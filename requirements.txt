@@ -1,0 +1,2 @@
+Ming==0.3.1dev-20120323
+py-bcrypt
