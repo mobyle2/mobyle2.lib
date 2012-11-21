@@ -4,6 +4,8 @@ from mobyle_data.data import *
 
 import pymongo
 
+from mobyle_data import users
+
 class TestUser(unittest.TestCase):
 
     def setUp(self):
@@ -11,12 +13,29 @@ class TestUser(unittest.TestCase):
        self.db = c.test
        #make sure users is empty
        self.db.user.remove({})
+       
+    def tearDown(self):
+        self.db.user.remove({})
 
     def test_insert(self):
-        from mobyle_data import users
+        
         user = users.User()
-        user.name = "Walter Bishop"
+        user.first_name = "Walter"
+        user.last_name = "Bishop"
         user.m.save()
         
-        users = list(self.db.user.find({'name': 'Walter Bishop'}))
-        self.assertTrue(len(users) ==1 )
+        user_list = list(self.db.user.find({'first_name': 'Walter'}))
+        self.assertTrue(len(user_list) ==1 )
+    
+    def test_password(self):
+        user = users.User()
+        user.m.save()
+        
+        self.assertTrue(user.hashed_password == '')        
+        user.set_password("verySecret")        
+        self.assertTrue(user.hashed_password != '')
+        
+        self.assertTrue(user.check_password("verySecret") )
+        self.assertFalse(user.check_password("incorrect") )
+        
+        user.m.save()
