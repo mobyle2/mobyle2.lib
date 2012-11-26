@@ -7,14 +7,15 @@ def allTests():
     from testData import TestData
     from testData import TestStructData
     from testData import TestCollectionData
-    
+    from testProject import TestProject
 
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestDataType))
     suite.addTest(unittest.makeSuite(TestDataFormat))
     suite.addTest(unittest.makeSuite(TestData))
     suite.addTest(unittest.makeSuite(TestStructData))
-    suite.addTest(unittest.makeSuite(TestCollectionData))
+    suite.addTest(unittest.makeSuite(TestProject))
+    
 
     return suite
 
