@@ -8,6 +8,7 @@ def allTests():
     from testData import TestStructData
     from testData import TestCollectionData
     from testProject import TestProject
+    from testConfig import TestConfig
 
     suite = unittest.TestSuite()
     suite.addTest(unittest.makeSuite(TestDataType))
@@ -15,6 +16,8 @@ def allTests():
     suite.addTest(unittest.makeSuite(TestData))
     suite.addTest(unittest.makeSuite(TestStructData))
     suite.addTest(unittest.makeSuite(TestProject))
+
+    suite.addTest(unittest.makeSuite(TestConfig))
     
 
     return suite
