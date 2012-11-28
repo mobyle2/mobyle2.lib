@@ -48,8 +48,6 @@ class Config:
 
     _log = None
 
-    _singleton = False
-
     def __init__(self, file = None):
 	"""
 	:param file: Path to the configuration file
