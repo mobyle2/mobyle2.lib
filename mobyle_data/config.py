@@ -28,17 +28,23 @@ class Config:
     Configuration file can be specified or loaded in $HOME/.mobyle or current directory if not specified.
     File also contains configuration for the logger
 
+    Config object must be instanciated once at application startup
+
+    :Example:
+
+    Config('path_to_my_configfile')
+
     To get access to a Config element, one must specify the section and key.
 
     :Example:
 
-	Config.get("main","mongo.url")
+    Config.get("main","mongo.url")
 
     To get a logger, just use the following.
 
     :Example:
 
-	Config.logger("mylogger") or Config.logger() for defaults
+    Config.logger("mylogger") or Config.logger() for defaults
     """
 
     # File holding the configuration
@@ -90,6 +96,7 @@ class Config:
 	    # Set defaults
 	    config.add_section("main")
 	    config.set("main","mongo.url","mongodb://localhost")
+	    config.set("main","mongo.db","mobyle")
 
 	Config._config = config
 

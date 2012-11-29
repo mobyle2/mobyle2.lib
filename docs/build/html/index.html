@@ -685,24 +685,36 @@ It&#8217;s composed by a set of <a class="reference internal" href="#data.Data" 
 <dd><p>Config loads mobyle configuration file.</p>
 <p>Configuration file can be specified or loaded in $HOME/.mobyle or current directory if not specified.
 File also contains configuration for the logger</p>
+<p>Config object must be instanciated once at application startup</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>Config(&#8216;path_to_my_configfile&#8217;)</p>
 <p>To get access to a Config element, one must specify the section and key.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body">Config.get(&#8220;main&#8221;,&#8221;mongo.url&#8221;)</td>
+<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
+<p>Config.get(&#8220;main&#8221;,&#8221;mongo.url&#8221;)</p>
 <p>To get a logger, just use the following.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body">Config.logger(&#8220;mylogger&#8221;) or Config.logger() for defaults</td>
+<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body"></td>
 </tr>
 </tbody>
 </table>
+<p>Config.logger(&#8220;mylogger&#8221;) or Config.logger() for defaults</p>
 <dl class="method">
 <dt id="config.Config.__init__">
 <tt class="descname">__init__</tt><big>(</big><em>file=None</em><big>)</big><a class="reference internal" href="_modules/config.html#Config.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.Config.__init__" title="Permalink to this definition">¶</a></dt>
