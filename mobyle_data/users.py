@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import mobyle_data
+from mobyle_data import session
 
 from ming.datastore import DataStore
 from ming import Session
@@ -11,7 +11,7 @@ import bcrypt
 
 class User(Document):
     class __mongometa__:
-        session = mobyle_data.session
+        session = session
         name = "user"
     
     _id = Field(schema.ObjectId)

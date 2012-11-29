@@ -5,6 +5,9 @@ from mobyle_data.data import *
 import pymongo
 
 from mobyle_data import users
+import mobyle_data
+
+mobyle_data.init_mongo(["mongodb://localhost/", "test"])
 
 class TestUser(unittest.TestCase):
 

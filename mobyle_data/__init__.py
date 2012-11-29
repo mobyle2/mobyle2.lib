@@ -8,9 +8,16 @@ Created on Nov. 12, 2012
 '''
 
 from ming.datastore import DataStore
+from ming import create_datastore
 from ming import Session
 
 
-bind = DataStore('mongodb://localhost', database='test')
-session = Session(bind)
+session = Session()
+
+def init_mongo(engine):
+    global session
+    server, database = engine
+    session.bind = create_datastore("%s%s"%(server, database))
+
+
 
