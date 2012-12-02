@@ -1,7 +1,7 @@
 import unittest
 from tempfile import mkstemp
 
-from mobyle_data.config import *
+from mobyle.config import *
 
 class TestConfig(unittest.TestCase):
 
