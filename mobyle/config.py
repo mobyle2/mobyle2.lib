@@ -55,99 +55,98 @@ class Config:
     _log = None
 
     def __init__(self, file = None):
-	"""
-	:param file: Path to the configuration file
-	:type file: String
-	"""
+        """
+        :param file: Path to the configuration file
+        :type file: String
+        """
 
-	if file is None:
-	  if os.path.exists( os.path.join(os.getcwd(),"mobyle.conf")):
-	      Config._file =  os.path.join(os.getcwd(),"mobyle.conf")
-	  elif os.path.exists(os.path.expanduser(".mobyle")):
-	     Config._file = os.path.expanduser(".mobyle")
-	else:
-	  if os.path.exists(file):
-              Config._file = file
+        if file is None:
+            if os.path.exists( os.path.join(os.getcwd(),"mobyle.conf")):
+                Config._file =  os.path.join(os.getcwd(),"mobyle.conf")
+            elif os.path.exists(os.path.expanduser(".mobyle")):
+                Config._file = os.path.expanduser(".mobyle")
+        else:
+            if os.path.exists(file):
+                Config._file = file
 
+        Config.__parse_config_file(Config._file)
 
-	Config.parseConfigFile(Config._file)
-
-	if Config._file is None:
-	    Config.logger().warn( "No configuration file available, using defaults" )
+        if Config._file is None:
+            Config.logger().warn( "No configuration file available, using defaults" )
 
 
     @staticmethod
-    def parseConfigFile(file = None):
-	"""
-	Parse the configuration file
+    def __parse_config_file(file = None):
+        """
+        Parse the configuration file
 
-	:param file: Configuration file to parse
-	:type file: String
-	"""
+        :param file: Configuration file to parse
+        :type file: String
+        """
 
 
-	config = ConfigParser.ConfigParser()
-	if file is not None:
-	    # If config file, load Logger config
-	    Config._log = logging
-	    logging.config.fileConfig(file)
-	    config.readfp(open(file))
-	else:
-	    # Set defaults
-	    config.add_section("main")
-	    config.set("main","mongo.url","mongodb://localhost")
-	    config.set("main","mongo.db","mobyle")
+        config = ConfigParser.ConfigParser()
+        if file is not None:
+            # If config file, load Logger config
+            Config._log = logging
+            logging.config.fileConfig(file)
+            config.readfp(open(file))
+        else:
+            # Set defaults
+            config.add_section("main")
+            config.set("main","mongo.url","mongodb://localhost")
+            config.set("main","mongo.db","mobyle")
 
-	Config._config = config
+        Config._config = config
 
 
 
     @staticmethod
     def reload():
-	"""
-	Reload configuration file
-	"""
-	Config.parseConfigFile(Config._file)
+        """
+        Reload configuration file
+        """
+        Config.__parse_config_file(Config._file)
         
 
     @staticmethod
     def logger(mylogger = "mobyle"):
-	"""
-	Gets a logger from configuration file.
-	If no logger is defined, create a default one.
+        """
+        Gets a logger from configuration file.
+        If no logger is defined, create a default one.
 
-	:param mylogger: name of the Logger, defaults to mobyle
-	:type: String
-	:return: logger
-	:rtype: Logger
-	"""
-	if Config._log is None:
-	    # Set default log handler on console with level WARN
-	    logger = logging.getLogger("mobyle")
-	    logger.setLevel(logging.WARN)
-	    # create console handler and set level to info
-	    ch = logging.StreamHandler()
-	    ch.setLevel(logging.WARN)
-	    # create formatter
-	    formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-	    # add formatter to ch
-	    ch.setFormatter(formatter)
-	    # add ch to logger
-	    logger.addHandler(ch)
-	    return logger
+        :param mylogger: name of the Logger, defaults to mobyle
+        :type: String
+        :return: logger
+        :rtype: Logger
+        """
+        if Config._log is None:
+            # Set default log handler on console with level WARN
+            logger = logging.getLogger("mobyle")
+            logger.setLevel(logging.WARN)
+            # create console handler and set level to info
+            ch = logging.StreamHandler()
+            ch.setLevel(logging.WARN)
+            # create formatter
+            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+            # add formatter to ch
+            ch.setFormatter(formatter)
+            # add ch to logger
+            logger.addHandler(ch)
+            return logger
 
-	return Config._log.getLogger( mylogger)
+        return Config._log.getLogger( mylogger)
 
 
     @staticmethod
     def config():
         """
-	Get the configuration parser
+        Get the configuration parser
 
-	:return: the config parser
-	:rtype: ConfigParser
+        :return: the config parser
+        :rtype: ConfigParser
 
-	..  seealso:: ConfigParser
-	"""
+        ..  seealso:: ConfigParser
+        """
         return Config._config
 
