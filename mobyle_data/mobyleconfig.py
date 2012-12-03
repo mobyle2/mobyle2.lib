@@ -52,8 +52,6 @@ class MobyleConfig(Document):
     data.dir = Field(str, if_missing="/var/lib/mobyle")
     # Various options
     options  = Field(dict( apikey = schema.Boolean ))
-    # Admin users
-    adminsistrators = Field('admin', [str])
 
 
     def to_json(self):
