@@ -675,6 +675,122 @@ It&#8217;s composed by a set of <a class="reference internal" href="#data.Data" 
 
 </dd></dl>
 
+<span class="target" id="module-config"></span><p>Created on Nov. 27, 2012</p>
+<p>&#64;author: Olivier Sallou
+&#64;contact: <a class="reference external" href="mailto:olivier&#46;sallou&#37;&#52;&#48;irisa&#46;fr">olivier<span>&#46;</span>sallou<span>&#64;</span>irisa<span>&#46;</span>fr</a>
+&#64;license: GPLv3</p>
+<dl class="class">
+<dt id="config.Config">
+<em class="property">class </em><tt class="descclassname">config.</tt><tt class="descname">Config</tt><big>(</big><em>file=None</em><big>)</big><a class="reference internal" href="_modules/config.html#Config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.Config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Config loads mobyle configuration file.</p>
+<p>Configuration file can be specified or loaded in $HOME/.mobyle or current directory if not specified.
+File also contains configuration for the logger</p>
+<p>Config object must be instanciated once at application startup</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>Config(&#8216;path_to_my_configfile&#8217;)</p>
+<p>To get access to a Config element, one must specify the section and key.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>Config.get(&#8220;main&#8221;,&#8221;mongo.url&#8221;)</p>
+<p>To get a logger, just use the following.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Example :</th><td class="field-body"></td>
+</tr>
+</tbody>
+</table>
+<p>Config.logger(&#8220;mylogger&#8221;) or Config.logger() for defaults</p>
+<dl class="method">
+<dt id="config.Config.__init__">
+<tt class="descname">__init__</tt><big>(</big><em>file=None</em><big>)</big><a class="reference internal" href="_modules/config.html#Config.__init__"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.Config.__init__" title="Permalink to this definition">¶</a></dt>
+<dd><table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> (<em>String</em>) &#8211; Path to the configuration file</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="config.Config.config">
+<em class="property">static </em><tt class="descname">config</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/config.html#Config.config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.Config.config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get the configuration parser</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">the config parser</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">ConfigParser</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition-see-also admonition seealso">
+<p class="first admonition-title">See also</p>
+<p class="last">ConfigParser</p>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="config.Config.logger">
+<em class="property">static </em><tt class="descname">logger</tt><big>(</big><em>mylogger='mobyle'</em><big>)</big><a class="reference internal" href="_modules/config.html#Config.logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.Config.logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets a logger from configuration file.
+If no logger is defined, create a default one.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>mylogger</strong> &#8211; name of the Logger, defaults to mobyle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Type :</th><td class="field-body">String</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">logger</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">Logger</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="config.Config.parseConfigFile">
+<em class="property">static </em><tt class="descname">parseConfigFile</tt><big>(</big><em>file=None</em><big>)</big><a class="reference internal" href="_modules/config.html#Config.parseConfigFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.Config.parseConfigFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse the configuration file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>file</strong> (<em>String</em>) &#8211; Configuration file to parse</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="config.Config.reload">
+<em class="property">static </em><tt class="descname">reload</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/config.html#Config.reload"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#config.Config.reload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reload configuration file</p>
+</dd></dl>
+
+</dd></dl>
+
 <span class="target" id="module-mobyleError"></span><p>Created on Nov. 12, 2012</p>
 <p>&#64;author: E. LEGROS
 &#64;contact: <a class="reference external" href="mailto:emeline&#46;legros&#37;&#52;&#48;ibcp&#46;fr">emeline<span>&#46;</span>legros<span>&#64;</span>ibcp<span>&#46;</span>fr</a>

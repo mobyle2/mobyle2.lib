@@ -16,6 +16,12 @@ Contents:
    :private-members:
    :special-members:
 
+.. automodule:: config
+   :members:
+   :private-members:
+   :special-members:
+
+
 .. automodule:: mobyleError
    :members:
    :private-members:
