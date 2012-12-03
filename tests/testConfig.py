@@ -13,20 +13,20 @@ class TestConfig(unittest.TestCase):
     def test_default_config(self):
 	myconfig = Config()
 	Config.logger().setLevel(logging.ERROR)
-        self.assertEqual(myconfig._config.get("main","mongo.url"),"mongodb://localhost")
+        self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://localhost")
 
     def test_file_config(self):
 	tmpconfig = os.path.join(os.path.dirname(os.path.realpath(__file__)),"test.conf")
 	myconfig = Config(tmpconfig) 
-        self.assertEqual(myconfig._config.get("main","mongo.url"),"mongodb://samplehost")
+        self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://samplehost")
 
     def test_reload_config(self):
 	myconfig = Config()
-        self.assertEqual(myconfig._config.get("main","mongo.url"),"mongodb://samplehost")
-	Config.config().set("main","mongo.url","mongodb://localhost")	
-        self.assertEqual(Config.config().get("main","mongo.url"),"mongodb://localhost")
+        self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://samplehost")
+	Config.config().set("app:main","db_uri","mongodb://localhost")	
+        self.assertEqual(Config.config().get("app:main","db_uri"),"mongodb://localhost")
 	Config.reload()
-        self.assertEqual(myconfig._config.get("main","mongo.url"),"mongodb://samplehost")
+        self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://samplehost")
 	
 
 

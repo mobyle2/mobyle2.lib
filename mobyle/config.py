@@ -38,7 +38,7 @@ class Config:
 
     :Example:
 
-    Config.get("main","mongo.url")
+    Config.get("app:main","db_uri")
 
     To get a logger, just use the following.
 
@@ -93,9 +93,9 @@ class Config:
             config.readfp(open(file))
         else:
             # Set defaults
-            config.add_section("main")
-            config.set("main","mongo.url","mongodb://localhost")
-            config.set("main","mongo.db","mobyle")
+            config.add_section("app:main")
+            config.set("app:main","db_uri","mongodb://localhost")
+            config.set("app:main","db_name","mobyle")
 
         Config._config = config
 
