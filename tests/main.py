@@ -4,6 +4,7 @@ import unittest
 from testUser import *
 from testData import *
 from testConfig import *
+from testProject import *
 
 
 if __name__ == '__main__':
