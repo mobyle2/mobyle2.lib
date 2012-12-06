@@ -13,6 +13,8 @@ from tempfile import mkstemp
 from mobyle.config import *
 
 class TestConfig(unittest.TestCase):
+    """ Tests for the Config class
+    """
 
     def setup(self):
         Config._config = None
