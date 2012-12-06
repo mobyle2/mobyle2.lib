@@ -1,3 +1,12 @@
+# -*- coding: utf-8 -*-
+'''
+Created on Nov. 27, 2012
+
+@author: Olivier Sallou
+@contact: olivier.sallou@irisa.fr
+@license: GPLv3
+'''
+
 import unittest
 from tempfile import mkstemp
 
