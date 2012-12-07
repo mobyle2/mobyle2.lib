@@ -16,6 +16,7 @@ import logging
 import logging.config
 
 import json
+from bson import json_util
 
 
 from mobyleError import MobyleError
@@ -32,35 +33,31 @@ class MobyleConfig(Document):
     It contains configuration that can be updated by administrators
     """
 
-
     class __mongometa__:
         session = session
         name = "config"
 
     _id = Field(schema.ObjectId)
-    # Last-updated
-    last_update = Field(datetime, if_missing=datetime.utcnow)
     # Allowed Authentication modes
     auth_mode = Field('auth_mode',[str])
     # Mail
-    mail = Field(dict( gateway = str , user = str, password = str, from = str))
+    mail = Field('mail', dict(gateway=str, user=str, password=str, origin=str))
     # URL
-    url = Field(str, if_missing="http://localhost")
+    url = Field('url', str, if_missing="http://localhost")
     # Data dir
-    data.dir = Field(str, if_missing="/var/lib/mobyle")
+    datadir = Field('datadir', str, if_missing="/var/lib/mobyle")
     # Mobyle root dir
-    root.dir = Field(str, if_missing="/usr/share/mobyle")
+    rootdir = Field('rootdir', str, if_missing="/usr/share/mobyle")
     # Various options
-    options  = Field(dict( apikey = schema.Boolean ))
-
+    options  = Field('options', dict( apikey = bool ))
 
     def to_json(self):
-    """"
-    Return JSON representation of the object
+        """"
+        Return JSON representation of the object
 
-    :return: JSON representation of the config
-    :rtype: str
-    """
-    return json.dumps(self)
+        :return: JSON representation of the config
+        :rtype: str
+        """
+        return json.dumps(self, default=json_util.default)
 
 
