@@ -7,7 +7,7 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 
-from mobyle import session
+from mobyle.common import session
 
 from ming.datastore import DataStore
 from ming import Session

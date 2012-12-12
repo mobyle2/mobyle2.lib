@@ -1,16 +1,16 @@
 import unittest
-from mobyle.project import *
+from mobyle.common.project import *
 import pymongo
 
 	
-from mobyle import project
-import mobyle
+from mobyle.common import project
+import mobyle.common
 
 import datetime
 from ming import schema
-from mobyle import users
+from mobyle.common import users
 
-mobyle.init_mongo(["mongodb://localhost/", "test"])
+mobyle.common.init_mongo(["mongodb://localhost/", "test"])
 
 	
 	

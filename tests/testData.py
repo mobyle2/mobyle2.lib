@@ -1,5 +1,5 @@
 import unittest
-from mobyle.data import *
+from mobyle.common.data import *
 
 class TestDataType(unittest.TestCase):
 

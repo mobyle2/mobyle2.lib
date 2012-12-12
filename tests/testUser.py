@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 import unittest
-from mobyle.data import *
+from mobyle.common.data import *
 
 import pymongo
 
-from mobyle import users
-import mobyle
+from mobyle.common import users
+import mobyle.common
 
-mobyle.init_mongo(["mongodb://localhost/", "test"])
+mobyle.common.init_mongo(["mongodb://localhost/", "test"])
 
 class TestUser(unittest.TestCase):
 

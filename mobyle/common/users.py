@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from mobyle import session
+from mobyle.common import session
 
 from ming.datastore import DataStore
 from ming import Session

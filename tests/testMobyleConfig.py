@@ -6,11 +6,11 @@ import mobyle
 
 import json
 
-from mobyle.config import Config
+from mobyle.common.config import Config
 
-from mobyle import mobyleConfig
+from mobyle.common.config import mobyleConfig
 
-mobyle.init_mongo(["mongodb://localhost/", "test"])
+mobyle.common.init_mongo(["mongodb://localhost/", "test"])
 
 class TestMobyleConfig(unittest.TestCase):
 

@@ -11,7 +11,7 @@ Created on Nov. 27, 2012
 import unittest
 from tempfile import mkstemp
 
-from mobyle.config import *
+from mobyle.common.config import *
 
 class TestConfig(unittest.TestCase):
     """ Tests for the Config class
