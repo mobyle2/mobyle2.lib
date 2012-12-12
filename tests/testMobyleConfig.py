@@ -8,7 +8,7 @@ import json
 
 from mobyle.common.config import Config
 
-from mobyle.common.config import mobyleConfig
+from mobyle.common.mobyleConfig import MobyleConfig
 
 mobyle.common.init_mongo(["mongodb://localhost/", "test"])
 
@@ -24,7 +24,7 @@ class TestMobyleConfig(unittest.TestCase):
         self.db.config.remove({})
 
     def test_insert(self):
-        config = mobyleConfig.MobyleConfig()
+        config = MobyleConfig()
         config.m.save()
         config_list = list(self.db.config.find({'datadir': '/var/lib/mobyle'}))
         self.assertTrue(len(config_list) ==1 )
