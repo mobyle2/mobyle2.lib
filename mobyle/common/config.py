@@ -18,7 +18,7 @@ import logging
 import logging.config
 
 
-from mobyle.mobyleError import MobyleError
+from mobyle.common.mobyleError import MobyleError
 
 
 class Config:

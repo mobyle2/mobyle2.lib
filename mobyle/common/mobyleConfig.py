@@ -10,7 +10,7 @@ Created on Nov. 28, 2012
 import sys
 import os
 
-from mobyle import session
+from mobyle.common import session
 
 import logging
 import logging.config
