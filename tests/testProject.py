@@ -6,49 +6,51 @@ import pymongo
 from mobyle.common import project
 import mobyle.common
 
-import datetime
-from ming import schema
+from mobyle.common  import session
+
+from datetime import datetime
 from mobyle.common import users
 
-mobyle.common.init_mongo(["mongodb://localhost/", "test"])
-
-	
+import mobyle.common.connection
+mobyle.common.connection.init_mongo("mongodb://localhost/")
 	
 class TestProject(unittest.TestCase):
 
     def setUp(self):
-	c = pymongo.Connection()
-        self.db = c.test
-        #make sure projects is empty
-        self.db.projects.remove({})	
+       objects = session.Project.find({})
+       for object in objects:
+         object.delete()
 
     def tearDown(self):
-	self.db.projects.remove({})
+       objects = session.Project.find({})
+       for object in objects:
+         object.delete()
 	
     def test_project(self):
-	my_project = project.Project("Emeline","MyProject")
-	my_project.m.save()
+	my_project = session.Project()
+        my_project['owner'] = 'Emeline'
+        my_project['name'] = 'MyProject'
+        my_project['date_creation'] = datetime.utcnow()
+	my_project.save()
 	
-        self.assertEqual(my_project.name, 'MyProject')
-	self.assertEqual(my_project.owner, 'Emeline')
+        self.assertEqual(my_project['name'], 'MyProject')
+	self.assertEqual(my_project['owner'], 'Emeline')
 
-    def test_get_creation_time(self):
-	my_project = project.Project("Emeline","MyProject")
-	my_project.m.save()
-	
-	date = str(my_project.get_creation_time())
-	current_date = str(datetime.datetime.utcnow()).split('.')[0]+"+00:00"
-	self.assertEqual(date, current_date)
-	
     def test_add_users(self):
-	my_project = project.Project("Emeline","MyProject")
-	my_project.m.save()
-	user = users.User()
-	user.m.save()
-	
+	my_project = session.Project()
+        my_project['owner'] = 'Emeline'
+        my_project['name'] = 'MyProject'
+        my_project['date_creation'] = datetime.utcnow()
+
+	my_project.save()
+	user = session.User()
+        user['email']='admin'
+	user.save()
+
 	my_project.add_user(user,"admin")
-	
-	
+        print str(my_project)
+
+        self.assertEqual(my_project['users'][0]['user']['_id'] , user['_id'])
 	
 	
 

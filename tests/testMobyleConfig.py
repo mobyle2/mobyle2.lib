@@ -6,26 +6,31 @@ import mobyle
 
 import json
 
+from mobyle.common  import session
+
 from mobyle.common.config import Config
 
 from mobyle.common.mobyleConfig import MobyleConfig
 
-mobyle.common.init_mongo(["mongodb://localhost/", "test"])
+import mobyle.common.connection
+
+mobyle.common.connection.init_mongo("mongodb://localhost/")
 
 class TestMobyleConfig(unittest.TestCase):
 
     def setUp(self):
-       c = pymongo.Connection()
-       self.db = c.test
-       #make sure users is empty
-       self.db.config.remove({})
+       objects = session.MobyleConfig.find({})
+       for object in objects:
+         object.delete()
        
     def tearDown(self):
-        self.db.config.remove({})
+       objects = session.MobyleConfig.find({})
+       for object in objects:
+         object.delete()
 
     def test_insert(self):
-        config = MobyleConfig()
-        config.m.save()
-        config_list = list(self.db.config.find({'datadir': '/var/lib/mobyle'}))
-        self.assertTrue(len(config_list) ==1 )
+        config = session.MobyleConfig()
+        config.save()
+        config_list = session.MobyleConfig.find_one({'datadir': '/var/lib/mobyle'})
+        self.assertTrue(config_list is not None)
     

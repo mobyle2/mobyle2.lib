@@ -7,17 +7,15 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 
+from datetime import datetime
+from mongokit import Document
+
 from mobyle.common import session
+from mobyle.common.config import Config
 
-from ming.datastore import DataStore
-from ming import Session
-from ming import Document, Field, schema
-
-from ming.odm import ODMSession
-from ming.odm.declarative import MappedClass
-from ming.odm.property import FieldProperty, RelationProperty
-from ming.odm.property import ForeignIdProperty
-
+from mobyle.common.job import Job
+from mobyle.common.data import Data
+from mobyle.common.users import User
 
 
 class Project(Document):
@@ -26,27 +24,14 @@ class Project(Document):
     It's initialized by two parameters: the name of the owner of the project and the project name itself.
     """
 
-    class __mongometa__:
-        session = session
-        name = "projects"
-	
-    _id = Field(schema.ObjectId)
-    name = Field(str,required=True)
-    owner = Field(str,required=True)
-    job_ids = Field([schema.ObjectId],if_missing=[])
-    data_ids = Field([schema.ObjectId],if_missing=[])
-    users = Field([dict(user=[schema.ObjectId],role=[str])],if_missing=[])
+    __collection__ = 'projects'
+    __database__ = Config.config().get('app:main','db_name')
 
-	
-    def __init__(self, project_owner = None, project_name = None):
-	"""
-	:param project_owner: name of the project owner 
-	:type project_owner: string
-	:param project_name: name of the project 
-	:type project_name: string
-	"""
-        self.name = project_name
-	self.owner = project_owner
+    structure = { 'name' : basestring, 'owner' : basestring, 'job_ids' : [ Job ], 'data_ids' : [ basestring ], 'users' : [ { 'user' : User, 'role' : basestring } ], 'date_creation': datetime }
+
+    required_fields = ['name', 'owner']
+
+    use_autorefs = True
 	
 
     def add_data(self, data):	
@@ -55,7 +40,7 @@ class Project(Document):
 	:param data: data to be associated to the project.
         :type data: :class:`Data` object.
         """
-	self.data_ids.append(data._id)
+	self['data_ids'].append(data)
 
 
     def add_list_of_data(self, data_list):
@@ -65,7 +50,7 @@ class Project(Document):
         :type data_list: array containing :class:`Data` object.
 	"""
 	for i in range(len(data_list)):
-		self.data_ids.append(data_list[i]._id)
+		self['data_ids'].append(data_list[i])
 
 
     def add_job(self, job):	
@@ -74,7 +59,7 @@ class Project(Document):
         :param job: job to be associated to the project.
         :type job: :class:`Job` object.
         """
-	self.job_ids.append(job._id)
+	self['job_ids'].append(job)
 	
 	
     def get_creation_time(self):
@@ -83,7 +68,7 @@ class Project(Document):
 	:return: the project creation datetime.
 	:rtype: string.
 	"""
-	return self._id.generation_time
+	return self['creation_time']
 	
 
     def add_user(self,user,role):
@@ -94,8 +79,8 @@ class Project(Document):
 	:param role: user's role in the project.
         :type role: string.
 	"""
-	self.users.append({user._id : role})
+	self['users'].append({ 'user' : user, 'role' : role})
 
 
 
-
+session.register([Project])

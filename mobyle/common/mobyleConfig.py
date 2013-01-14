@@ -23,9 +23,9 @@ from mobyleError import MobyleError
 
 from datetime import datetime
 
-from ming.datastore import DataStore
-from ming import Session
-from ming import Document, Field, schema
+from mongokit import Document, Connection
+
+from mobyle.common.config import Config
 
 class MobyleConfig(Document):
     """
@@ -33,23 +33,20 @@ class MobyleConfig(Document):
     It contains configuration that can be updated by administrators
     """
 
-    class __mongometa__:
-        session = session
-        name = "config"
+    __collection__ = 'config'
+    __database__ = Config.config().get('app:main','db_name')
 
-    _id = Field(schema.ObjectId)
-    # Allowed Authentication modes
-    auth_mode = Field('auth_mode',[str])
-    # Mail
-    mail = Field('mail', dict(gateway=str, user=str, password=str, origin=str))
-    # URL
-    url = Field('url', str, if_missing="http://localhost")
-    # Data dir
-    datadir = Field('datadir', str, if_missing="/var/lib/mobyle")
-    # Mobyle root dir
-    rootdir = Field('rootdir', str, if_missing="/usr/share/mobyle")
-    # Various options
-    options  = Field('options', dict( apikey = bool ))
+    structure = { 'auth_mod' : basestring , 'mail' : { 'gateway' : basestring, 'user' : basestring, 'password' : basestring, 'origin' : basestring },
+                  'url' : basestring, 'datadir' : basestring, 'rootdir' : basestring, 'options' :  { 'apikey' : bool }
+    }
+
+    default_values = {
+        'options.apikey': False,
+        'url': 'http://localhost',
+        'datadir' : '/var/lib/mobyle',
+        'rootdir' : '/usr/share/mobyle'
+    }
+
 
     def to_json(self):
         """"
@@ -61,3 +58,5 @@ class MobyleConfig(Document):
         return json.dumps(self, default=json_util.default)
 
 
+
+session.register([MobyleConfig])

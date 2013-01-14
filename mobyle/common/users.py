@@ -1,32 +1,30 @@
 # -*- coding: utf-8 -*-
 
 from mobyle.common import session
+from mobyle.common.config import Config
 
-from ming.datastore import DataStore
-from ming import Session
-from ming import Document, Field, schema
+from mongokit import Document
 
 import bcrypt
 
 
 class User(Document):
-    class __mongometa__:
-        session = session
-        name = "user"
-    
-    _id = Field(schema.ObjectId)
-    first_name = Field(str, if_missing='')
-    last_name = Field(str, if_missing='')
-    email = Field(str, if_missing='')
-    hashed_password = Field(str, if_missing='')
+
+    __collection__ = 'users'
+    __database__ = Config.config().get('app:main','db_name')
+
+    structure = { 'first_name' : basestring, 'last_name' : basestring, 'email' : basestring, 'hashed_password' : basestring }
+
+    default_values = { 'hashed_password' : '' }
+
+    required_fields = [ 'email' ]    
     
     def set_password(self, clear_password):
-        self.hashed_password = bcrypt.hashpw(clear_password, bcrypt.gensalt())
+        self['hashed_password'] = bcrypt.hashpw(clear_password, bcrypt.gensalt())
     
     def check_password(self, password):
-        hashed = bcrypt.hashpw(password, self.hashed_password)
-        return hashed == self.hashed_password
+        hashed = bcrypt.hashpw(password, self['hashed_password'])
+        return hashed == self['hashed_password']
     
     
-
-     
+session.register([User])
