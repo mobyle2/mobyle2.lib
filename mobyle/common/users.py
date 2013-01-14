@@ -13,9 +13,9 @@ class User(Document):
     __collection__ = 'users'
     __database__ = Config.config().get('app:main','db_name')
 
-    structure = { 'first_name' : basestring, 'last_name' : basestring, 'email' : basestring, 'hashed_password' : basestring }
+    structure = { 'first_name' : basestring, 'last_name' : basestring, 'email' : basestring, 'hashed_password' : basestring, 'type' : basestring, 'admin': bool, 'groups' : [ basestring ] }
 
-    default_values = { 'hashed_password' : '' }
+    default_values = { 'hashed_password' : '', 'admin': False }
 
     required_fields = [ 'email' ]    
     
