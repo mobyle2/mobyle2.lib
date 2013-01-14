@@ -1,5 +1,5 @@
 paste
 pastedeploy
 pastescript
-Ming
 py-bcrypt
+mongokit
