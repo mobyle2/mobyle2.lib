@@ -2,6 +2,8 @@ from mobyle.common.users import User
 from mobyle.common.project import Project
 from mobyle.common.mobyleConfig import MobyleConfig
 from mobyle.common.job import Job
+from mobyle.common.program import Program
+
 from mongokit import Connection
 
 from mobyle.common import session
@@ -19,5 +21,5 @@ def init_mongo(server):
     '''
     global session
     session = Connection(server)
-    session.register([User, Project, MobyleConfig, Job])
+    session.register([User, Project, MobyleConfig, Job, Program])
 

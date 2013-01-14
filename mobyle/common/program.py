@@ -25,5 +25,5 @@ class Program(Document):
     required_fields = [ 'name' ]
 
 
-session.register([Job])
+session.register([Program])
 
