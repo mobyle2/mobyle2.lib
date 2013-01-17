@@ -148,5 +148,8 @@ class Config:
 
         ..  seealso:: ConfigParser
         """
+        if Config._config is None:
+          # If not config, initialize with defaults
+          Config()
         return Config._config
 
