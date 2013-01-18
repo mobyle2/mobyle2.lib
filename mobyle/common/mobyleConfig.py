@@ -17,6 +17,8 @@ import logging.config
 
 import json
 from bson import json_util
+import mf.annotation
+from mf.annotation import *
 
 
 from mobyleError import MobyleError
@@ -27,6 +29,7 @@ from mongokit import Document, Connection
 
 from mobyle.common.config import Config
 
+@mf_decorator
 class MobyleConfig(Document):
     """
     Config loads mobyle configuration from database.

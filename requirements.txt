@@ -3,3 +3,4 @@ pastedeploy
 pastescript
 py-bcrypt
 mongokit
+mf

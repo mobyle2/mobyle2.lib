@@ -17,7 +17,11 @@ from mobyle.common.job import Job
 from mobyle.common.data import Data
 from mobyle.common.users import User
 
+import mf.annotation
+from mf.annotation import *
 
+
+@mf_decorator
 class Project(Document):
     """
     Project is a class that stores all information about a project (owner username, inputs, outputs, job id). 
