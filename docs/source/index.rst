@@ -11,22 +11,46 @@ Contents:
 .. toctree::
    :maxdepth: 2
 
-.. automodule:: data
+.. automodule:: mobyle.common.data
    :members:
    :private-members:
    :special-members:
 
-.. automodule:: config
+.. automodule:: mobyle.common.config
    :members:
    :private-members:
    :special-members:
 
 
-.. automodule:: mobyleError
+.. automodule:: mobyle.common.mobyleError
    :members:
    :private-members:
    :special-members:
 
+.. automodule:: mobyle.common.mobyleConfig
+   :members:
+   :private-members:
+   :special-members:
+
+.. automodule:: mobyle.common.job
+   :members:
+   :private-members:
+   :special-members:
+
+.. automodule:: mobyle.common.program
+   :members:
+   :private-members:
+   :special-members:
+
+.. automodule:: mobyle.common.users
+   :members:
+   :private-members:
+   :special-members:
+
+.. automodule:: mobyle.common.project
+   :members:
+   :private-members:
+   :special-members:
 
 Indices and tables
 ==================
