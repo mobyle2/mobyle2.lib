@@ -7,7 +7,10 @@ from mongokit import Document
 
 import bcrypt
 
+import mf.annotation
+from mf.annotation import *
 
+@mf_decorator
 class User(Document):
 
     __collection__ = 'users'

@@ -10,6 +10,10 @@ from mongokit import Document
 from mobyle.common import session
 from mobyle.common.config import Config
 
+import mf.annotation
+from mf.annotation import *
+
+@mf_decorator
 class Program(Document):
     """
     Empty class for the moment, only used as reference
