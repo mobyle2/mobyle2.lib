@@ -30,4 +30,3 @@ class User(Document):
         return hashed == self['hashed_password']
     
     
-session.register([User])

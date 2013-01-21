@@ -61,5 +61,3 @@ class MobyleConfig(Document):
         return json.dumps(self, default=json_util.default)
 
 
-
-session.register([MobyleConfig])

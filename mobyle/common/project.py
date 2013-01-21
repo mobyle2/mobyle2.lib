@@ -86,5 +86,3 @@ class Project(Document):
 	self['users'].append({ 'user' : user, 'role' : role})
 
 
-
-session.register([Project])

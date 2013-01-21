@@ -11,6 +11,4 @@ __import__('pkg_resources').declare_namespace('mobyle')
 from mongokit import Connection
 
 
-session  = Connection()
-
-
+session = None

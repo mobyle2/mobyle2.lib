@@ -16,24 +16,24 @@ mobyle.common.connection.init_mongo("mongodb://localhost/")
 class TestUser(unittest.TestCase):
 
     def setUp(self):
-       objects = session.User.find({})
+       objects = mobyle.common.session.User.find({})
        for object in objects:
          object.delete()
        
     def tearDown(self):
-       objects = session.User.find({})
+       objects = mobyle.common.session.User.find({})
        for object in objects:
          object.delete()
 
 
     def test_insert(self):
-        user = session.User()
+        user = mobyle.common.session.User()
         user['first_name'] = "Walter"
         user['last_name'] = "Bishop"
         user['email'] = "Bishop@nomail"
         user.save()
         
-        user_list = session.User.find({'first_name': 'Walter'})
+        user_list = mobyle.common.session.User.find({'first_name': 'Walter'})
         count = 0
         for user in user_list:
           count+=1
@@ -41,7 +41,7 @@ class TestUser(unittest.TestCase):
         self.assertTrue(count ==1 )
     
     def test_password(self):
-        user = session.User()
+        user = mobyle.common.session.User()
         user['email'] = "Bishop@nomail"
         user.save()
         self.assertTrue(user['hashed_password'] == '')        

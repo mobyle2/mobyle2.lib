@@ -1,15 +1,11 @@
-from mobyle.common.users import User
-from mobyle.common.project import Project
-from mobyle.common.mobyleConfig import MobyleConfig
-from mobyle.common.job import Job
-from mobyle.common.program import Program
-
 from mongokit import Connection
 
 from mobyle.common import session
 from mobyle.common.config import Config
+import mobyle.common
 
 import logging
+
 
 
 def init_mongo(server):
@@ -19,7 +15,12 @@ def init_mongo(server):
     :type server: str
 
     '''
-    global session
     session = Connection(server)
+    from mobyle.common.users import User
+    from mobyle.common.project import Project
+    from mobyle.common.mobyleConfig import MobyleConfig
+    from mobyle.common.job import Job
+    from mobyle.common.program import Program
     session.register([User, Project, MobyleConfig, Job, Program])
+    mobyle.common.session = session
 

@@ -29,5 +29,3 @@ class Program(Document):
     required_fields = [ 'name' ]
 
 
-session.register([Program])
-

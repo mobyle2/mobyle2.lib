@@ -24,5 +24,3 @@ class Job(Document):
 
     structure = { 'name' : basestring }
 
-session.register([Job])
-
