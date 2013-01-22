@@ -29,7 +29,12 @@ class Service(Document):
                   'references' : [{'label':basestring,
                                    'doi':basestring,
                                    'url':basestring
-                                 }]
+                                 }],
+                  'documentation_links' : [basestring],
+                  'source_links' : [basestring],
+                  'homepage_links' : [basestring],
+                  'comment': basestring,
+                  'classifications': [{'type':basestring,'classification':basestring}],
                 }
 
     default_values = {}
