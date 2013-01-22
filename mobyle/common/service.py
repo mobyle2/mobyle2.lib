@@ -22,19 +22,39 @@ class Service(Document):
     __database__ = Config.config().get('app:main','db_name')
 
     structure = { 'name' : basestring,
+                  # version of the software
                   'version' : basestring,
+                  # title
                   'title' : basestring,
+                  # description
                   'description' : basestring,
+                  # authors of the software
                   'authors' : basestring,
-                  'references' : [{'label':basestring,
+                  # bibliographic references to be cited when using
+                  # this software
+                  'references' : [{
+                                   # citation text
+                                   'label':basestring,
+                                   # citation DOI
                                    'doi':basestring,
+                                   # citation URL
                                    'url':basestring
                                  }],
+                  # software documentation links
                   'documentation_links' : [basestring],
+                  # software sources links
                   'source_links' : [basestring],
+                  # software homepage links
                   'homepage_links' : [basestring],
+                  # miscelaneous comments
                   'comment': basestring,
-                  'classifications': [{'type':basestring,'classification':basestring}],
+                  # software classifications
+                  'classifications': [{
+                                       # type of classification
+                                       'type':basestring,
+                                       # classification value
+                                       'classification':basestring
+                                     }],
                 }
 
     default_values = {}
