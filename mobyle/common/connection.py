@@ -21,6 +21,7 @@ def init_mongo(server):
     from mobyle.common.mobyleConfig import MobyleConfig
     from mobyle.common.job import Job
     from mobyle.common.program import Program
-    session.register([User, Project, MobyleConfig, Job, Program])
+    from mobyle.common.stats.stat import HourlyStatistic
+    session.register([User, Project, MobyleConfig, Job, Program, HourlyStatistic])
     mobyle.common.session = session
 

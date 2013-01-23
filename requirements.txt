@@ -2,5 +2,6 @@ paste
 pastedeploy
 pastescript
 py-bcrypt
-mongokit
+mongokit>=0.8.3
 mf
+pygeoip
