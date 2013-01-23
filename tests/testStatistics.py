@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import unittest
-
+import logging
 import pymongo
 import mobyle
 
@@ -30,8 +30,12 @@ class TestMobyleStatistics(unittest.TestCase):
 
     def test_insert(self):
         stat = mobyle.common.session.HourlyStatistic()
-        print('test '+str(stat))
         status = stat.add('test1','188.224.22.213')
-        print str(status)
-        assertTrue(1==0)
+        status = stat.add('test1','188.224.22.213')
+        status = stat.add('test2','188.224.22.213')
+        stats = mobyle.common.session.HourlyStatistic.find_one()
+        for s in stats:
+            logging.debug(str(s))
+        self.assertTrue(stats['total']==3)
+        self.assertTrue(stats['jobs']['test1']==2)
     
