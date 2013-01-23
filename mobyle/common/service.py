@@ -68,6 +68,7 @@ class Software(Document):
 
     required_fields = [ 'name' ]
 
+@mf_decorator
 class Package(Software):
     """
     a package is a group of services.
@@ -75,6 +76,7 @@ class Package(Software):
     __collection__ = 'packages'
     pass
 
+@mf_decorator
 class Service(Software):
     """
     a service is an executable piece of software
@@ -85,6 +87,7 @@ class Service(Software):
                   'package' : Package
                 }
 
+@mf_decorator
 class Program(Service):
     """
     a program is a command line tool
