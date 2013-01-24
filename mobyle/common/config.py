@@ -123,17 +123,20 @@ class Config:
         if Config._log is None:
             # Set default log handler on console with level WARN
             logger = logging.getLogger("mobyle")
-            logger.setLevel(logging.WARN)
-            # create console handler and set level to info
-            ch = logging.StreamHandler()
-            ch.setLevel(logging.WARN)
-            # create formatter
-            formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-            # add formatter to ch
-            ch.setFormatter(formatter)
-            # add ch to logger
-            logger.addHandler(ch)
-            return logger
+            if not logger.handlers:
+                logger.setLevel(logging.WARN)
+                # create console handler and set level to info
+                ch = logging.StreamHandler()
+                ch.setLevel(logging.WARN)
+                # create formatter
+                formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+                # add formatter to ch
+                ch.setFormatter(formatter)
+                # add ch to logger
+                logger.addHandler(ch)
+                return logger
+            else:
+                Config._log = logging
 
         return Config._log.getLogger( mylogger)
 
