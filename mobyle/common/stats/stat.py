@@ -41,7 +41,7 @@ class HourlyStatistic(Statistic):
     def add(self,job,location):
         import datetime
         date = datetime.datetime.utcnow()
-        timestamp = datetime.datetime(date.year, date.month,date.day)
+        timestamp = datetime.datetime(date.year, date.month,date.day,date.hour)
         year = date.year
         month = date.month
         day = date.day
@@ -63,7 +63,7 @@ class DailyStatistic(Statistic):
         month = date.month
         day = date.day
         hour = 0
-        location = HourlyStatistic.gi.country_code_by_name(location)
+        location = DailyStatistic.gi.country_code_by_name(location)
         timestamp = datetime.datetime(year, month,day,hour)
         mobyle.common.session.DailyStatistic.find_and_modify({'timestamp': timestamp}, {'$set':{ 'year' : year, 'month' : month, 'day' : day, 'hour' : hour}, '$inc' : { 'total' : 1, 'jobs.'+job : 1, 'location.'+location : 1 } },  { 'upsert' : True })
 
@@ -80,7 +80,7 @@ class MonthlyStatistic(Statistic):
         month = date.month
         day = 1
         hour = 0
-        location = HourlyStatistic.gi.country_code_by_name(location)
+        location = MonthlyStatistic.gi.country_code_by_name(location)
         timestamp = datetime.datetime(year, month,day,hour)
         mobyle.common.session.MonthlyStatistic.find_and_modify({'timestamp': timestamp}, {'$set':{ 'year' : year, 'month' : month, 'day' : day, 'hour' : hour}, '$inc' : { 'total' : 1, 'jobs.'+job : 1, 'location.'+location : 1 } },  { 'upsert' : True })
 
