@@ -24,6 +24,15 @@ class Statistic(Document):
 
     structure = { 'timestamp' : datetime.datetime, 'total' : int , 'jobs' :  {  } , 'location' :  {  } , 'year' : int, 'month' : int, 'hour' : int }
 
+    def add(self,job,location):
+        hstat = HourlyStatistic()
+        hstat.add(job,location)
+        dstat = DailyStatistic()
+        dstat.add(job,location)
+        mstat = MonthlyStatistic()
+        mstat.add(job,location)
+
+
 
 class HourlyStatistic(Statistic):
 
