@@ -11,13 +11,43 @@ import abc
 from abc import ABCMeta
 from abc import abstractmethod
 from bson.dbref import DBRef
-from mongokit import Document
+from mongokit import Document, CustomType, OR
 
 from mobyle.common import session
 from mobyle.common.config import Config
 
 import mf.annotation
 from mf.annotation import *
+
+class Parameter(dict):
+    """
+    a service parameter
+    """
+    structure = {
+                 'name': basestring
+                }
+
+    def __setitem__(self, key, value):
+        # optional processing here
+        super(Parameter, self).__setitem__(key, value)
+
+    structure = {
+                 'name': basestring
+                }
+
+    def to_bson(self, value):
+        """convert type to a mongodb type"""
+        return structure
+
+    def to_python(self, value):
+        """convert type to a python object"""
+        return structure
+
+class Paragraph(CustomType):
+    structure = {
+                 'name': basestring,
+		 #'parameters': OR(Parameter, Paragraph)
+                }
 
 @mf_decorator
 class Software(Document):
@@ -62,6 +92,10 @@ class Software(Document):
                                        # classification value
                                        'classification':basestring
                                      }],
+                  # inputs
+                  #'inputs': [OR(Parameter, Paragraph)],
+                  # output
+                  #'outputs': [OR(Parameter, Paragraph)]
                 }
 
     default_values = {}
@@ -93,3 +127,5 @@ class Program(Service):
     a program is a command line tool
     """
     structure = {}
+
+
