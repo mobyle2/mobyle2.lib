@@ -52,6 +52,11 @@ Contents:
    :private-members:
    :special-members:
 
+.. automodule:: mobyle.common.stats.stat
+   :members:
+   :private-members:
+   :special-members:
+
 Indices and tables
 ==================
 

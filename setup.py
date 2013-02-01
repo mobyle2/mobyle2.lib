@@ -63,7 +63,7 @@ setup(name        = 'mobyle.lib',
                      'Programming Language :: Python' ,
                      'Topic :: Bioinformatics' ,
                     ] ,
-      packages    = ['mobyle' , 'mobyle.common'],
+      packages    = ['mobyle' , 'mobyle.common', 'mobyle.common.stats'],
       package_dir = {'': '.'},
       cmdclass= { 'build' : check_and_build }
       )
