@@ -65,5 +65,6 @@ setup(name        = 'mobyle.lib',
                     ] ,
       packages    = ['mobyle' , 'mobyle.common', 'mobyle.common.stats'],
       package_dir = {'': '.'},
+      package_data={'mobyle.common.stats': ['GeoIP.dat']},
       cmdclass= { 'build' : check_and_build }
       )
