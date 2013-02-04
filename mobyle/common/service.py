@@ -11,7 +11,7 @@ import abc
 from abc import ABCMeta
 from abc import abstractmethod
 from bson.dbref import DBRef
-from mongokit import Document, CustomType, OR
+from mongokit import Document, SchemaDocument, CustomType, OR
 
 from mobyle.common import session
 from mobyle.common.config import Config
@@ -19,7 +19,7 @@ from mobyle.common.config import Config
 import mf.annotation
 from mf.annotation import *
 
-class Parameter(dict):
+class Parameter(SchemaDocument):
     """
     a service parameter
     """
@@ -43,7 +43,7 @@ class Parameter(dict):
         """convert type to a python object"""
         return structure
 
-class Paragraph(CustomType):
+class Paragraph(SchemaDocument):
     structure = {
                  'name': basestring,
 		 #'parameters': OR(Parameter, Paragraph)
@@ -93,7 +93,7 @@ class Software(Document):
                                        'classification':basestring
                                      }],
                   # inputs
-                  #'inputs': [OR(Parameter, Paragraph)],
+                  'inputs': [Parameter],
                   # output
                   #'outputs': [OR(Parameter, Paragraph)]
                 }
