@@ -19,34 +19,75 @@ from mobyle.common.config import Config
 import mf.annotation
 from mf.annotation import *
 
-class Parameter(SchemaDocument):
+class Para(SchemaDocument):
+    """
+    parent class for parameters and paragraphs
+    """
+    structure = {
+                'name': basestring
+                }
+
+class Parameter(Para):
     """
     a service parameter
     """
     structure = {
-                 'name': basestring
                 }
 
-    def __setitem__(self, key, value):
-        # optional processing here
-        super(Parameter, self).__setitem__(key, value)
-
+class Paragraph(Para):
+    """
+    a service paragraph
+    """
     structure = {
-                 'name': basestring
+                 'children': [Para]
                 }
 
-    def to_bson(self, value):
-        """convert type to a mongodb type"""
-        return structure
+class InputParameter(Parameter):
+   """
+   input parameter
+   """
+   structure = {}
 
-    def to_python(self, value):
-        """convert type to a python object"""
-        return structure
+class OutputParameter(Parameter):
+   """ 
+   output parameter
+   """
+   structure = {}
 
-class Paragraph(SchemaDocument):
-    structure = {
-                 'name': basestring,
-		 #'parameters': OR(Parameter, Paragraph)
+def inputs_validator(paras_list):
+   """
+   checks that all parameters and paragraphs in the list are inputs
+   """
+   for para in paras_list:
+       if not(isinstance(para,InputParameter) or isinstance(para, InputParagraph)):
+           raise ValueError('%%s should contain only input parameters and paragraphs, but %s is not an input' % para['name'])
+   return True
+
+def outputs_validator(paras_list):
+   """
+   checks that all parameters and paragraphs in the list are outputs
+   """
+   for para in paras_list:
+       if not(isinstance(para,OutputParameter) or isinstance(para, OutputParagraph)):
+           raise ValueError('%%s should contain only output parameters and paragraphs, but %s is not an output' % para['name'])
+   return True
+
+class InputParagraph(Paragraph):
+   """
+   inputs container paragraph
+   """
+   structure = {} 
+   validators = {
+                'children':inputs_validator
+                }
+
+class OutputParagraph(Paragraph):
+   """
+   outputs container paragraph
+   """
+   structure = {}
+   validators = {
+                'children':outputs_validator
                 }
 
 @mf_decorator
@@ -93,9 +134,9 @@ class Software(Document):
                                        'classification':basestring
                                      }],
                   # inputs
-                  'inputs': [Parameter],
-                  # output
-                  #'outputs': [OR(Parameter, Paragraph)]
+                  'inputs': InputParagraph,
+                  # outputs
+                  'outputs': OutputParagraph
                 }
 
     default_values = {}
