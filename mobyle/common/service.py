@@ -7,17 +7,11 @@ Created on Jan 22, 2013
 @organization: Institut Pasteur
 @license: GPLv3
 """
-import abc
-from abc import ABCMeta
-from abc import abstractmethod
-from bson.dbref import DBRef
-from mongokit import Document, SchemaDocument, CustomType, OR
+from mongokit import Document, SchemaDocument
 
-from mobyle.common import session
 from mobyle.common.config import Config
 
-import mf.annotation
-from mf.annotation import *
+from mf.annotation import mf_decorator
 
 class Para(SchemaDocument):
     """
@@ -43,52 +37,58 @@ class Paragraph(Para):
                 }
 
 class InputParameter(Parameter):
-   """
-   input parameter
-   """
-   structure = {}
+    """
+    input parameter
+    """
+    structure = {}
 
 class OutputParameter(Parameter):
-   """ 
-   output parameter
-   """
-   structure = {}
+    """ 
+    output parameter
+    """
+    structure = {}
 
 def inputs_validator(paras_list):
-   """
-   checks that all parameters and paragraphs in the list are inputs
-   """
-   for para in paras_list:
-       if not(isinstance(para,InputParameter) or isinstance(para, InputParagraph)):
-           raise ValueError('%%s should contain only input parameters and paragraphs, but %s is not an input' % para['name'])
-   return True
+    """
+    checks that all parameters and paragraphs in the list are inputs
+    """
+    for para in paras_list:
+        if not(isinstance(para, InputParameter) or \
+         isinstance(para, InputParagraph)):
+            raise ValueError(\
+             '%%s should contain only input parameters and paragraphs, '\
+             'but %s is not an input' % para['name'])
+    return True
 
 def outputs_validator(paras_list):
-   """
-   checks that all parameters and paragraphs in the list are outputs
-   """
-   for para in paras_list:
-       if not(isinstance(para,OutputParameter) or isinstance(para, OutputParagraph)):
-           raise ValueError('%%s should contain only output parameters and paragraphs, but %s is not an output' % para['name'])
-   return True
+    """
+    checks that all parameters and paragraphs in the list are outputs
+    """
+    for para in paras_list:
+        if not(isinstance(para, OutputParameter) or \
+         isinstance(para, OutputParagraph)):
+            raise ValueError(\
+             '%%s should contain only output parameters and paragraphs, '\
+             'but %s is not an output' % para['name'])
+    return True
 
 class InputParagraph(Paragraph):
-   """
-   inputs container paragraph
-   """
-   structure = {} 
-   validators = {
-                'children':inputs_validator
-                }
+    """
+    inputs container paragraph
+    """
+    structure = {} 
+    validators = {
+                  'children':inputs_validator
+                 }
 
 class OutputParagraph(Paragraph):
-   """
-   outputs container paragraph
-   """
-   structure = {}
-   validators = {
-                'children':outputs_validator
-                }
+    """
+    outputs container paragraph
+    """
+    structure = {}
+    validators = {
+                  'children':outputs_validator
+                 }
 
 @mf_decorator
 class Software(Document):
@@ -97,7 +97,7 @@ class Software(Document):
     describes the common properties of these levels.     
     """
 
-    __database__ = Config.config().get('app:main','db_name')
+    __database__ = Config.config().get('app:main', 'db_name')
 
     structure = { 'name' : basestring,
                   # version of the software
@@ -149,7 +149,6 @@ class Package(Software):
     a package is a group of services.
     """
     __collection__ = 'packages'
-    pass
 
 @mf_decorator
 class Service(Software):
