@@ -7,7 +7,7 @@ Created on Jan 22, 2013
 @organization: Institut Pasteur
 @license: GPLv3
 """
-from mongokit import Document, SchemaDocument
+from mongokit import Document, SchemaDocument, IS
 
 from mobyle.common.config import Config
 
@@ -18,7 +18,10 @@ class Para(SchemaDocument):
     parent class for parameters and paragraphs
     """
     structure = {
-                'name': basestring
+                'name': basestring,
+                'prompt': basestring,
+                'precond': basestring,
+                'comment': basestring
                 }
 
 class Parameter(Para):
@@ -26,6 +29,10 @@ class Parameter(Para):
     a service parameter
     """
     structure = {
+                'main': bool,
+                'mandatory': bool,
+                'hidden': bool,
+                'simple': bool
                 }
 
 class Paragraph(Para):
@@ -46,7 +53,15 @@ class OutputParameter(Parameter):
     """ 
     output parameter
     """
-    structure = {}
+    structure = {
+                """ output type:
+                stdout: standard output
+                stderr: standard error
+                file: a specific file
+                """
+                'output_type':IS(u'stdout',u'stderr',u'file'),
+                }
+    default_values = {'output_type': u'file'}
 
 def inputs_validator(paras_list):
     """
