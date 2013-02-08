@@ -10,15 +10,18 @@ import bcrypt
 import mf.annotation
 from mf.annotation import *
 
+import uuid
+from uuid import UUID
+
 @mf_decorator
 class User(Document):
 
     __collection__ = 'users'
     __database__ = Config.config().get('app:main','db_name')
 
-    structure = { 'first_name' : basestring, 'last_name' : basestring, 'email' : basestring, 'hashed_password' : basestring, 'type' : basestring, 'admin': bool, 'groups' : [ basestring ] }
+    structure = { 'first_name' : basestring, 'last_name' : basestring, 'email' : basestring, 'hashed_password' : basestring, 'type' : basestring, 'admin': bool, 'groups' : [ basestring ], 'apikey' : basestring }
 
-    default_values = { 'hashed_password' : '', 'admin': False }
+    default_values = { 'hashed_password' : '', 'admin': False, 'apikey' : uuid.uuid4().hex }
 
     required_fields = [ 'email' ]    
     

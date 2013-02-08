@@ -5,3 +5,4 @@ py-bcrypt
 mongokit>=0.8.3
 mf
 pygeoip
+uuid

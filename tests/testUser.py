@@ -37,7 +37,7 @@ class TestUser(unittest.TestCase):
         count = 0
         for user in user_list:
           count+=1
-        print "##"+str(count)
+          self.assertTrue(user["apikey"] is not None)
         self.assertTrue(count ==1 )
     
     def test_password(self):
