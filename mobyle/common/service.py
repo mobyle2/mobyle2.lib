@@ -30,9 +30,7 @@ class Parameter(Para):
     """
     structure = {
                 'main': bool,
-                'mandatory': bool,
                 'hidden': bool,
-                'simple': bool
                 }
 
 class Paragraph(Para):
@@ -40,26 +38,28 @@ class Paragraph(Para):
     a service paragraph
     """
     structure = {
-                 'children': [Para]
+                'children': [Para]
                 }
 
 class InputParameter(Parameter):
     """
     input parameter
     """
-    structure = {}
+    structure = {
+                'mandatory':bool,
+                'simple':bool
+                }
 
 class OutputParameter(Parameter):
     """ 
     output parameter
     """
     structure = {
-                """ output type:
-                stdout: standard output
-                stderr: standard error
-                file: a specific file
-                """
-                'output_type':IS(u'stdout',u'stderr',u'file'),
+                # output type:
+                # stdout: standard output
+                # stderr: standard error
+                # file: a specific file
+                'output_type':IS(u'stdout',u'stderr',u'file')
                 }
     default_values = {'output_type': u'file'}
 
