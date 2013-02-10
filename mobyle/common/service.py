@@ -172,6 +172,7 @@ class Service(Software):
     """
     __collection__ = 'services'
     structure = {
+                  'type': basestring,
                   # package reference
                   'package' : Package
                 }
@@ -181,6 +182,35 @@ class Program(Service):
     """
     a program is a command line tool
     """
-    structure = {}
+    structure = {
+                }
 
+    default_values = {
+                      'type': u'program'
+                     }
 
+@mf_decorator
+class Workflow(Service):
+    """
+    a workflow is a composite service running
+    multiple other workflows
+    """
+    structure = {
+                }
+
+    default_values = {
+                      'type': u'workflow'
+                     }
+
+@mf_decorator
+class Widget(Service):
+    """
+    a widget is an interactive web component dedicated to the
+    visualisation/edition of data multiple other workflows
+    """
+    structure = {
+                }
+
+    default_values = {
+                      'type': u'widget'
+                     }
