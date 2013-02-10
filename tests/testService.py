@@ -5,14 +5,13 @@ from mobyle.common.service import *
 import pymongo
 
 from mongokit import ValidationError
-from mobyle.common import users
 import mobyle.common
 from mobyle.common  import session
 
 import mobyle.common.connection
 mobyle.common.connection.init_mongo("mongodb://localhost/")
 
-class TestUser(unittest.TestCase):
+class TestService(unittest.TestCase):
 
     def setUp(self):
        objects = mobyle.common.session.Service.find({})
