@@ -158,6 +158,13 @@ class Software(Document):
 
     required_fields = [ 'name' ]
 
+    indexes = [
+               {
+                'fields':['name', 'version'],
+                'unique':True
+               }
+              ]
+
 @mf_decorator
 class Package(Software):
     """
