@@ -45,7 +45,6 @@ def parse_software(d, s):
     """
     parse top-level elements of the software
     """
-    print d
     s['name'] = d['name']
     s['version'] = d.get('version', 'unspecified')
     s['title'] = d['doc']['title']
@@ -89,9 +88,12 @@ if __name__ == '__main__':
     filenames = sys.argv[1:]
     for filename in filenames: 
         print 'processing %s...' % filename
-        # parse the XML into memory
-        elem = ET.fromstring(open(filename).read())
-        # create the JSON object
-        service = elem_to_internal(elem)
-        if service.has_key('program'):
-            program_parse(service['program'])
+        try:
+            # parse the XML into memory
+            elem = ET.fromstring(open(filename).read())
+            # create the JSON object
+            service = elem_to_internal(elem)
+            if service.has_key('program'):
+                program_parse(service['program'])
+        except Exception, exc:
+            print "Error processing file %s: %s" % (filename, exc.message)
