@@ -147,11 +147,7 @@ class Software(Document):
                                        'type':basestring,
                                        # classification value
                                        'classification':basestring
-                                     }],
-                  # inputs
-                  'inputs': InputParagraph,
-                  # outputs
-                  'outputs': OutputParagraph
+                                     }]
                 }
 
     default_values = {}
@@ -181,7 +177,11 @@ class Service(Software):
     structure = {
                   'type': basestring,
                   # package reference
-                  'package' : Package
+                  'package' : Package,
+                  # inputs
+                  'inputs': InputParagraph,
+                  # outputs
+                  'outputs': OutputParagraph
                 }
 
 @mf_decorator
