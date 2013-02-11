@@ -75,6 +75,19 @@ def parse_software(d, s):
         s['classifications'].append({'type':'EDAM','classification':cat['@ref']})
     return s
 
+def parse_parameter(p_dict):
+    print "processing parameter %s" % p_dict['name']
+
+def parse_paragraph(p_dict):
+    print "processing paragraph %s" % p_dict['name']    
+    parse_parameters(p_dict['parameters'])
+
+def parse_parameters(s_dict):
+    for p in s_dict.get('paragraph',[]):
+        parse_paragraph(p)
+    for p in s_dict.get('parameter',[]):
+        parse_parameter(p)
+
 def program_parse(s_dict):
     """
     create a program object from a dictionary
@@ -82,6 +95,7 @@ def program_parse(s_dict):
     """
     p = mobyle.common.session.Program()
     p = parse_software(s_dict['head'], p)
+    parse_parameters(s_dict['parameters'])
     p.save()
 
 if __name__ == '__main__':
