@@ -10,13 +10,22 @@ Created on Feb 08, 2013
 import sys
 import xml.etree.cElementTree as ET
 from xml2json import elem_to_internal, internal_to_elem
+import logging
 
 import mobyle.common.connection
 mobyle.common.connection.init_mongo("mongodb://localhost/")
+from service import InputParagraph, OutputParagraph, InputParameter, OutputParameter
+
+logger = logging.getLogger('mobyle.service_migration')
+logger.setLevel(logging.DEBUG)
 
 def parse_text_or_html(struct):
     """
     parse Mobyle1 "XHTML or text" elements
+    :param struct: the json dictionary containing the Mobyle1 "XHTML or text" elements
+    :type struct: dict 
+    :returns: the result of the parsing
+    :rtype: string
     """
     s = ''
     for d in to_list(struct):
@@ -76,17 +85,37 @@ def parse_software(d, s):
     return s
 
 def parse_parameter(p_dict):
-    print "processing parameter %s" % p_dict['name']
+    logger.info("processing parameter %s" % p_dict['name'])
+    if p_dict.has_key('@isout') or p_dict.has_key('@isstdout'):
+        parameter = OutputParameter()
+    else:
+        parameter = InputParameter()
+    parameter['name']=p_dict['name']
+    return parameter
 
 def parse_paragraph(p_dict):
-    print "processing paragraph %s" % p_dict['name']    
-    parse_parameters(p_dict['parameters'])
+    logger.info("processing paragraph %s" % p_dict['name'])
+    input_paragraph = InputParagraph()
+    input_paragraph['name']=p_dict['name']
+    output_paragraph = OutputParagraph()
+    output_paragraph['name']=p_dict['name']
+    parse_parameters(p_dict['parameters'],(input_paragraph, output_paragraph))
+    return (input_paragraph, output_paragraph)
 
-def parse_parameters(s_dict):
-    for p in s_dict.get('paragraph',[]):
-        parse_paragraph(p)
-    for p in s_dict.get('parameter',[]):
-        parse_parameter(p)
+def parse_parameters(s_dict,containers):
+    for p in s_dict.get('contents',[]):
+        if p[0]=='paragraph':
+            input_paragraph, output_paragraph = parse_paragraph(p[1])
+            if len(input_paragraph['children'])>0:
+                containers[0]['children'].append(input_paragraph)
+            if len(output_paragraph['children'])>0:
+                containers[1]['children'].append(output_paragraph)
+        elif p[0]=='parameter':
+            parameter = parse_parameter(p[1])
+            if isinstance(parameter,InputParameter):
+                containers[0]['children'].append(parameter)
+            else:
+                containers[1]['children'].append(parameter)
 
 def program_parse(s_dict):
     """
@@ -95,19 +124,21 @@ def program_parse(s_dict):
     """
     p = mobyle.common.session.Program()
     p = parse_software(s_dict['head'], p)
-    parse_parameters(s_dict['parameters'])
+    p['inputs']=InputParagraph()
+    p['outputs']=OutputParagraph()
+    parse_parameters(s_dict['parameters'],(p['inputs'],p['outputs']))
     p.save()
 
 if __name__ == '__main__':
     filenames = sys.argv[1:]
     for filename in filenames: 
-        print 'processing %s...' % filename
+        logger.info('processing %s...' % filename)
         try:
             # parse the XML into memory
             elem = ET.fromstring(open(filename).read())
             # create the JSON object
-            service = elem_to_internal(elem)
+            service = elem_to_internal(elem,list_elems=['parameters'])
             if service.has_key('program'):
                 program_parse(service['program'])
         except Exception, exc:
-            print "Error processing file %s: %s" % (filename, exc.message)
+            logger.error("Error processing file %s: %s" % (filename, exc.message),exc_info=True)
