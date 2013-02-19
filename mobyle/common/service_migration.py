@@ -19,6 +19,17 @@ from service import InputParagraph, OutputParagraph, InputParameter, OutputParam
 logger = logging.getLogger('mobyle.service_migration')
 logger.setLevel(logging.DEBUG)
 
+def get_el(d, key):
+    el = [n for n in d['#children'] if isinstance(n,dict) and n['#tag']==key]
+    return el[0]
+
+def get_text(d, key):
+    print d
+    print key
+    print [n for n in d['#children'] if isinstance(n,dict) and n['#tag']==key]
+    text = [n['#children'][0] for n in d['#children'] if isinstance(n,dict) and n['#tag']==key]
+    return text
+
 def parse_text_or_html(struct):
     """
     parse Mobyle1 "XHTML or text" elements
@@ -58,9 +69,9 @@ def parse_software(d, s):
     :param s: the software object to be filled
     :type struct: Software
     """
-    s['name'] = d['name']
-    s['version'] = d.get('version', 'unspecified')
-    s['title'] = d['doc']['title']
+    s['name'] = get_text(d,'name')
+    s['version'] = get_text(d,'version')
+    s['title'] = get_text(get_el(d,'doc'),'title')
     s['description'] = parse_text_or_html(d['doc']['description'])
     s['authors'] = d['doc'].get('authors', 'unspecified')
     for r in to_list(d['doc'].get('reference', [])):
@@ -156,7 +167,7 @@ def parse_program(s_dict):
     :rtype: Program
     """
     p = mobyle.common.session.Program()
-    parse_software(s_dict['head'], p)
+    parse_software(get_el(s_dict,'head'), p)
     p['inputs'] = InputParagraph()
     p['outputs'] = OutputParagraph()
     parse_parameters(s_dict['parameters'], (p['inputs'], p['outputs']))
@@ -170,8 +181,8 @@ if __name__ == '__main__':
             # parse the XML into memory
             elem = ET.fromstring(open(filename).read())
             # create the JSON object
-            service = elem_to_internal(elem, list_elems=['parameters'])
-            if service.has_key('program'):
-                parse_program(service['program'])
+            service = elem_to_internal(elem)
+            if service.get('#tag')=='program':
+                parse_program(service)
         except Exception, exc:
             logger.error("Error processing file %s: %s" % (filename, exc.message), exc_info=True)
