@@ -19,47 +19,65 @@ from service import InputParagraph, OutputParagraph, InputParameter, OutputParam
 logger = logging.getLogger('mobyle.service_migration')
 logger.setLevel(logging.DEBUG)
 
-def get_el(d, key):
-    el = [n for n in d['#children'] if isinstance(n,dict) and n['#tag']==key]
-    return el[0]
+class JSONDictProxy:
 
-def get_text(d, key):
-    print d
-    print key
-    print [n for n in d['#children'] if isinstance(n,dict) and n['#tag']==key]
-    text = [n['#children'][0] for n in d['#children'] if isinstance(n,dict) and n['#tag']==key]
-    return text
+    def __init__(self, json_dict):
+        self.json_dict = json_dict
 
-def parse_text_or_html(struct):
-    """
-    parse Mobyle1 "XHTML or text" elements
-    :param struct: the dictionary containing the Mobyle1 "XHTML or text" elements
-    :type struct: dict 
-    :returns: the result of the parsing
-    :rtype: string
-    """
-    s = ''
-    for d in to_list(struct):
-        if isinstance(d, basestring):
-            s += d
-        elif d.has_key('text'):
-            s += ''.join([e['#text'] for e in to_list(d['text'])])
+    def tag(self):
+        return self.json_dict.get('#tag')
+
+    def get(self, key, default=None):
+        try:
+            el = [n for n in self.json_dict['#children'] if isinstance(n, dict) and n['#tag'] == key]
+            return JSONDictProxy(el[0])
+        except IndexError:
+            return default
+
+    def att(self, key, default=None):
+        try:
+            return self.json_dict['@%s'%key]
+        except KeyError:
+            return default
+
+    def text(self, key=None, default=None):
+        try:
+            if key is not None:
+                text = [n['#children'][0] for n in self.json_dict['#children'] if isinstance(n, dict) and n['#tag'] == key]
+                return text[0]
+            else:
+                return self.json_dict['#children'][0]
+        except IndexError:
+            return default
+
+    def list(self, key=None):
+        """
+        convert a JSON value to a list
+        if it is a string
+        (useful as many converted JSON values
+        are strings OR lists depending on the
+        number of values)
+        """
+        if key is not None:
+            el = [n for n in self.json_dict['#children'] if isinstance(n, dict) and n['#tag'] == key]
+            return [JSONDictProxy(item) for item in el]
         else:
-            s += ET.tostring(internal_to_elem(d))
-    return s
+            return [JSONDictProxy(item) for item in self.json_dict['#children']]
 
-def to_list(val):
-    """
-    convert a JSON value to a list
-    if it is a string
-    (useful as many converted JSON values
-    are strings OR lists depending on the
-    number of values)
-    """
-    if not(isinstance(val, list)):
-        return [val]
-    else:
-        return [v for v in val if v is not None]
+    def has(self, key):
+        return self.json_dict.has_key(key)
+
+    def text_or_html(self):
+        s = ''
+        for d in self.json_dict['#children']:
+            print d
+            if isinstance(d, basestring):
+                s += d
+            elif d['#tag']=='text':
+                s += d['#children'][0]
+            else:
+                s += ET.tostring(internal_to_elem(d))
+        return s
 
 def parse_software(d, s):
     """
@@ -69,33 +87,28 @@ def parse_software(d, s):
     :param s: the software object to be filled
     :type struct: Software
     """
-    s['name'] = get_text(d,'name')
-    s['version'] = get_text(d,'version')
-    s['title'] = get_text(get_el(d,'doc'),'title')
-    s['description'] = parse_text_or_html(d['doc']['description'])
-    s['authors'] = d['doc'].get('authors', 'unspecified')
-    for r in to_list(d['doc'].get('reference', [])):
+    s['name'] = d.text('name')
+    s['version'] = d.text('version')
+    s['title'] = d.get('doc').text('title')
+    s['description'] = d.get('doc').get('description').text_or_html()
+    s['authors'] = d.get('doc').text('authors', 'unspecified')
+    for r in d.get('doc').list('reference'):
         refdic = {}
-        if isinstance(r, basestring):
-            refdic['label'] = r
-            refdic['doi'] = None
-            refdic['url'] = None
-        else:
-            refdic['label'] = r['#text'] if r.has_key('#text') else None
-            refdic['doi'] = r['@doi'] if r.has_key('@doi') else None
-            refdic['url'] = r['@url'] if r.has_key('@url') else None
+        refdic['label'] = r.text(default='')
+        refdic['doi'] = r.att('doi')
+        refdic['url'] = r.att('url')
         s['references'].append(refdic)
-    for link in to_list(d['doc'].get('sourcelink', [])):
-        s['source_links'].append(link)
-    for link in to_list(d['doc'].get('doclink', [])):
-        s['documentation_links'].append(link)
-    for link in to_list(d['doc'].get('homepagelink', [])):
-        s['homepage_links'].append(link)
-    if d['doc'].has_key('comment'):
+    for link in d.get('doc').list('sourcelink'):
+        s['source_links'].append(link.text())
+    for link in d.get('doc').list('doclink'):
+        s['documentation_links'].append(link.text())
+    for link in d.get('doc').list('homepagelink'):
+        s['homepage_links'].append(link.text())
+    if d.get('doc').has('comment'):
         s['comment'] = parse_text_or_html(d['doc']['comment'])
-    for cat in to_list(d.get('category', [])):
-        s['classifications'].append({'type':'mobyle1', 'classification':cat})
-    for cat in to_list(d.get('edam_cat', [])):
+    for cat in d.list('category'):
+        s['classifications'].append({'type':'mobyle1', 'classification':cat.text()})
+    for cat in d.list('edam_cat'):
         s['classifications'].append({'type':'EDAM', 'classification':cat['@ref']})
     return s
 
@@ -107,12 +120,12 @@ def parse_parameter(p_dict):
     :returns: the InputParameter or OutputParameter object 
     :rtype: Parameter
     """
-    logger.info("processing parameter %s" % p_dict['name'])
-    if p_dict.has_key('@isout') or p_dict.has_key('@isstdout'):
+    logger.info("processing parameter %s" % p_dict.text('name'))
+    if p_dict.att('isout') or p_dict.att('isstdout'):
         parameter = OutputParameter()
     else:
         parameter = InputParameter()
-    parameter['name'] = p_dict['name']
+    parameter['name'] = p_dict.text('name')
     return parameter
 
 def parse_paragraph(p_dict):
@@ -124,12 +137,12 @@ def parse_paragraph(p_dict):
               corresponding to the Mobyle1 paragraph 
     :rtype: tuple
     """
-    logger.info("processing paragraph %s" % p_dict['name'])
+    logger.info("processing paragraph %s" % p_dict.text('name'))
     input_paragraph = InputParagraph()
-    input_paragraph['name'] = p_dict['name']
+    input_paragraph['name'] = p_dict.text('name')
     output_paragraph = OutputParagraph()
-    output_paragraph['name'] = p_dict['name']
-    parse_parameters(p_dict['parameters'], (input_paragraph, output_paragraph))
+    output_paragraph['name'] = p_dict.text('name')
+    parse_parameters(p_dict.get('parameters'), (input_paragraph, output_paragraph))
     return (input_paragraph, output_paragraph)
 
 def parse_parameters(s_dict, containers):
@@ -142,15 +155,15 @@ def parse_parameters(s_dict, containers):
                        OutputParagraph containers
     :type containers: tuple
     """
-    for p in s_dict.get('contents', []):
-        if p[0] == 'paragraph':
-            input_paragraph, output_paragraph = parse_paragraph(p[1])
+    for p in s_dict.list():
+        if p.tag() == 'paragraph':
+            input_paragraph, output_paragraph = parse_paragraph(p)
             if len(input_paragraph['children']) > 0:
                 containers[0]['children'].append(input_paragraph)
             if len(output_paragraph['children']) > 0:
                 containers[1]['children'].append(output_paragraph)
-        elif p[0] == 'parameter':
-            parameter = parse_parameter(p[1])
+        elif p.tag() == 'parameter':
+            parameter = parse_parameter(p)
             if isinstance(parameter, InputParameter):
                 containers[0]['children'].append(parameter)
             else:
@@ -167,10 +180,10 @@ def parse_program(s_dict):
     :rtype: Program
     """
     p = mobyle.common.session.Program()
-    parse_software(get_el(s_dict,'head'), p)
+    parse_software(s_dict.get('head'), p)
     p['inputs'] = InputParagraph()
     p['outputs'] = OutputParagraph()
-    parse_parameters(s_dict['parameters'], (p['inputs'], p['outputs']))
+    parse_parameters(s_dict.get('parameters'), (p['inputs'], p['outputs']))
     p.save()
 
 if __name__ == '__main__':
@@ -183,6 +196,6 @@ if __name__ == '__main__':
             # create the JSON object
             service = elem_to_internal(elem)
             if service.get('#tag')=='program':
-                parse_program(service)
+                parse_program(JSONDictProxy(service)) 
         except Exception, exc:
             logger.error("Error processing file %s: %s" % (filename, exc.message), exc_info=True)
