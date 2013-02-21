@@ -17,7 +17,7 @@ mobyle.common.connection.init_mongo("mongodb://localhost/")
 from service import InputParagraph, OutputParagraph, InputParameter, OutputParameter
 
 logger = logging.getLogger('mobyle.service_migration')
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 
 class JSONDictProxy:
 
@@ -36,7 +36,7 @@ class JSONDictProxy:
 
     def att(self, key, default=None):
         try:
-            return self.json_dict['@%s'%key]
+            return self.json_dict['@%s' % key]
         except KeyError:
             return default
 
@@ -65,15 +65,14 @@ class JSONDictProxy:
             return [JSONDictProxy(item) for item in self.json_dict['#children']]
 
     def has(self, key):
-        return self.json_dict.has_key(key)
+        return len([n for n in self.json_dict['#children'] if isinstance(n, dict) and n['#tag'] == key])>0
 
     def text_or_html(self):
         s = ''
         for d in self.json_dict['#children']:
-            print d
             if isinstance(d, basestring):
                 s += d
-            elif d['#tag']=='text':
+            elif d['#tag'] == 'text':
                 s += d['#children'][0]
             else:
                 s += ET.tostring(internal_to_elem(d))
@@ -94,7 +93,7 @@ def parse_software(d, s):
     s['authors'] = d.get('doc').text('authors', 'unspecified')
     for r in d.get('doc').list('reference'):
         refdic = {}
-        refdic['label'] = r.text(default='')
+        refdic['label'] = r.text_or_html()
         refdic['doi'] = r.att('doi')
         refdic['url'] = r.att('url')
         s['references'].append(refdic)
@@ -105,7 +104,7 @@ def parse_software(d, s):
     for link in d.get('doc').list('homepagelink'):
         s['homepage_links'].append(link.text())
     if d.get('doc').has('comment'):
-        s['comment'] = parse_text_or_html(d['doc']['comment'])
+        s['comment'] = d.get('doc').get('comment').text_or_html()
     for cat in d.list('category'):
         s['classifications'].append({'type':'mobyle1', 'classification':cat.text()})
     for cat in d.list('edam_cat'):
@@ -120,7 +119,7 @@ def parse_parameter(p_dict):
     :returns: the InputParameter or OutputParameter object 
     :rtype: Parameter
     """
-    logger.info("processing parameter %s" % p_dict.text('name'))
+    logger.debug("processing parameter %s" % p_dict.text('name'))
     if p_dict.att('isout') or p_dict.att('isstdout'):
         parameter = OutputParameter()
     else:
@@ -137,7 +136,7 @@ def parse_paragraph(p_dict):
               corresponding to the Mobyle1 paragraph 
     :rtype: tuple
     """
-    logger.info("processing paragraph %s" % p_dict.text('name'))
+    logger.debug("processing paragraph %s" % p_dict.text('name'))
     input_paragraph = InputParagraph()
     input_paragraph['name'] = p_dict.text('name')
     output_paragraph = OutputParagraph()
