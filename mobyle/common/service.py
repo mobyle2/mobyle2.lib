@@ -13,6 +13,12 @@ from mobyle.common.config import Config
 
 from mf.annotation import mf_decorator
 
+class Code(SchemaDocument):
+    structure = {
+                'python': basestring,
+                'perl': basestring
+                }
+
 class Para(SchemaDocument):
     """
     parent class for parameters and paragraphs
@@ -20,7 +26,7 @@ class Para(SchemaDocument):
     structure = {
                 'name': basestring,
                 'prompt': basestring,
-                'precond': basestring,
+                'precond': Code,
                 'comment': basestring
                 }
 
@@ -30,7 +36,7 @@ class Parameter(Para):
     """
     structure = {
                 'main': bool,
-                'hidden': bool,
+                'hidden': bool
                 }
 
 class Paragraph(Para):
