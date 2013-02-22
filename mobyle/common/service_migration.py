@@ -72,7 +72,7 @@ class JSONDictProxy:
         for d in self.json_dict['#children']:
             if isinstance(d, basestring):
                 s += d
-            elif d['#tag'] == 'text':
+            elif d['#tag'] == 'text' and len(d['#children']) == 1:
                 s += d['#children'][0]
             else:
                 s += ET.tostring(internal_to_elem(d))
@@ -111,6 +111,25 @@ def parse_software(d, s):
         s['classifications'].append({'type':'EDAM', 'classification':cat['@ref']})
     return s
 
+def parse_para(p_dict, para):
+    """
+    parse Mobyle1 common "parameter" or "paragraph" element properties
+    :param p_dict: the dictionary representing the Mobyle1 "parameter" element
+    :type p_dict: dict 
+    :param para: the Parameter or Paragraph object 
+    :type para: Para
+    """
+    para['name'] = p_dict.text('name')
+    para['prompt'] = p_dict.text('prompt')
+    if p_dict.has('comment'):
+        para['comment'] = p_dict.get('comment').text_or_html()
+    if p_dict.has('precond'):
+        para['precond'] = {}
+        for code in p_dict.get('precond').list('code'):
+            para['precond'][code.att('proglang')] = code.text()
+        #for 
+        #para['precond'] = p_dict.get('precond').list('code')
+
 def parse_parameter(p_dict):
     """
     parse Mobyle1 "parameter" element
@@ -124,7 +143,9 @@ def parse_parameter(p_dict):
         parameter = OutputParameter()
     else:
         parameter = InputParameter()
-    parameter['name'] = p_dict.text('name')
+    parse_para(p_dict, parameter)
+    parameter['ismain'] = p_dict.att('ismain') in ['1','true','True']
+    parameter['hidden'] = p_dict.att('ishidden') in ['1','true','True']
     return parameter
 
 def parse_paragraph(p_dict):
@@ -138,9 +159,9 @@ def parse_paragraph(p_dict):
     """
     logger.debug("processing paragraph %s" % p_dict.text('name'))
     input_paragraph = InputParagraph()
-    input_paragraph['name'] = p_dict.text('name')
+    parse_para(p_dict, input_paragraph)
     output_paragraph = OutputParagraph()
-    output_paragraph['name'] = p_dict.text('name')
+    parse_para(p_dict, output_paragraph)
     parse_parameters(p_dict.get('parameters'), (input_paragraph, output_paragraph))
     return (input_paragraph, output_paragraph)
 
