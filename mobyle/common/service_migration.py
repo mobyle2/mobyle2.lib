@@ -90,7 +90,8 @@ def parse_software(d, s):
     s['version'] = d.text('version')
     s['title'] = d.get('doc').text('title')
     s['description'] = d.get('doc').get('description').text_or_html()
-    s['authors'] = d.get('doc').text('authors', 'unspecified')
+    print d.get('doc').text('authors', 'unspecified')
+    s['authors'] = d.get('doc').get('authors').text_or_html()
     for r in d.get('doc').list('reference'):
         refdic = {}
         refdic['label'] = r.text_or_html()
