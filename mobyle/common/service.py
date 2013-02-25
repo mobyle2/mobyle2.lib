@@ -14,9 +14,29 @@ from mobyle.common.config import Config
 from mf.annotation import mf_decorator
 
 class Code(SchemaDocument):
+    """
+    python or perl code to be evaluated
+    """
     structure = {
                 'python': basestring,
                 'perl': basestring
+                }
+
+class Type(SchemaDocument):
+    """
+    type information
+    WARNING: this is Mobyle1 information
+    the real type information will be defined
+    in type.py
+    """
+    structure = {
+                'datatype': {'class': basestring, 'superclass': basestring},
+                'biotypes': [basestring],
+                'formats': [basestring],
+                'card': [basestring],
+                'biomoby_datatypes': [{'datatype': basestring, 
+                                       'namespace': basestring}],
+                'edam_types': [basestring]
                 }
 
 class Para(SchemaDocument):
@@ -36,7 +56,9 @@ class Parameter(Para):
     """
     structure = {
                 'main': bool,
-                'hidden': bool
+                'hidden': bool,
+                'simple':bool,
+                'type': Type
                 }
 
 class Paragraph(Para):
@@ -53,7 +75,7 @@ class InputParameter(Parameter):
     """
     structure = {
                 'mandatory':bool,
-                'simple':bool
+                'ctrl':Code
                 }
 
 class OutputParameter(Parameter):
@@ -117,7 +139,6 @@ class Software(Document):
     top-level abstract element for different services and packages
     describes the common properties of these levels.     
     """
-
     __database__ = Config.config().get('app:main', 'db_name')
 
     structure = { 'name' : basestring,
