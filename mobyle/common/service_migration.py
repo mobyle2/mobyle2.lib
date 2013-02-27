@@ -15,7 +15,10 @@ import logging
 import mobyle.common.connection
 mobyle.common.connection.init_mongo("mongodb://localhost/")
 from mobyle.common.service import InputParagraph, OutputParagraph, \
-                                  InputParameter, OutputParameter, Type
+                                  InputParameter, OutputParameter, \
+                                  InputProgramParameter, \
+                                  OutputProgramParameter, \
+                                  Type
 
 # pylint: disable=C0103
 #        Invalid name "logger" for type constant
@@ -180,13 +183,15 @@ def parse_software(d, s):
                                      'classification':cat.att('ref')})
     return s
 
-def parse_para(p_dict, para):
+def parse_para(p_dict, para, service_type):
     """
     parse Mobyle1 common "parameter" or "paragraph" element properties
     :param p_dict: the dictionary representing the Mobyle1 "parameter" element
     :type p_dict: dict 
     :param para: the Parameter or Paragraph object 
     :type para: Para
+    :param service_type: 'program', 'workflow' or 'widget'
+    :type service_type: string
     """
     para['name'] = p_dict.text('name')
     para['prompt'] = p_dict.text('prompt')
@@ -199,22 +204,30 @@ def parse_para(p_dict, para):
         #for 
         #para['precond'] = p_dict.get('precond').list('code')
 
-def parse_parameter(p_dict):
+def parse_parameter(p_dict, service_type):
     """
     parse Mobyle1 "parameter" element
     :param p_dict: the dictionary representing the Mobyle1 "parameter" element
-    :type p_dict: dict 
+    :type p_dict: dict
+    :param service_type: 'program', 'workflow' or 'widget'
+    :type service_type: string 
     :returns: the InputParameter or OutputParameter object 
     :rtype: Parameter
     """
     logger.debug("processing parameter %s" % p_dict.text('name'))
     if p_dict.att('isout') or p_dict.att('isstdout'):
-        parameter = OutputParameter()
-        parse_output_parameter(p_dict, parameter)
+        if service_type == 'program':
+            parameter = OutputProgramParameter()
+        else:
+            parameter = OutputParameter()
+        parse_output_parameter(p_dict, parameter, service_type)
     else:
-        parameter = InputParameter()
-        parse_input_parameter(p_dict, parameter)
-    parse_para(p_dict, parameter)
+        if service_type == 'program':
+            parameter = InputProgramParameter()
+        else:
+            parameter = InputParameter()
+        parse_input_parameter(p_dict, parameter, service_type)
+    parse_para(p_dict, parameter, service_type)
     parameter['main'] = p_dict.att('ismain') in ['1', 'true', 'True']
     parameter['hidden'] = p_dict.att('ishidden') in ['1', 'true', 'True']
     m_type = Type()
@@ -237,27 +250,39 @@ def parse_parameter(p_dict):
     parameter['type'] = m_type
     return parameter
 
-def parse_input_parameter(p_dict, parameter):
+def parse_input_parameter(p_dict, parameter, service_type):
     """
     parse Mobyle1 parameter element properties for inputs
     :param p_dict: the dictionary representing the Mobyle1 "parameter" element
     :type p_dict: dict 
     :param para: the InputParameter  
     :type para: InputParameter
+    :param service_type: 'program', 'workflow' or 'widget'
+    :type service_type: string
     """
     parameter['mandatory'] = p_dict.att('ismandatory') in ['1', 'true', 'True'] 
     if p_dict.has('ctrl'):
         parameter['ctrl'] = {}
         for code in p_dict.get('ctrl').list('code'):
             parameter['ctrl'][code.att('proglang')] = code.text()
+    if service_type == 'program':
+        parameter['command'] = p_dict.att('iscommand') in ['1', 'true', 'True']
+        parameter['argpos'] = p_dict.text('argpos')
+        if p_dict.has('format'):
+            parameter['format'] = {}
+            for code in p_dict.get('format').list('code'):
+                parameter['format'][code.att('proglang')] = code.text()
+        parameter['paramfile'] = p_dict.text('paramfile')
 
-def parse_output_parameter(p_dict, parameter):
+def parse_output_parameter(p_dict, parameter, service_type):
     """
     parse Mobyle1 parameter element properties for outputs
     :param p_dict: the dictionary representing the Mobyle1 "parameter" element
     :type p_dict: dict 
     :param para: the OutputParameter  
     :type para: OutputParameter
+    :param service_type: 'program', 'workflow' or 'widget'
+    :type service_type: string
     """
     if p_dict.att('isout') in ['1', 'true', 'True']:
         parameter['output_type'] = u'file'
@@ -265,26 +290,33 @@ def parse_output_parameter(p_dict, parameter):
         parameter['output_type'] = u'stdout'
     elif p_dict.att('isstderr') in ['1', 'true', 'True']:
         parameter['output_type'] = u'stderr'
+    if service_type == 'program':
+        if p_dict.has('filenames'):
+            parameter['filenames'] = {}
+            for code in p_dict.get('filenames').list('code'):
+                parameter['filenames'][code.att('proglang')] = code.text()
 
-def parse_paragraph(p_dict):
+def parse_paragraph(p_dict, service_type):
     """
     parse Mobyle1 "paragraph" element
     :param p_dict: the dictionary representing the Mobyle1 "paragraph" element
-    :type p_dict: dict 
+    :type p_dict: dict
+    :param service_type: 'program', 'workflow' or 'widget'
+    :type service_type: string
     :returns: tuple containing an InputParagraph and an OutputParagraph object
               corresponding to the Mobyle1 paragraph 
     :rtype: tuple
     """
     logger.debug("processing paragraph %s" % p_dict.text('name'))
     input_paragraph = InputParagraph()
-    parse_para(p_dict, input_paragraph)
+    parse_para(p_dict, input_paragraph, service_type)
     output_paragraph = OutputParagraph()
-    parse_para(p_dict, output_paragraph)
-    parse_parameters(p_dict.get('parameters'), 
-                     (input_paragraph, output_paragraph))
+    parse_para(p_dict, output_paragraph, service_type)
+    parse_parameters(p_dict.get('parameters'),
+                     (input_paragraph, output_paragraph), service_type)
     return (input_paragraph, output_paragraph)
 
-def parse_parameters(s_dict, containers):
+def parse_parameters(s_dict, containers, service_type):
     """
     parse Mobyle1 "parameters" element and add the resulting paragraphs/parameters
     to the relevant containers
@@ -293,16 +325,18 @@ def parse_parameters(s_dict, containers):
     :param containers: a tuple containing the corresponding InputParagraph and 
                        OutputParagraph containers
     :type containers: tuple
+    :param service_type: 'program', 'workflow' or 'widget'
+    :type service_type: string
     """
     for p in s_dict.list():
         if p.tag() == 'paragraph':
-            input_paragraph, output_paragraph = parse_paragraph(p)
+            input_paragraph, output_paragraph = parse_paragraph(p, service_type)
             if len(input_paragraph['children']) > 0:
                 containers[0]['children'].append(input_paragraph)
             if len(output_paragraph['children']) > 0:
                 containers[1]['children'].append(output_paragraph)
         elif p.tag() == 'parameter':
-            parameter = parse_parameter(p)
+            parameter = parse_parameter(p, service_type)
             if isinstance(parameter, InputParameter):
                 containers[0]['children'].append(parameter)
             else:
@@ -315,6 +349,8 @@ def parse_program(s_dict):
     parse Mobyle1 "program" element
     :param p_dict: the dictionary representing the Mobyle1 "program" element
     :type p_dict: dict
+    :param service_type: 'program', 'workflow' or 'widget'
+    :type service_type: string
     :returns: the corresponding Program object
     :rtype: Program
     """
@@ -322,7 +358,7 @@ def parse_program(s_dict):
     parse_software(s_dict.get('head'), p)
     p['inputs'] = InputParagraph()
     p['outputs'] = OutputParagraph()
-    parse_parameters(s_dict.get('parameters'), (p['inputs'], p['outputs']))
+    parse_parameters(s_dict.get('parameters'), (p['inputs'], p['outputs']), 'program')
     if s_dict.get('head').has('command'):
         p['command'] = {'path': s_dict.get('head').get('command').att('path'),\
                         'value': s_dict.get('head').text('command')
