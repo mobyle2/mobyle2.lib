@@ -323,6 +323,12 @@ def parse_program(s_dict):
     p['inputs'] = InputParagraph()
     p['outputs'] = OutputParagraph()
     parse_parameters(s_dict.get('parameters'), (p['inputs'], p['outputs']))
+    if s_dict.get('head').has('command'):
+        p['command'] = {'path': s_dict.get('head').get('command').att('path'),\
+                        'value': s_dict.get('head').text('command')
+                       }
+    for env in s_dict.get('head').list('env'):
+        p['env'].append({'name':env.att('name'), 'value':env.text()})
     p.save()
 
 if __name__ == '__main__':
