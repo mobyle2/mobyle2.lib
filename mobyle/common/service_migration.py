@@ -11,14 +11,16 @@ import sys
 import xml.etree.cElementTree as ET
 from xml2json import elem_to_internal, internal_to_elem
 import logging
+import argparse
 
+from mobyle.common.config import Config
 import mobyle.common.connection
-mobyle.common.connection.init_mongo("mongodb://localhost/")
 from mobyle.common.service import InputParagraph, OutputParagraph, \
                                   InputParameter, OutputParameter, \
                                   InputProgramParameter, \
                                   OutputProgramParameter, \
                                   Type
+
 
 # pylint: disable=C0103
 #        Invalid name "logger" for type constant
@@ -368,7 +370,18 @@ def parse_program(s_dict):
     p.save()
 
 if __name__ == '__main__':
-    filenames = sys.argv[1:]
+    parser = argparse.ArgumentParser(description='Migrate Mobyle1 XML files to Mobyle2')
+    parser.add_argument('--config', required=True, help="path to the Mobyle2 config file")
+    parser.add_argument("filenames", help="files you want to convert", nargs='+')
+    args = parser.parse_args()
+    if not args.config:
+        print "config argument is missing"
+        sys.exit(2)
+    # Init config
+    config = Config(args.config).config()
+    # init db connection
+    mobyle.common.connection.init_mongo(config.get("app:main","db_uri"))
+    filenames = args.filenames
     for filename in filenames: 
         logger.info('processing %s...' % filename)
         try:
