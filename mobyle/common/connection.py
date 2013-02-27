@@ -20,7 +20,7 @@ def init_mongo(server):
     from mobyle.common.project import Project
     from mobyle.common.mobyleConfig import MobyleConfig
     from mobyle.common.job import Job
-    from mobyle.common.service import Package, Service, Program
-    session.register([User, Project, MobyleConfig, Job, Package, Service, Program])
+    from mobyle.common.service import Package, Service, Program, Workflow, Widget
+    session.register([User, Project, MobyleConfig, Job, Package, Service, Program, Workflow, Widget])
     mobyle.common.session = session
 
