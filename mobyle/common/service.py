@@ -69,6 +69,14 @@ class Paragraph(Para):
                 'children': [Para]
                 }
 
+class OutputProgramParagraph(Paragraph):
+    """
+    a program output paragraph
+    """
+    structure = {
+                'argpos': int
+                }
+
 class InputParameter(Parameter):
     """
     input parameter
@@ -87,9 +95,29 @@ class OutputParameter(Parameter):
                 # stdout: standard output
                 # stderr: standard error
                 # file: a specific file
-                'output_type':IS(u'stdout',u'stderr',u'file')
+                # progress: a progress report file
+                'output_type':IS(u'stdout',u'stderr',u'file',u'progress')
                 }
     default_values = {'output_type': u'file'}
+
+class OutputProgramParameter(OutputParameter):
+    """
+    output parameter for a program
+    """
+    structure = {
+                'filenames': Code
+                }
+
+class InputProgramParameter(InputParameter):
+    """
+    input parameter for a program
+    """    
+    structure = {
+                'command': bool,
+                'argpos': int,
+                'format': Code,
+                'paramfile': basestring
+                }
 
 def inputs_validator(paras_list):
     """
@@ -217,6 +245,14 @@ class Program(Service):
     a program is a command line tool
     """
     structure = {
+                  'command': {
+                              'path':basestring,
+                              'value':basestring
+                             },
+                  'env': [{
+                           'name':basestring,
+                           'value':basestring
+                          }]
                 }
 
     default_values = {
