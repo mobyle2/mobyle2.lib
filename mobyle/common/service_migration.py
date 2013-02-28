@@ -7,7 +7,7 @@ Created on Feb 08, 2013
 @organization: Institut Pasteur
 @license: GPLv3
 """
-import sys
+import sys, os
 import xml.etree.cElementTree as ET
 from xml2json import elem_to_internal, internal_to_elem
 import logging
@@ -356,7 +356,7 @@ def parse_program(s_dict):
     :returns: the corresponding Program object
     :rtype: Program
     """
-    p = mobyle.common.session.Program()
+    p = Program()
     parse_software(s_dict.get('head'), p)
     p['inputs'] = InputParagraph()
     p['outputs'] = OutputParagraph()
@@ -367,20 +367,25 @@ def parse_program(s_dict):
                        }
     for env in s_dict.get('head').list('env'):
         p['env'].append({'name':env.att('name'), 'value':env.text()})
-    p.save()
+    return p
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Migrate Mobyle1 XML files to Mobyle2')
-    parser.add_argument('--config', required=True, help="path to the Mobyle2 config file")
-    parser.add_argument("filenames", help="files you want to convert", nargs='+')
+    parser.add_argument('--config', help="path to the Mobyle2 config file for DB injection")
+    parser.add_argument('--storeto', help="output the generated objects as JSON files")
+    parser.add_argument('filenames', help="files you want to convert", nargs='+')
     args = parser.parse_args()
-    if not args.config:
-        print "config argument is missing"
-        sys.exit(2)
-    # Init config
-    config = Config(args.config).config()
-    # init db connection
-    mobyle.common.connection.init_mongo(config.get("app:main","db_uri"))
+    if args.config:
+        # Init config
+        config = Config(args.config).config()
+        # init db connection
+        mobyle.common.connection.init_mongo(config.get("app:main","db_uri"))
+        from mobyle.common import session
+        Program = mobyle.common.session.Program
+    else:
+        from mobyle.common.service import Program
+    if args.storeto:
+        import json
     filenames = args.filenames
     for filename in filenames: 
         logger.info('processing %s...' % filename)
@@ -390,7 +395,13 @@ if __name__ == '__main__':
             # create the JSON object
             service = elem_to_internal(elem)
             if service.get('#tag')=='program':
-                parse_program(JSONProxy(service))
+                p = parse_program(JSONProxy(service))
+                if args.config:
+                    p.save()
+                if args.storeto:
+                    fh = open(os.path.join(args.storeto, p['name']+'.json'),'w')
+                    fh.write(json.dumps(p, sort_keys=True, indent=4, separators=(',', ': ')))
+                    fh.close()
         # pylint: disable=W0703
         #        Invalid name "logger" for type constant 
         except Exception, exc:
