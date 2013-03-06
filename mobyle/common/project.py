@@ -31,49 +31,20 @@ class Project(Document):
     __collection__ = 'projects'
     __database__ = Config.config().get('app:main','db_name')
 
-    structure = { 'name' : basestring, 'owner' : basestring, 'job_ids' : [ Job ], 'data_ids' : [ basestring ], 'users' : [ { 'user' : User, 'role' : basestring } ], 'date_creation': datetime }
+    structure = { 'name' : basestring, 
+                  'owner' : User, 
+                  'jobs' : [Job], 
+                  'data' : [basestring], 
+                  'users' : [{'user':User, 'role':basestring}],
+                }
 
     required_fields = ['name', 'owner']
 
     use_autorefs = True
-	
 
-    def add_data(self, data):	
-        """
-	add_data is a method defined to attach a new data_id into the project. 
-	:param data: data to be associated to the project.
-        :type data: :class:`Data` object.
-        """
-	self['data_ids'].append(data)
-
-
-    def add_list_of_data(self, data_list):
-        """
-	add_list_of_data is a method defined to attach a set of data_ids into the project.
-        :param data_list: list of :class:`Data` object
-        :type data_list: array containing :class:`Data` object.
-	"""
-	for i in range(len(data_list)):
-		self['data_ids'].append(data_list[i])
-
-
-    def add_job(self, job):	
-        """
-	add_job is a method defined to attach a new job_id into the project. 
-        :param job: job to be associated to the project.
-        :type job: :class:`Job` object.
-        """
-	self['job_ids'].append(job)
-	
-	
-    def get_creation_time(self):
-	"""
-	get_creation_time returns the project creation date time according to the _id
-	:return: the project creation datetime.
-	:rtype: string.
-	"""
-	return self['creation_time']
-	
+    @property	
+    def creation_date():
+        return self['_id'].generation_time
 
     def add_user(self,user,role):
 	"""
@@ -83,6 +54,6 @@ class Project(Document):
 	:param role: user's role in the project.
         :type role: string.
 	"""
-	self['users'].append({ 'user' : user, 'role' : role})
+	self['users'].append({'user': user, 'role': role})
 
 
