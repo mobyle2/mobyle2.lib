@@ -13,129 +13,11 @@ from mobyleError import MobyleError
 from mobyle.common import session
 from mobyle.common.config import Config
 
-
-class AbstractJob(Document):
-    """
-    AbstractJobRef is an abstract class that describes the common interface of JobRef and WorkflowRef
-    """     
-    __metaclass__ = abc.ABCMeta
-    __collection__ = 'jobs'
-    __database__ = Config.config().get('app:main','db_name')
-
-    structure = {
-                 'name' : basestring,
-                 'status' : Status,
-                 'owner' : basestring,
-                  }
-    
-    def __init__(self, status, owner, **kwargs):
-        """
-        :param id: the identifier of this jobRef
-        :type id: string
-        :param create_time: the time of job creation
-        :type create_time: time.struct_time
-        :param status: the status of this jobRef
-        :type status: `:class:` object
-        :param owner: owner id of the job: either a workflow (local|remote) or a userspace (local|remote)
-        :type owner: string
-        
-        """
-        super(AbstractJob , self).__init__(**kwargs)
-        self._owner = owner
-        self.status = status
-        
-    def __cmp__(self, other):
-        """
-        :param other: a JobRef I want to comared with self
-        :type other: an AbstractJobRef instance
-        :returns: negative int if the other object was created before this one, positive integer if other is newer, or 0 if they are created at the same time.
-        :rtype: Integer 
-        
-        """
-        return cmp( self.create_time , other.create_time )
-    
-
-    @property
-    def owner(self):
-        """
-        :return: the owner of a job. It can be a user space or a workflow
-        :rtype: ???
-         
-        """
-        return self.owner
-    
-    @property
-    def create_time(self):
-        """
-        :returns: the time of job creation
-        :rtype: datetime.datetime object
-        
-        """
-        return self["_id"].generation_time
-    
-
-    @abc.abstractmethod
-    def must_be_notified(self):
-        """
-        :returns: True if a notification must be send a the end of job. False otherwise 
-        
-        """
-        
-        
-        
-@mf_decorator    
-class Job(AbstractJob):
-    """
-    AbstractJob implementation for a simple job
-    """ 
-    structure = { 
-                'end_time' : datetime.datetime,
-                'has_been_notified' : bool
-                }
-    
-    def __init__(self, name, status, owner, **kwargs ):
-        """
-        :param name: the user name of this job
-        :type name: string
-        :param status: the status of this jobRef
-        :type status: L{status} instance
-        :param owner: "owner" id of the job: either a workflow( local or remote) or a userspace(local or remote)
-        :type owner: ???
-        
-        """
-        super(JobRef , self).__init__(name, status, owner, **kwargs )
-        self.end_time = None
-        self.has_been_notified = False
-
-    def must_be_notified(self):
-        """
-        :returns: True if a notification must be send a the end of job. False otherwise 
-        
-        """
-        delay = 60
-        if self.end_time:
-            return True if self.end_time - self.create_time > delay else False 
-        else:
-            return False
     
 
 class Status(SchemaDocument):
     """reflect the different steps of a job life"""
-    
-    structure = {
-                  'code' : IS(Status.UNKNOWN,
-                              Status.BUILDING,
-                              Status.SUBMITTED,
-                              Status.PENDING,
-                              Status.RUNNING,
-                              Status.FINISHED,
-                              Status.ERROR,
-                              Status.KILLED,
-                              Status.HOLD,
-                              ),
-                  'message' : basestring
-                  }
-    
+
     """the system is not able to determine the status of the job"""
     UNKNOWN = u'unknown'
     """the environment of the job is building (working directory creation, building command line, ...)"""
@@ -154,6 +36,21 @@ class Status(SchemaDocument):
     KILLED = u'killed'
     """the job is hold by the execution system"""
     HOLD = u'hold'
+    
+    structure = {
+                  'code' : IS(UNKNOWN,
+                              BUILDING,
+                              SUBMITTED,
+                              PENDING,
+                              RUNNING,
+                              FINISHED,
+                              ERROR,
+                              KILLED,
+                              HOLD,
+                              ),
+                  'message' : basestring
+                  }
+    
 
     
     def __init__(self , code , message = '',
@@ -255,4 +152,108 @@ class Status(SchemaDocument):
         
         """
         return self.code == self.BUILDING
+
+class AbstractJob(Document):
+    """
+    AbstractJobRef is an abstract class that describes the common interface of JobRef and WorkflowRef
+    """     
+    __collection__ = 'jobs'
+    __database__ = Config.config().get('app:main','db_name')
+
+    structure = {
+                 'name' : basestring,
+                 'status' : Status,
+                 'owner' : basestring,
+                  }
+    
+    def __init__(self, status, owner, **kwargs):
+        """
+        :param id: the identifier of this jobRef
+        :type id: string
+        :param create_time: the time of job creation
+        :type create_time: time.struct_time
+        :param status: the status of this jobRef
+        :type status: `:class:` object
+        :param owner: owner id of the job: either a workflow (local|remote) or a userspace (local|remote)
+        :type owner: string
+        
+        """
+        super(AbstractJob , self).__init__(**kwargs)
+        self._owner = owner
+        self.status = status
+        
+    def __cmp__(self, other):
+        """
+        :param other: a JobRef I want to comared with self
+        :type other: an AbstractJobRef instance
+        :returns: negative int if the other object was created before this one, positive integer if other is newer, or 0 if they are created at the same time.
+        :rtype: Integer 
+        
+        """
+        return cmp( self.create_time , other.create_time )
+    
+
+    @property
+    def owner(self):
+        """
+        :return: the owner of a job. It can be a user space or a workflow
+        :rtype: ???
+         
+        """
+        return self.owner
+    
+    @property
+    def create_time(self):
+        """
+        :returns: the time of job creation
+        :rtype: datetime.datetime object
+        
+        """
+        return self["_id"].generation_time
+    
+
+    @abc.abstractmethod
+    def must_be_notified(self):
+        """
+        :returns: True if a notification must be send a the end of job. False otherwise 
+        
+        """
+        
+        
+        
+@mf_decorator    
+class Job(AbstractJob):
+    """
+    AbstractJob implementation for a simple job
+    """ 
+    structure = { 
+                'end_time' : datetime,
+                'has_been_notified' : bool
+                }
+    
+    def __init__(self, name, status, owner, **kwargs ):
+        """
+        :param name: the user name of this job
+        :type name: string
+        :param status: the status of this jobRef
+        :type status: L{status} instance
+        :param owner: "owner" id of the job: either a workflow( local or remote) or a userspace(local or remote)
+        :type owner: ???
+        
+        """
+        super(JobRef , self).__init__(name, status, owner, **kwargs )
+        self.end_time = None
+        self.has_been_notified = False
+
+    def must_be_notified(self):
+        """
+        :returns: True if a notification must be send a the end of job. False otherwise 
+        
+        """
+        delay = 60
+        if self.end_time:
+            return True if self.end_time - self.create_time > delay else False 
+        else:
+            return False
+
     
