@@ -7,7 +7,7 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 
-from mongokit import Document
+from mongokit import Document, IS
 
 from mobyle.common.config import Config
 
@@ -17,6 +17,8 @@ from mobyle.common.job import Job
 from mobyle.common.users import User
 
 from mf.annotation import mf_decorator
+
+
 
 
 @mf_decorator
@@ -34,8 +36,10 @@ class Project(Document):
                   'jobs' : [Job],
                   #TODO: switch to Data list as soon as 
                   # Data is MongoKit-compatible 
-                  'data' : [basestring], 
-                  'users' : [{'user':User, 'role':basestring}],
+                  'data' : [basestring],
+                  #TODO: role may be modified for ACLs implementation?
+                  'users' : [{'user': User, 'role': basestring}],
+                  'notebook' : basestring
                 }
 
     required_fields = ['name', 'owner']
