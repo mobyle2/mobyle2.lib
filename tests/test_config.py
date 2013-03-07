@@ -8,12 +8,13 @@ Created on Nov. 27, 2012
 '''
 
 
+from abstract_test import AbstractMobyleTest
 import unittest
 from tempfile import mkstemp
 
 from mobyle.common.config import *
 
-class TestConfig(unittest.TestCase):
+class TestConfig(AbstractMobyleTest):
     """ Tests for the Config class
     """
 
@@ -25,7 +26,7 @@ class TestConfig(unittest.TestCase):
     def test_default_config(self):
         myconfig = Config()
         Config.logger().setLevel(logging.ERROR)
-        self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://localhost")
+        self.assertEqual(myconfig._config.get("app:main","db_uri"), "mongodb://localhost")
 
     def test_file_config(self):
         tmpconfig = os.path.join(os.path.dirname(os.path.realpath(__file__)),"test.conf")
