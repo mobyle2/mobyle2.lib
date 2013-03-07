@@ -7,18 +7,16 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 
-from datetime import datetime
 from mongokit import Document
 
-from mobyle.common import session
 from mobyle.common.config import Config
 
 from mobyle.common.job import Job
-from mobyle.common.data import Data
+#TODO: reimport as soon as Data object is MongoKit-compatible
+#from mobyle.common.data import Data
 from mobyle.common.users import User
 
-import mf.annotation
-from mf.annotation import *
+from mf.annotation import mf_decorator
 
 
 @mf_decorator
@@ -33,7 +31,9 @@ class Project(Document):
 
     structure = { 'name' : basestring, 
                   'owner' : User, 
-                  'jobs' : [Job], 
+                  'jobs' : [Job],
+                  #TODO: switch to Data list as soon as 
+                  # Data is MongoKit-compatible 
                   'data' : [basestring], 
                   'users' : [{'user':User, 'role':basestring}],
                 }
@@ -43,17 +43,21 @@ class Project(Document):
     use_autorefs = True
 
     @property	
-    def creation_date():
+    def creation_date(self):
+        """
+        Get project creation date
+        :returns: the attribute value
+        :rtype: datetime
+        """
         return self['_id'].generation_time
 
-    def add_user(self,user,role):
-	"""
+    def add_user(self, user, role):
+        """
 	add_user is a method defined to attach a new user and its role into the project.
 	:param user: user to be associated to the project.
         :type user: :class:`User` object.
 	:param role: user's role in the project.
         :type role: string.
 	"""
-	self['users'].append({'user': user, 'role': role})
-
+        self['users'].append({'user': user, 'role': role})
 
