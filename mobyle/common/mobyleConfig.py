@@ -9,27 +9,20 @@ Created on Nov. 28, 2012
 
 import sys
 import os
-
-from mobyle.common import session
-
 import logging
 import logging.config
-
 import json
 from bson import json_util
-import mf.annotation
-from mf.annotation import *
-
-
-from mobyleError import MobyleError
-
 from datetime import datetime
+from mongokit import Document
+from mf.annotation import mf_decorator
 
-from mongokit import Document, Connection
-
-from mobyle.common.config import Config
+from . import connection
+from .mobyleError import MobyleError
+from .config import Config
 
 @mf_decorator
+@connection.register
 class MobyleConfig(Document):
     """
     Config loads mobyle configuration from database.
@@ -37,6 +30,7 @@ class MobyleConfig(Document):
     """
 
     __collection__ = 'config'
+
     __database__ = Config.config().get('app:main','db_name')
 
     structure = { 'auth_mod' : basestring , 'mail' : { 'gateway' : basestring, 'user' : basestring, 'password' : basestring, 'origin' : basestring },

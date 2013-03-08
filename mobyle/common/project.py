@@ -7,21 +7,20 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 
-from mongokit import Document, IS
-
-from mobyle.common.config import Config
-
-from mobyle.common.job import Job
-#TODO: reimport as soon as Data object is MongoKit-compatible
-#from mobyle.common.data import Data
-from mobyle.common.users import User
-
+from mongokit import Document
 from mf.annotation import mf_decorator
 
+from . import connection
+from .config import Config
+from .job import Job
+#TODO: reimport as soon as Data object is MongoKit-compatible
+#from .data import Data
+from .users import User
 
 
 
 @mf_decorator
+@connection.register
 class Project(Document):
     """
     Project is a class that stores all information about a project (owner username, inputs, outputs, job id). 

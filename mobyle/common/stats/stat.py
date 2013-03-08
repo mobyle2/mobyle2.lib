@@ -7,9 +7,8 @@ import pygeoip
 from mongokit import Document
 import logging
 
-import mobyle.common
-from mobyle.common import session
-from mobyle.common.config import Config
+from mobyle.common import connection
+from ..config import Config
 
 
 class Statistic(Document):
@@ -33,7 +32,7 @@ class Statistic(Document):
         mstat.add(job,location)
 
 
-
+@connection.register
 class HourlyStatistic(Statistic):
 
     __collection__ = 'hourlystatistics'
@@ -48,9 +47,10 @@ class HourlyStatistic(Statistic):
         hour = date.hour
         location = HourlyStatistic.gi.country_code_by_name(location)
         timestamp = datetime.datetime(year, month,day,hour)
-        mobyle.common.session.HourlyStatistic.find_and_modify({'timestamp': timestamp}, {'$set':{ 'year' : year, 'month' : month, 'day' : day, 'hour' : hour}, '$inc' : { 'total' : 1, 'jobs.'+job : 1, 'location.'+location : 1 } },  { 'upsert' : True })
+        connection.HourlyStatistic.find_and_modify({'timestamp': timestamp}, {'$set':{ 'year' : year, 'month' : month, 'day' : day, 'hour' : hour}, '$inc' : { 'total' : 1, 'jobs.'+job : 1, 'location.'+location : 1 } },  { 'upsert' : True })
 
 
+@connection.register
 class DailyStatistic(Statistic):
 
     __collection__ = 'dailystatistics'
@@ -65,9 +65,10 @@ class DailyStatistic(Statistic):
         hour = 0
         location = DailyStatistic.gi.country_code_by_name(location)
         timestamp = datetime.datetime(year, month,day,hour)
-        mobyle.common.session.DailyStatistic.find_and_modify({'timestamp': timestamp}, {'$set':{ 'year' : year, 'month' : month, 'day' : day, 'hour' : hour}, '$inc' : { 'total' : 1, 'jobs.'+job : 1, 'location.'+location : 1 } },  { 'upsert' : True })
+        connection.DailyStatistic.find_and_modify({'timestamp': timestamp}, {'$set':{ 'year' : year, 'month' : month, 'day' : day, 'hour' : hour}, '$inc' : { 'total' : 1, 'jobs.'+job : 1, 'location.'+location : 1 } },  { 'upsert' : True })
 
 
+@connection.register
 class MonthlyStatistic(Statistic):
 
     __collection__ = 'monthlystatistics'
@@ -82,6 +83,6 @@ class MonthlyStatistic(Statistic):
         hour = 0
         location = MonthlyStatistic.gi.country_code_by_name(location)
         timestamp = datetime.datetime(year, month,day,hour)
-        mobyle.common.session.MonthlyStatistic.find_and_modify({'timestamp': timestamp}, {'$set':{ 'year' : year, 'month' : month, 'day' : day, 'hour' : hour}, '$inc' : { 'total' : 1, 'jobs.'+job : 1, 'location.'+location : 1 } },  { 'upsert' : True })
+        connection.MonthlyStatistic.find_and_modify({'timestamp': timestamp}, {'$set':{ 'year' : year, 'month' : month, 'day' : day, 'hour' : hour}, '$inc' : { 'total' : 1, 'jobs.'+job : 1, 'location.'+location : 1 } },  { 'upsert' : True })
 
 

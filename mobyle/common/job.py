@@ -1,19 +1,23 @@
 # -*- coding: utf-8 -*-
 
-import abc
+#===============================================================================
+#   Created on Aug 13, 2012           
+#                                     
+# @author: Bertrand Néron              
+# @contact: bneron@pasteur.fr          
+# @organization: Institut Pasteur      
+# @license: GPLv3                      
+#===============================================================================
 
 from mongokit import Document, SchemaDocument, IS 
 import datetime
-import mf.annotation
-from mf.annotation import *
+from mf.annotation import mf_decorator
 import logging
 _log = logging.getLogger(__name__)
 
 from mobyleError import MobyleError
-from mobyle.common import session
-from mobyle.common.config import Config
+from .config import Config
 
-    
 
 class Status(SchemaDocument):
     """reflect the different steps of a job life"""
@@ -212,13 +216,12 @@ class AbstractJob(Document):
         return self["_id"].generation_time
     
 
-    @abc.abstractmethod
     def must_be_notified(self):
         """
         :returns: True if a notification must be send a the end of job. False otherwise 
         
         """
-        
+        return NotImplementedError
         
         
 @mf_decorator    
@@ -227,7 +230,7 @@ class Job(AbstractJob):
     AbstractJob implementation for a simple job
     """ 
     structure = { 
-                'end_time' : datetime,
+                'end_time' : datetime.datetime,
                 'has_been_notified' : bool
                 }
     
