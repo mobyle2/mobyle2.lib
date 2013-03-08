@@ -21,8 +21,9 @@ class TestConfig(AbstractMobyleTest):
         Config._file = None
 
     def test_default_config(self):
-        myconfig = Config()
+        import logging
         Config.logger().setLevel(logging.ERROR)
+        myconfig = Config()
         self.assertEqual(myconfig._config.get("app:main","db_uri"), "mongodb://localhost")
 
     def test_file_config(self):

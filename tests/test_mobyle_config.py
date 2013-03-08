@@ -24,6 +24,8 @@ class TestMobyleConfig(AbstractMobyleTest):
            object.delete()
 
     def test_insert(self):
+        import logging
+        Config.logger().setLevel(logging.ERROR)
         config = mobyle.common.session.MobyleConfig()
         config.save()
         config_list = mobyle.common.session.MobyleConfig.find_one({'datadir': '/var/lib/mobyle'})

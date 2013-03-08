@@ -10,15 +10,14 @@ mobyle.common.connection.init_mongo(Config.config().get('app:main','db_uri'))
 class TestService(AbstractMobyleTest):
 
     def setUp(self):
-       objects = mobyle.common.session.User.find({})
-       for object in objects:
-           object.delete()
+        objects = mobyle.common.session.Service.find({})
+        for object in objects:
+            object.delete()
        
     def tearDown(self):
-       objects = mobyle.common.session.User.find({})
-       for object in objects:
-           object.delete()
-
+        objects = mobyle.common.session.Service.find({})
+        for object in objects:
+            object.delete()
 
     def test_insert(self):
         """

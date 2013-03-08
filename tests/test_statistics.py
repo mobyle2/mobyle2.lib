@@ -17,12 +17,12 @@ mobyle.common.connection.init_mongo(Config.config().get('app:main','db_uri'))
 class TestMobyleStatistics(AbstractMobyleTest):
 
     def setUp(self):
-       objects = mobyle.common.session.User.find({})
+       objects = mobyle.common.session.HourlyStatistic.find({})
        for object in objects:
            object.delete()
        
     def tearDown(self):
-       objects = mobyle.common.session.User.find({})
+       objects = mobyle.common.session.HourlyStatistic.find({})
        for object in objects:
            object.delete()
 
