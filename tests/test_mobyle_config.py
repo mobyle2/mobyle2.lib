@@ -7,6 +7,8 @@ import json
 from abstract_test import AbstractMobyleTest
 from mobyle.common.config import Config
 from mobyle.common.mobyleConfig import MobyleConfig
+import mobyle.common
+import mobyle.common.connection
 mobyle.common.connection.init_mongo(Config.config().get('app:main','db_uri'))
 
 class TestMobyleConfig(AbstractMobyleTest):
