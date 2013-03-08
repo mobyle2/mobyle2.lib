@@ -21,3 +21,21 @@
 *\.pyc
 *\.pyo
 
+
+##########################
+# Sphinx doc build       #
+##########################
+docs/build
+docs/build/*
+
+##########################
+# egg_info install dir   #
+##########################
+mobyle.lib.egg-info
+
+##########################
+# coverage result files  #
+##########################
+tests/.coverage
+tests/htmlcov
+tests/htmlcov/*

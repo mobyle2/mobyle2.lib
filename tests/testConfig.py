@@ -17,7 +17,7 @@ class TestConfig(unittest.TestCase):
     """ Tests for the Config class
     """
 
-    def setup(self):
+    def setUp(self):
         Config._config = None
         Config._log = None
         Config._file = None
@@ -33,7 +33,8 @@ class TestConfig(unittest.TestCase):
         self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://samplehost")
 
     def test_reload_config(self):
-        myconfig = Config()
+        tmpconfig = os.path.join(os.path.dirname(os.path.realpath(__file__)),"test.conf")
+        myconfig = Config(tmpconfig)
         self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://samplehost")
         Config.config().set("app:main","db_uri","mongodb://localhost")	
         self.assertEqual(Config.config().get("app:main","db_uri"),"mongodb://localhost")

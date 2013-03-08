@@ -20,37 +20,36 @@ class TestProject(unittest.TestCase):
        objects = session.Project.find({})
        for object in objects:
          object.delete()
+       self.example_user = session.User()
+       self.example_user['email'] = 'Emeline@example.com'
+       self.example_user.save()
 
     def tearDown(self):
        objects = session.Project.find({})
        for object in objects:
          object.delete()
-	
+       self.example_user.delete()
+
     def test_project(self):
 	my_project = session.Project()
-        my_project['owner'] = 'Emeline'
+        my_project['owner'] = self.example_user
         my_project['name'] = 'MyProject'
-        my_project['date_creation'] = datetime.utcnow()
 	my_project.save()
 	
         self.assertEqual(my_project['name'], 'MyProject')
-	self.assertEqual(my_project['owner'], 'Emeline')
+	self.assertEqual(my_project['owner'], self.example_user)
 
     def test_add_users(self):
 	my_project = session.Project()
-        my_project['owner'] = 'Emeline'
+        my_project['owner'] = self.example_user
         my_project['name'] = 'MyProject'
-        my_project['date_creation'] = datetime.utcnow()
-
 	my_project.save()
 	user = session.User()
         user['email']='admin'
 	user.save()
-
 	my_project.add_user(user,"admin")
-        print str(my_project)
 
-        self.assertEqual(my_project['users'][0]['user']['_id'] , user['_id'])
+        self.assertEqual(my_project['users'][0]['user'], user)
 	
 	
 
