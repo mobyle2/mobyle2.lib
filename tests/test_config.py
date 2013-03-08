@@ -7,11 +7,8 @@ Created on Nov. 27, 2012
 @license: GPLv3
 '''
 
-
 from abstract_test import AbstractMobyleTest
-import unittest
 from tempfile import mkstemp
-
 from mobyle.common.config import *
 
 class TestConfig(AbstractMobyleTest):
@@ -29,12 +26,14 @@ class TestConfig(AbstractMobyleTest):
         self.assertEqual(myconfig._config.get("app:main","db_uri"), "mongodb://localhost")
 
     def test_file_config(self):
-        tmpconfig = os.path.join(os.path.dirname(os.path.realpath(__file__)),"test.conf")
+        tmpconfig = os.path.join(os.path.dirname(os.path.realpath(__file__)),"test_samplehost.conf")
         myconfig = Config(tmpconfig) 
         self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://samplehost")
+    
 
     def test_reload_config(self):
-        myconfig = Config()
+        tmpconfig = os.path.join(os.path.dirname(os.path.realpath(__file__)),"test_samplehost.conf")
+        myconfig = Config(tmpconfig)
         self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://samplehost")
         Config.config().set("app:main","db_uri","mongodb://localhost")	
         self.assertEqual(Config.config().get("app:main","db_uri"),"mongodb://localhost")
@@ -44,5 +43,6 @@ class TestConfig(AbstractMobyleTest):
 
 
 if __name__=='__main__':
+    import unittest
     unittest.main()
 
