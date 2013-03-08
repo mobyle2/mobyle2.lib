@@ -1,11 +1,46 @@
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
+
+#===============================================================================
+# Created on Mar 07, 2013
+# 
+# @author: Bertrand Néron
+# @contact: bneron@pasteur.fr
+# @organization: Institut Pasteur
+# @license: GPLv3
+#===============================================================================
+
+import os
+import sys
 import unittest
+     
+from argparse import ArgumentParser    
+parser = ArgumentParser()
+parser.add_argument("tests",
+                    nargs = '*',
+                    help = "name of test to execute")
 
-from testUser import *
-from testData import *
-from testConfig import *
-from testProject import *
+parser.add_argument("-v", "--verbose" , 
+                    dest= "verbosity" , 
+                    action="count" , 
+                    help= "set the verbosity level of output",
+                    default = 0
+                    )
 
+args = parser.parse_args()
 
-if __name__ == '__main__':
-    unittest.main()
+if not args.tests:
+    suite = unittest.TestLoader().discover('.', pattern="test_*.py" ) 
+else:
+    suite = unittest.TestSuite()
+    for test in args.tests: 
+        if os.path.exists(test):
+            if os.path.isfile(test):
+                fpath, fname =  os.path.split( test )
+                suite.addTests(unittest.TestLoader().discover(fpath , pattern = fname )) 
+            elif os.path.isdir(test):  
+                suite.addTests(unittest.TestLoader().discover(test)) 
+        else:
+            sys.stderr.write(  "%s : no such file or directory\n" % test) 
+
+unittest.TextTestRunner(verbosity = args.verbosity).run(suite)

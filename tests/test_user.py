@@ -1,29 +1,25 @@
 # -*- coding: utf-8 -*-
-import unittest
-from mobyle.common.data import *
 
-import pymongo
+from abstract_test import AbstractMobyleTest
 
 from mobyle.common import users
-
 import mobyle.common
-
-from mobyle.common  import session
-
+from mobyle.common import session
 import mobyle.common.connection
-mobyle.common.connection.init_mongo("mongodb://localhost/")
+from mobyle.common.config import Config
+mobyle.common.connection.init_mongo(Config.config().get('app:main','db_uri'))
 
-class TestUser(unittest.TestCase):
+class TestUser(AbstractMobyleTest):
 
     def setUp(self):
        objects = mobyle.common.session.User.find({})
        for object in objects:
-         object.delete()
+           object.delete()
        
     def tearDown(self):
        objects = mobyle.common.session.User.find({})
        for object in objects:
-         object.delete()
+           object.delete()
 
 
     def test_insert(self):
@@ -36,19 +32,24 @@ class TestUser(unittest.TestCase):
         user_list = mobyle.common.session.User.find({'first_name': 'Walter'})
         count = 0
         for user in user_list:
-          count+=1
-          self.assertTrue(user["apikey"] is not None)
-        self.assertTrue(count ==1 )
+            count+=1
+            self.assertIsNotNone(user["apikey"])
+        self.assertEqual(count, 1)
     
     def test_password(self):
         user = mobyle.common.session.User()
         user['email'] = "Bishop@nomail"
         user.save()
-        self.assertTrue(user['hashed_password'] == '')        
+        self.assertEqual(user['hashed_password'], '')        
         user.set_password("verySecret")        
-        self.assertTrue(user['hashed_password'] != '')
+        self.assertNotEqual(user['hashed_password'], '')
         
         self.assertTrue(user.check_password("verySecret") )
         self.assertFalse(user.check_password("incorrect") )
         
         user.save()
+    
+if __name__ == '__main__':
+    import unittest
+    unittest.main()
+

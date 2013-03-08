@@ -1,27 +1,24 @@
 # -*- coding: utf-8 -*-
-import unittest
-from mobyle.common.service import *
 
 import pymongo
-
 from mongokit import ValidationError
+from abstract_test import AbstractMobyleTest
 import mobyle.common
-from mobyle.common  import session
+from mobyle.common.service import *
+mobyle.common.connection.init_mongo(Config.config().get('app:main','db_uri'))
 
-import mobyle.common.connection
-mobyle.common.connection.init_mongo("mongodb://localhost/")
-
-class TestService(unittest.TestCase):
+class TestService(AbstractMobyleTest):
 
     def setUp(self):
-       objects = mobyle.common.session.Service.find({})
+       objects = mobyle.common.session.User.find({})
        for object in objects:
-         object.delete()
+           object.delete()
        
     def tearDown(self):
-       objects = mobyle.common.session.Service.find({})
+       objects = mobyle.common.session.User.find({})
        for object in objects:
-         object.delete()
+           object.delete()
+
 
     def test_insert(self):
         """
@@ -33,8 +30,8 @@ class TestService(unittest.TestCase):
         services_list = mobyle.common.session.Service.find({'name': 'test_service'})
         count = 0
         for service in services_list:
-          count+=1
-        self.assertTrue(count==1)
+            count += 1
+        self.assertEqual(count, 1)
 
     def test_inputs_creation(self):
         """
@@ -43,13 +40,14 @@ class TestService(unittest.TestCase):
         service = mobyle.common.session.Service()
         service['name'] = "test_service_with_inputs"
         inputs = InputParagraph()
-	service['inputs']=inputs
-	input_1 = InputParameter()
-        input_1['name']='test_input'
+        service['inputs'] = inputs
+        input_1 = InputParameter()
+        input_1['name'] = 'test_input'
         inputs['children'].append(input_1)
         inputs.validate()
         service.validate()
         service.save()
+        
 
     def test_invalid_inputs_creation(self):
         """
@@ -66,8 +64,12 @@ class TestService(unittest.TestCase):
         inputs = InputParagraph()
         #service['inputs']=inputs
         output = OutputParameter()
-        output['name']='test_output'     
+        output['name'] = 'test_output'     
         inputs['children'].append(output)
-        self.assertRaises(ValidationError,inputs.validate)
+        self.assertRaises(ValidationError, inputs.validate)
         #service.validate()
         #service.save()
+        
+if __name__ == '__main__':
+    import unittest
+    unittest.main()
