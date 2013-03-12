@@ -13,9 +13,8 @@ from xml2json import elem_to_internal, internal_to_elem
 import logging
 import argparse
 
-from mobyle.common.config import Config
-import mobyle.common.connection
-from mobyle.common.service import InputParagraph, OutputParagraph, \
+from .config import Config
+from .service import InputParagraph, OutputParagraph, \
                                   InputParameter, OutputParameter, \
                                   InputProgramParameter, \
                                   OutputProgramParameter, \
@@ -379,9 +378,8 @@ if __name__ == '__main__':
         # Init config
         config = Config(args.config).config()
         # init db connection
-        mobyle.common.connection.init_mongo(config.get("app:main","db_uri"))
-        from mobyle.common import session
-        Program = mobyle.common.session.Program
+        from mobyle.common import connection
+        Program = connection.Program
     else:
         from mobyle.common.service import Program
     if args.storeto:

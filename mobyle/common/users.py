@@ -1,19 +1,15 @@
 # -*- coding: utf-8 -*-
 
-from mobyle.common import session
-from mobyle.common.config import Config
-
 from mongokit import Document
-
 import bcrypt
-
-import mf.annotation
-from mf.annotation import *
-
+from mf.annotation import mf_decorator
 import uuid
-from uuid import UUID
+
+from . import connection
+from .config import Config
 
 @mf_decorator
+@connection.register
 class User(Document):
 
     __collection__ = 'users'
@@ -28,8 +24,7 @@ class User(Document):
                  'groups' : [ basestring ],
                  'apikey' : basestring }
 
-    #default_values = { 'hashed_password' : '', 'admin': False, 'apikey' : uuid.uuid4().hex }
-    default_values = { 'hashed_password' : '', 'admin': False, 'apikey' : "truc muche" }
+    default_values = { 'hashed_password' : '', 'admin': False, 'apikey' : uuid.uuid4().hex }
     
     required_fields = [ 'email' ]    
     
@@ -40,4 +35,5 @@ class User(Document):
         hashed = bcrypt.hashpw(password, self['hashed_password'])
         return hashed == self['hashed_password']
     
-    
+if __name__ == '__main__':
+    print connection.User

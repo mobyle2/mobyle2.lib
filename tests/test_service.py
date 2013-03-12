@@ -1,21 +1,24 @@
 # -*- coding: utf-8 -*-
 
+import unittest
 import pymongo
 from mongokit import ValidationError
-from abstract_test import AbstractMobyleTest
-import mobyle.common
+import os.path
+#a config object must be instantiated first for each entry point of the application
+from mobyle.common.config import Config
+config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
+from mobyle.common import connection
 from mobyle.common.service import *
-mobyle.common.connection.init_mongo(Config.config().get('app:main','db_uri'))
 
-class TestService(AbstractMobyleTest):
+class TestService(unittest.TestCase):
 
     def setUp(self):
-        objects = mobyle.common.session.Service.find({})
+        objects = connection.Service.find({})
         for object in objects:
             object.delete()
        
     def tearDown(self):
-        objects = mobyle.common.session.Service.find({})
+        objects = connection.Service.find({})
         for object in objects:
             object.delete()
 
@@ -23,10 +26,10 @@ class TestService(AbstractMobyleTest):
         """
         test basic creation of an almost empty service
         """
-        service = mobyle.common.session.Service()
+        service = connection.Service()
         service['name'] = "test_service"
         service.save()
-        services_list = mobyle.common.session.Service.find({'name': 'test_service'})
+        services_list = connection.Service.find({'name': 'test_service'})
         count = 0
         for service in services_list:
             count += 1
@@ -36,7 +39,7 @@ class TestService(AbstractMobyleTest):
         """
         test creation of a service with an input
         """
-        service = mobyle.common.session.Service()
+        service = connection.Service()
         service['name'] = "test_service_with_inputs"
         inputs = InputParagraph()
         service['inputs'] = inputs
@@ -58,7 +61,7 @@ class TestService(AbstractMobyleTest):
         # as the validation for inputs paragraph
         # is not automatically triggered when
         # validating or saving the Service object
-        #service = mobyle.common.session.Service()
+        #service = connection.Service()
         #service['name'] = "test_service_with_inputs"
         inputs = InputParagraph()
         #service['inputs']=inputs
@@ -70,5 +73,4 @@ class TestService(AbstractMobyleTest):
         #service.save()
         
 if __name__ == '__main__':
-    import unittest
     unittest.main()

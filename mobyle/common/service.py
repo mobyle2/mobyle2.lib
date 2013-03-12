@@ -8,10 +8,11 @@ Created on Jan 22, 2013
 @license: GPLv3
 """
 from mongokit import Document, SchemaDocument, IS
-
-from mobyle.common.config import Config
-
 from mf.annotation import mf_decorator
+
+from . import connection
+from .config import Config
+
 
 class Code(SchemaDocument):
     """
@@ -162,6 +163,7 @@ class OutputParagraph(Paragraph):
                  }
 
 @mf_decorator
+@connection.register
 class Software(Document):
     """
     top-level abstract element for different services and packages
@@ -217,6 +219,7 @@ class Software(Document):
               ]
 
 @mf_decorator
+@connection.register
 class Package(Software):
     """
     a package is a group of services.
@@ -224,6 +227,7 @@ class Package(Software):
     __collection__ = 'packages'
 
 @mf_decorator
+@connection.register
 class Service(Software):
     """
     a service is an executable piece of software
@@ -240,6 +244,7 @@ class Service(Software):
                 }
 
 @mf_decorator
+@connection.register
 class Program(Service):
     """
     a program is a command line tool
@@ -260,6 +265,7 @@ class Program(Service):
                      }
 
 @mf_decorator
+@connection.register
 class Workflow(Service):
     """
     a workflow is a composite service running
@@ -273,6 +279,7 @@ class Workflow(Service):
                      }
 
 @mf_decorator
+@connection.register
 class Widget(Service):
     """
     a widget is an interactive web component dedicated to the

@@ -4,33 +4,35 @@ import pymongo
 import mobyle
 import json
 
-from abstract_test import AbstractMobyleTest
+import unittest
+import os.path
+#a config object must be instantiated first for each entry point of the application
+from mobyle.common.config import Config
+config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
+
+from mobyle.common import connection
 from mobyle.common.config import Config
 from mobyle.common.mobyleConfig import MobyleConfig
-import mobyle.common
-import mobyle.common.connection
-mobyle.common.connection.init_mongo(Config.config().get('app:main','db_uri'))
 
-class TestMobyleConfig(AbstractMobyleTest):
+class TestMobyleConfig(unittest.TestCase):
 
     def setUp(self):
-       objects = mobyle.common.session.MobyleConfig.find({})
+       objects = connection.MobyleConfig.find({})
        for object in objects:
            object.delete()
        
     def tearDown(self):
-       objects = mobyle.common.session.MobyleConfig.find({})
+       objects = connection.MobyleConfig.find({})
        for object in objects:
            object.delete()
 
     def test_insert(self):
         import logging
         Config.logger().setLevel(logging.ERROR)
-        config = mobyle.common.session.MobyleConfig()
+        config = connection.MobyleConfig()
         config.save()
-        config_list = mobyle.common.session.MobyleConfig.find_one({'datadir': '/var/lib/mobyle'})
+        config_list = connection.MobyleConfig.find_one({'datadir': '/var/lib/mobyle'})
         self.assertIsNotNone(config_list)
     
 if __name__ == '__main__':
-    import unittest
     unittest.main()

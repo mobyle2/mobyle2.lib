@@ -7,9 +7,6 @@ Created on Nov. 12, 2012
 @license: GPLv3
 '''
 
-
-
-import abc
 from abc import ABCMeta
 from abc import abstractmethod
 from mobyleError import MobyleError
