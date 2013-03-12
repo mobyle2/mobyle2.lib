@@ -30,7 +30,7 @@ parser.add_argument("-v", "--verbose" ,
 args = parser.parse_args()
 
 if not args.tests:
-    suite = unittest.TestLoader().discover('.', pattern="test_*.py" ) 
+    suite = unittest.TestLoader().discover(os.path.dirname(__file__), pattern="test_*.py" ) 
 else:
     suite = unittest.TestSuite()
     for test in args.tests: 
