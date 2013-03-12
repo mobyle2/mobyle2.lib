@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
 
-from abstract_test import AbstractMobyleTest
+import unittest
+import os.path
+#a config object must be instantiated first for each entry point of the application
+from mobyle.common.config import Config
+config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common import connection
 from mobyle.common import users
-from mobyle.common.config import Config
 
-class TestUser(AbstractMobyleTest):
+class TestUser(unittest.TestCase):
 
     def setUp(self):
         objects = connection.User.find({})
@@ -39,13 +42,11 @@ class TestUser(AbstractMobyleTest):
         self.assertEqual(user['hashed_password'], '')        
         user.set_password("verySecret")        
         self.assertNotEqual(user['hashed_password'], '')
-        
         self.assertTrue(user.check_password("verySecret") )
         self.assertFalse(user.check_password("incorrect") )
         
         user.save()
     
 if __name__ == '__main__':
-    import unittest
     unittest.main()
 

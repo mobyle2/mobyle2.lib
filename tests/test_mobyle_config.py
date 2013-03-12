@@ -4,12 +4,17 @@ import pymongo
 import mobyle
 import json
 
-from abstract_test import AbstractMobyleTest
+import unittest
+import os.path
+#a config object must be instantiated first for each entry point of the application
+from mobyle.common.config import Config
+config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
+
 from mobyle.common import connection
 from mobyle.common.config import Config
 from mobyle.common.mobyleConfig import MobyleConfig
 
-class TestMobyleConfig(AbstractMobyleTest):
+class TestMobyleConfig(unittest.TestCase):
 
     def setUp(self):
        objects = connection.MobyleConfig.find({})
@@ -30,5 +35,4 @@ class TestMobyleConfig(AbstractMobyleTest):
         self.assertIsNotNone(config_list)
     
 if __name__ == '__main__':
-    import unittest
     unittest.main()

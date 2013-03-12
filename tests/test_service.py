@@ -1,13 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import unittest
 import pymongo
 from mongokit import ValidationError
-
-from abstract_test import AbstractMobyleTest
+import os.path
+#a config object must be instantiated first for each entry point of the application
+from mobyle.common.config import Config
+config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common import connection
 from mobyle.common.service import *
 
-class TestService(AbstractMobyleTest):
+class TestService(unittest.TestCase):
 
     def setUp(self):
         objects = connection.Service.find({})
@@ -70,5 +73,4 @@ class TestService(AbstractMobyleTest):
         #service.save()
         
 if __name__ == '__main__':
-    import unittest
     unittest.main()

@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from abstract_test import AbstractMobyleTest
+import unittest
+import os.path
+#a config object must be instantiated first for each entry point of the application
+from mobyle.common.config import Config
+config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common.data import *
 
-class TestDataType(AbstractMobyleTest):
+class TestDataType(unittest.TestCase):
 
     def setUp(self):
         self.type_1 = IntegerDataType()
@@ -17,7 +21,7 @@ class TestDataType(AbstractMobyleTest):
 
 
 
-class TestDataFormat(AbstractMobyleTest):
+class TestDataFormat(unittest.TestCase):
 
     def setUp(self):
         self.format_1 = BinaryDataFormat()
@@ -35,7 +39,7 @@ class TestDataFormat(AbstractMobyleTest):
     
     
     
-class TestData(AbstractMobyleTest):
+class TestData(unittest.TestCase):
 
     def setUp(self):
         type_1 = IntegerDataType()
@@ -48,7 +52,7 @@ class TestData(AbstractMobyleTest):
 
 
 
-class TestStructData(AbstractMobyleTest):
+class TestStructData(unittest.TestCase):
 
     def setUp(self):
         format_1 = IntegerDataFormat()
@@ -64,7 +68,7 @@ class TestStructData(AbstractMobyleTest):
         self.assertEqual(self.structure['file'], 'StringDataType')
 
 
-class TestCollectionData(AbstractMobyleTest):
+class TestCollectionData(unittest.TestCase):
 
     def setUp(self):
         data_1 = Data(TextDataFormat(), 'file1')
@@ -81,6 +85,5 @@ class TestCollectionData(AbstractMobyleTest):
     
 
 if __name__=='__main__':
-    import unittest
     unittest.main()
 

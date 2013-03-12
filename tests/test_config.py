@@ -6,12 +6,11 @@ Created on Nov. 27, 2012
 @contact: olivier.sallou@irisa.fr
 @license: GPLv3
 '''
-
-from abstract_test import AbstractMobyleTest
+import unittest
 from tempfile import mkstemp
 from mobyle.common.config import *
 
-class TestConfig(AbstractMobyleTest):
+class TestConfig(unittest.TestCase):
     """ Tests for the Config class
     """
 
@@ -44,6 +43,5 @@ class TestConfig(AbstractMobyleTest):
 
 
 if __name__=='__main__':
-    import unittest
     unittest.main()
 
