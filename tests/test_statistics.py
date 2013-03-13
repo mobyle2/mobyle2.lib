@@ -9,7 +9,7 @@ import os.path
 #a config object must be instantiated first for each entry point of the application
 from mobyle.common.config import Config
 config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
-from mobyle.common import connection
+from mobyle.common.connection import connection
 from mobyle.common.stats.stat import HourlyStatistic, DailyStatistic, MonthlyStatistic
 
 

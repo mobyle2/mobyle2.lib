@@ -10,7 +10,7 @@ Created on Jan 22, 2013
 from mongokit import Document, SchemaDocument, IS
 from mf.annotation import mf_decorator
 
-from . import connection
+from .connection import connection
 from .config import Config
 
 

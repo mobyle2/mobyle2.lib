@@ -17,7 +17,7 @@ from datetime import datetime
 from mongokit import Document
 from mf.annotation import mf_decorator
 
-from . import connection
+from .connection import connection
 from .mobyleError import MobyleError
 from .config import Config
 

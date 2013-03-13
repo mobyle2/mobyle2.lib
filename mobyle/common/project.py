@@ -10,7 +10,7 @@ Created on Nov. 23, 2012
 from mongokit import Document
 from mf.annotation import mf_decorator
 
-from . import connection
+from .connection import connection
 from .config import Config
 from .job import Job
 #TODO: reimport as soon as Data object is MongoKit-compatible

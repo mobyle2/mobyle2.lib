@@ -8,6 +8,3 @@ Created on Nov. 12, 2012
 '''
 __import__('pkg_resources').declare_namespace('mobyle')
 
-from mongokit import Connection
-connection = Connection()
-
