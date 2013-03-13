@@ -7,7 +7,7 @@ import pygeoip
 from mongokit import Document
 import logging
 
-from mobyle.common import connection
+from ..connection import connection
 from ..config import Config
 
 

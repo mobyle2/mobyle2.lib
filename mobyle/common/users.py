@@ -5,7 +5,7 @@ import bcrypt
 from mf.annotation import mf_decorator
 import uuid
 
-from . import connection
+from .connection import connection
 from .config import Config
 
 @mf_decorator
