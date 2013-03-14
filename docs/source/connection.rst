@@ -51,10 +51,3 @@ Use Mongokit to retrieve User::
    objects = connection.User.find({})
 
 
-connection API reference
-=========================
- .. automodule:: mobyle.common.connection
-   :members:
-   :private-members:
-   :special-members:
-
