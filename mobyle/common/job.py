@@ -12,16 +12,21 @@
 from mongokit import Document, SchemaDocument, IS 
 import datetime
 from mf.annotation import mf_decorator
+import inspect
+import types
 import logging
 _log = logging.getLogger(__name__)
 
 from .config import Config
 from .connection import connection
+from .mobyleError import MobyleError
 
 
 class Status(SchemaDocument):
     """reflect the different steps of a job life"""
 
+    use_dot_notation = True
+    
     """the system is not able to determine the status of the job"""
     UNKNOWN = u'unknown'
     """init the job creation (working directory creation, job settings,...) the status changed for BUILDING when the user click on "run" """
@@ -62,8 +67,18 @@ class Status(SchemaDocument):
                               PAUSE
                               )
                   }
-
     
+    required_fields = ['code']
+    
+    def __init__(self, **kwargs):
+        if not 'code' in kwargs:
+            raise MobyleError( "keyword code is mandatory to instanciate a Status")
+        auth_values = [  m[1] for m in inspect.getmembers( Status ) if type(m[1]) == types.UnicodeType ]
+        if kwargs['code'] not in  auth_values:
+            raise MobyleError( "keyword code must be in %s" % auth_values )
+        self.code = kwargs['code']
+        
+        
     def __eq__(self , other):
         """
         two Status instances are equals if there code and message are equals
@@ -148,6 +163,7 @@ class Status(SchemaDocument):
         return self.code == self.BUILDING
 
 
+
 class Job(Document):
     """
     Job is an abstract class that describes the common interface of all jobs
@@ -165,6 +181,8 @@ class Job(Document):
                  'end_time' : datetime.datetime,
                   }
 
+    required_fields = ['status']
+    
         
     def __cmp__(self, other):
         """
@@ -175,6 +193,16 @@ class Job(Document):
         :rtype: Integer 
         """
         return cmp( self.create_time , other.create_time )
+
+
+    @property
+    def owner(self):
+        """
+        :return: the owner of a job. It can be a user space or a workflow
+        :rtype: ???
+         
+        """
+        return self._owner
 
     
     @property
@@ -206,7 +234,6 @@ class ClJob(Job):
     structure = { 
                 'has_been_notified' : bool
                 }
-    
     
     def must_be_notified(self):
         """
