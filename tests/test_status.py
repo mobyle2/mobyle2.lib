@@ -23,36 +23,50 @@ import types
 from mobyle.common.config import Config
 config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common.job import Status
-
+from mobyle.common.mobyleError import MobyleError
 
 class StatusTest(unittest.TestCase):
 
     def setUp(self):
         #tuple (attribute , value)
         self.all_status_tuple = [ m  for m in inspect.getmembers( Status ) if type(m[1]) == types.UnicodeType ]
-        self.all_status_object = [ Status(code = t[1]) for t in self.all_status_tuple]
-        self.status_attr =  [ l[0] for l in self.all_status_tuple ] 
+        self.all_status_object =  [ Status(t[1]) for t in self.all_status_tuple]
+        self.status_attr =  [ l[0] for l in self.all_status_tuple ]
         self.status_string = {}
         for l in self.status_attr: 
             self.status_string [l] = l.lower()
             
-        self.ended_status = [ Status(code = c) for c in (Status.FINISHED, Status.ERROR, Status.KILLED) ]
-        self.error_status = [ Status(code = c) for c in (Status.ERROR, Status.KILLED) ]
-        self.queryable_status = [ Status(code = c) for c in (Status.SUBMITTED, Status.PENDING, Status.RUNNING, Status.HOLD) ]
-        self.known_status = [ s for s in self.all_status_object if s.code != Status.UNKNOWN ]
-        self.submittable_status = [ Status(code = c) for c in [Status.BUILDING] ]
+        self.ended_status = [ Status(c) for c in (Status.FINISHED, Status.ERROR, Status.KILLED) ]
+        self.error_status = [ Status(c) for c in (Status.ERROR, Status.KILLED) ]
+        self.queryable_status = [ Status(c) for c in (Status.SUBMITTED, Status.PENDING, Status.RUNNING, Status.HOLD) ]
+        self.known_status = [ s for s in self.all_status_object if s.state != Status.UNKNOWN ]
+        self.submittable_status = [ Status(Status.TO_BE_SUBMITTED) ]
+    
+    
+    def test_init(self):
+        for attr, val in self.all_status_tuple:
+            self.assertIsInstance(Status(val), Status)
+        self.assertRaises(MobyleError, Status, 'nimportnaoik')
+        
+        
+    def test_transition(self):
+        s = Status(Status.INIT)
+        s.state = Status.BUILDING
+        self.assertEqual(s.state, Status.BUILDING)
+        self.assertRaises(MobyleError, Status.state.fset, s, Status.FINISHED)
+        s = Status(Status.KILLED)
+        self.assertRaises(MobyleError, Status.state.fset, s, Status.KILLED)
+        
         
     def test_eq(self):
         """
         2 Status instance are equals if they have
          - the same status code 
         """
-        print self.status_attr
-        
         for l1 in self.status_attr:
-            s1= Status( code = getattr( Status, l1 ) )
+            s1= Status(getattr(Status, l1))
             for l2 in self.status_attr:
-                s2= Status( code = getattr( Status, l2 ) )
+                s2= Status(getattr(Status, l2))
                 if l1 == l2:
                     self.assertTrue(s1 == s2)
                 else:
@@ -98,9 +112,9 @@ class StatusTest(unittest.TestCase):
             self.assertFalse( s.is_submittable() )
             
     def test_str(self):
-        for l, c in self.all_status_tuple:
-            s = Status(code = c)
-            self.assertEqual( str(s) , l.lower().replace('_', ' ') )
+        for attr, state in self.all_status_tuple:
+            s = Status(state)
+            self.assertEqual( str(s) , attr.lower().replace('_', ' ') )
     
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
