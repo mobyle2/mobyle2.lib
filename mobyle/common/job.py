@@ -179,6 +179,7 @@ class Status(object):
 class CustomStatus(CustomType):
     
     mongo_type = basestring
+    python_type = Status
     
     def to_bson(self, value):
         return unicode(value)
@@ -203,7 +204,7 @@ class Job(Document):
 
     structure = {
                  'name' : basestring,
-                 'status' : CustomStatus,
+                 'status' : CustomStatus(),
                  'owner' : basestring,
                  'message' : basestring,
                  'end_time' : datetime.datetime,
