@@ -13,13 +13,7 @@ from xml2json import elem_to_internal, internal_to_elem
 import logging
 import argparse
 
-from .config import Config
-from .service import InputParagraph, OutputParagraph, \
-                                  InputParameter, OutputParameter, \
-                                  InputProgramParameter, \
-                                  OutputProgramParameter, \
-                                  Type
-
+from mobyle.common.config import Config
 
 # pylint: disable=C0103
 #        Invalid name "logger" for type constant
@@ -378,10 +372,16 @@ if __name__ == '__main__':
         # Init config
         config = Config(args.config).config()
         # init db connection
-        from mobyle.common import connection
+        from mobyle.common.connection import connection
+        from mobyle.common.service import Service, Program
+        from mobyle.common.service import InputParagraph, OutputParagraph, \
+                                          InputParameter, OutputParameter, \
+                                          InputProgramParameter, \
+                                          OutputProgramParameter, \
+                                          Type
         Program = connection.Program
     else:
-        from mobyle.common.service import Program
+        from mobyle.common.service import Service, Program
     if args.storeto:
         import json
     filenames = args.filenames
