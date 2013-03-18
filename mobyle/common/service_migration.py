@@ -153,7 +153,8 @@ def parse_software(d, s):
     s['name'] = d.text('name')
     s['version'] = d.text('version')
     s['title'] = d.get('doc').text('title')
-    s['description'] = d.get('doc').get('description').text_or_html()
+    if d.get('doc').get('description'):
+        s['description'] = d.get('doc').get('description').text_or_html()
     if d.get('doc').get('authors'):
         s['authors'] = d.get('doc').get('authors').text_or_html()
     for r in d.get('doc').list('reference'):
@@ -344,8 +345,6 @@ def parse_program(s_dict):
     parse Mobyle1 "program" element
     :param p_dict: the dictionary representing the Mobyle1 "program" element
     :type p_dict: dict
-    :param service_type: 'program', 'workflow' or 'widget'
-    :type service_type: string
     :returns: the corresponding Program object
     :rtype: Program
     """
@@ -362,6 +361,20 @@ def parse_program(s_dict):
         p['env'].append({'name':env.att('name'), 'value':env.text()})
     return p
 
+def parse_package(s_dict):
+    """
+    create a package object from a dictionary
+    "Mobyle1-style"
+    parse Mobyle1 "package" element
+    :param p_dict: the dictionary representing the Mobyle1 "program" element
+    :type p_dict: dict
+    :returns: the corresponding Package object
+    :rtype: Package
+    """
+    p = Package()
+    parse_software(s_dict, p)
+    return p
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Migrate Mobyle1 XML files to Mobyle2')
     parser.add_argument('--config', help="path to the Mobyle2 config file for DB injection")
@@ -373,33 +386,40 @@ if __name__ == '__main__':
         config = Config(args.config).config()
         # init db connection
         from mobyle.common.connection import connection
-        from mobyle.common.service import Service, Program
+        from mobyle.common.service import Service, Program, Package
         from mobyle.common.service import InputParagraph, OutputParagraph, \
                                           InputParameter, OutputParameter, \
                                           InputProgramParameter, \
                                           OutputProgramParameter, \
                                           Type
         Program = connection.Program
+        Package = connection.Package
     else:
-        from mobyle.common.service import Service, Program
+        from mobyle.common.service import Service, Program, Package
     if args.storeto:
         import json
     filenames = args.filenames
     for filename in filenames: 
         logger.info('processing %s...' % filename)
         try:
+            # s stores the result of the parsing
+            s = None
             # parse the XML into memory
             elem = ET.fromstring(open(filename).read())
             # create the JSON object
             service = elem_to_internal(elem)
             if service.get('#tag')=='program':
-                p = parse_program(JSONProxy(service))
+                s = parse_program(JSONProxy(service))
+            elif service.get('#tag')=='package':
+                s = parse_package(JSONProxy(service))
+            if s:
                 if args.config:
-                    p.save()
+                    s.save()
                 if args.storeto:
-                    fh = open(os.path.join(args.storeto, p['name']+'.json'),'w')
-                    fh.write(json.dumps(p, sort_keys=True, indent=4, separators=(',', ': ')))
+                    fh = open(os.path.join(args.storeto, s['name']+'.json'),'w')
+                    fh.write(json.dumps(s, sort_keys=True, indent=4, separators=(',', ': ')))
                     fh.close()
+                 
         # pylint: disable=W0703
         #        Invalid name "logger" for type constant 
         except Exception, exc:
