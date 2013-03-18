@@ -396,6 +396,11 @@ if __name__ == '__main__':
         Package = connection.Package
     else:
         from mobyle.common.service import Service, Program, Package
+        from mobyle.common.service import InputParagraph, OutputParagraph, \
+                                          InputParameter, OutputParameter, \
+                                          InputProgramParameter, \
+                                          OutputProgramParameter, \
+                                          Type
     if args.storeto:
         import json
     filenames = args.filenames
