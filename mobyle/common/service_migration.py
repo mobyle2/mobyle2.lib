@@ -237,6 +237,7 @@ def parse_parameter(p_dict, service_type):
     parse_para(p_dict, parameter, service_type)
     parameter['main'] = p_dict.att('ismain') in ['1', 'true', 'True']
     parameter['hidden'] = p_dict.att('ishidden') in ['1', 'true', 'True']
+    parameter['simple'] = p_dict.att('issimple') in ['1', 'true', 'True']
     m_type = Type()
     t_dict = p_dict.get('type')
     m_type['datatype']['class'] = t_dict.get('datatype').text('class')
