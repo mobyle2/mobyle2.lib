@@ -76,7 +76,20 @@ class Status(object):
             self._state = state
         else:
             raise MobyleError("invalid state: %s " % state)
-           
+    
+    @staticmethod
+    def unserialize(value):
+        """
+        unserizalize from string to expected format
+
+        :param value: input value
+        :type value: string
+        :return: a Status corresnonding to this value
+        :rtype: :class:`mobyle.common.job.Status` object
+        """
+        return Status(value)
+    
+    
     @property
     def state(self):
         return self._state
