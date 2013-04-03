@@ -9,17 +9,12 @@ Created on Feb 08, 2013
 """
 import sys, os
 import xml.etree.cElementTree as ET
+import xml.etree.ElementInclude as EI
 from xml2json import elem_to_internal, internal_to_elem
 import logging
 import argparse
 
-from .config import Config
-from .service import InputParagraph, OutputParagraph, \
-                                  InputParameter, OutputParameter, \
-                                  InputProgramParameter, \
-                                  OutputProgramParameter, \
-                                  Type
-
+from mobyle.common.config import Config
 
 # pylint: disable=C0103
 #        Invalid name "logger" for type constant
@@ -159,7 +154,8 @@ def parse_software(d, s):
     s['name'] = d.text('name')
     s['version'] = d.text('version')
     s['title'] = d.get('doc').text('title')
-    s['description'] = d.get('doc').get('description').text_or_html()
+    if d.get('doc').get('description'):
+        s['description'] = d.get('doc').get('description').text_or_html()
     if d.get('doc').get('authors'):
         s['authors'] = d.get('doc').get('authors').text_or_html()
     for r in d.get('doc').list('reference'):
@@ -182,6 +178,16 @@ def parse_software(d, s):
     for cat in d.list('edam_cat'):
         s['classifications'].append({'type':'EDAM', \
                                      'classification':cat.att('ref')})
+    if d.get('package'):
+        package_name = d.get('package').text('name')
+        logger.info('software %s belongs to package %s, linking...' %\
+                   (s['name'], package_name))
+        package = Package.fetch_one({'name':package_name})
+        if package:
+           s['package']=package
+        else:
+           logger.warning('missing package %s in software %s' %\
+                          (s['name'], package_name))
     return s
 
 def parse_para(p_dict, para, service_type):
@@ -231,6 +237,7 @@ def parse_parameter(p_dict, service_type):
     parse_para(p_dict, parameter, service_type)
     parameter['main'] = p_dict.att('ismain') in ['1', 'true', 'True']
     parameter['hidden'] = p_dict.att('ishidden') in ['1', 'true', 'True']
+    parameter['simple'] = p_dict.att('issimple') in ['1', 'true', 'True']
     m_type = Type()
     t_dict = p_dict.get('type')
     m_type['datatype']['class'] = t_dict.get('datatype').text('class')
@@ -350,8 +357,6 @@ def parse_program(s_dict):
     parse Mobyle1 "program" element
     :param p_dict: the dictionary representing the Mobyle1 "program" element
     :type p_dict: dict
-    :param service_type: 'program', 'workflow' or 'widget'
-    :type service_type: string
     :returns: the corresponding Program object
     :rtype: Program
     """
@@ -368,6 +373,56 @@ def parse_program(s_dict):
         p['env'].append({'name':env.att('name'), 'value':env.text()})
     return p
 
+def parse_package(s_dict):
+    """
+    create a package object from a dictionary
+    "Mobyle1-style"
+    parse Mobyle1 "package" element
+    :param p_dict: the dictionary representing the Mobyle1 "program" element
+    :type p_dict: dict
+    :returns: the corresponding Package object
+    :rtype: Package
+    """
+    p = Package()
+    parse_software(s_dict, p)
+    return p
+
+def get_loader(path):
+    """
+    return a loader function that works relatively to the specified path,
+    as a workaround for ElementInclude's baseurl limitation
+    :param path: the baseURL path
+    :type path: string
+    :returns: the loader function
+    :rtype: function
+    """
+    def correct_loader(href, parse, encoding=None):
+        """
+        the loader function returned by get_loader
+        :param href: Resource reference.
+        :type href: string
+        :param parse: Parse mode.  Either "xml" or "text".
+        :type parse: string
+        :param encoding: Optional text encoding.
+        :type encoding: string
+        :returns: The expanded resource.  If the parse mode is "xml", this
+                  is an ElementTree instance.  If the parse mode is "text",
+                  this is a Unicode string.  If the loader fails, it can return
+                  or raise an IOError exception.
+        :rtype: ElementTree or unicode
+        :throws IOError: If the loader fails to load the resource.
+        """
+        file = open(os.path.join(path,href))
+        if parse == "xml":
+            data = ET.parse(file).getroot()
+        else:
+            data = file.read()
+            if encoding:
+                data = data.decode(encoding)
+        file.close()
+        return data
+    return correct_loader
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Migrate Mobyle1 XML files to Mobyle2')
     parser.add_argument('--config', help="path to the Mobyle2 config file for DB injection")
@@ -378,28 +433,50 @@ if __name__ == '__main__':
         # Init config
         config = Config(args.config).config()
         # init db connection
-        from mobyle.common import connection
+        from mobyle.common.connection import connection
+        from mobyle.common.service import Service, Program, Package
+        from mobyle.common.service import InputParagraph, OutputParagraph, \
+                                          InputParameter, OutputParameter, \
+                                          InputProgramParameter, \
+                                          OutputProgramParameter, \
+                                          Type
         Program = connection.Program
+        Package = connection.Package
     else:
-        from mobyle.common.service import Program
+        from mobyle.common.service import Service, Program, Package
+        from mobyle.common.service import InputParagraph, OutputParagraph, \
+                                          InputParameter, OutputParameter, \
+                                          InputProgramParameter, \
+                                          OutputProgramParameter, \
+                                          Type
     if args.storeto:
         import json
     filenames = args.filenames
     for filename in filenames: 
         logger.info('processing %s...' % filename)
         try:
+            # s stores the result of the parsing
+            s = None
             # parse the XML into memory
-            elem = ET.fromstring(open(filename).read())
+            elem = ET.parse(filename)
+            # process XInclude chunks
+            root = elem.getroot()
+            EI.include(root,get_loader(os.path.dirname(filename)))
+            elem = root
             # create the JSON object
             service = elem_to_internal(elem)
             if service.get('#tag')=='program':
-                p = parse_program(JSONProxy(service))
+                s = parse_program(JSONProxy(service))
+            elif service.get('#tag')=='package':
+                s = parse_package(JSONProxy(service))
+            if s:
                 if args.config:
-                    p.save()
+                    s.save()
                 if args.storeto:
-                    fh = open(os.path.join(args.storeto, p['name']+'.json'),'w')
-                    fh.write(json.dumps(p, sort_keys=True, indent=4, separators=(',', ': ')))
+                    fh = open(os.path.join(args.storeto, s['name']+'.json'),'w')
+                    fh.write(json.dumps(s, sort_keys=True, indent=4, separators=(',', ': ')))
                     fh.close()
+                 
         # pylint: disable=W0703
         #        Invalid name "logger" for type constant 
         except Exception, exc:
