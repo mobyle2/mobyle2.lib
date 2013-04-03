@@ -97,8 +97,10 @@ class Status(object):
         :return: True if this object is equal to the other, False otherwise
         :rtype: boolean
         """
-        return self._state == other.state
-
+        if isinstance(other, Status):
+            return self._state == other.state
+        else:
+            return False
     
     def __ne__(self , other ):
         """
@@ -107,8 +109,10 @@ class Status(object):
         :return: True if this object is not equal to the other, False otherwise
         :rtype: boolean
         """
-        return self._state != other.state
-
+        if isinstance(other, Status):
+            return self._state != other.state
+        else:
+            return True
     
     def __str__(self):
         """
@@ -241,6 +245,8 @@ class Job(Document):
         """
         :return: the time of job creation
         :rtype: datetime.datetime object
+        
+        :note: _id is available only after first mongokit save
         """
         return self._id.generation_time
     
