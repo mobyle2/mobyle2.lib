@@ -7,16 +7,16 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 
-from mongokit import Document
+from mongokit import Document, ObjectId
 from mf.annotation import mf_decorator
 
 from .connection import connection
 from .config import Config
-from .job import Job
+#from .job import Job
 #TODO: reimport as soon as Data object is MongoKit-compatible
 #from .data import Data
-from .users import User
-
+#from .users import User
+from .data import AbstractData
 
 
 @mf_decorator
@@ -31,19 +31,14 @@ class Project(Document):
     __database__ = Config.config().get('app:main','db_name')
 
     structure = { 'name' : basestring, 
-                  'owner' : User, 
-                  'jobs' : [Job],
-                  #TODO: switch to Data list as soon as 
-                  # Data is MongoKit-compatible 
-                  'data' : [basestring],
+                  'owner' : ObjectId, 
+                  'jobs' : [ObjectId],
                   #TODO: role may be modified for ACLs implementation?
-                  'users' : [{'user': User, 'role': basestring}],
+                  'users' : [{'user': ObjectId, 'role': basestring}],
                   'notebook' : basestring
                 }
 
     required_fields = ['name', 'owner']
-
-    use_autorefs = True
 
     @property	
     def creation_date(self):
@@ -56,11 +51,25 @@ class Project(Document):
 
     def add_user(self, user, role):
         """
-	add_user is a method defined to attach a new user and its role into the project.
-	:param user: user to be associated to the project.
+        add_user is a method defined to attach a new user and its role into the project.
+        :param user: user to be associated to the project.
         :type user: :class:`User` object.
-	:param role: user's role in the project.
+        :param role: user's role in the project.
         :type role: string.
-	"""
-        self['users'].append({'user': user, 'role': role})
+        """
+        self['users'].append({'user': user['_id'], 'role': role})
 
+@mf_decorator
+@connection.register
+class ProjectData(Document):
+
+    __collection__ = 'projects_data'
+    __database__ = Config.config().get('app:main','db_name')
+
+    structure = { 'name' : basestring, 
+                  'description' : basestring, 
+                  'tags' : [basestring],
+                  'project': ObjectId,
+                  'data': AbstractData
+                  #TODO: add data provenance information
+                }
