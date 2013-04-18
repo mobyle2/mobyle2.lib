@@ -16,10 +16,11 @@ class AbstractData(SchemaDocument):
     """
     Abstract super class for all kinds of data
     """
-
+    
     use_dot_notation = True
 
     structure = {
+                 "_type": unicode,
                 }
 
     def get_format(self):
@@ -28,6 +29,11 @@ class AbstractData(SchemaDocument):
     def get_type(self):
         raise NotImplementedError
 
+    @staticmethod
+    def get_instance(dict):
+        #TODO instanciate the right AbstractData subclass instance
+        # depending on the _type field
+        pass
 
 class SimpleData(AbstractData):
     """
@@ -36,6 +42,7 @@ class SimpleData(AbstractData):
 
     structure = {'type':basestring,
                  'format': basestring,
+                 #'_type': 'SimpleData',
                 }
 
     def get_format(self):
@@ -49,21 +56,27 @@ class RefData(SimpleData):
     A data whose value is stored on the file system
     """
 
-    structure = {'path':basestring}
+    structure = {'path':basestring,
+                 #'_type': 'RefData',
+                }
 
 class ValueData(SimpleData):
     """
     A data whose value is stored directly in the object
     """
 
-    structure = {'value':basestring}
+    structure = {'value':basestring,
+                 #'_type': 'ValueData',
+                }
 
 class ListData(AbstractData):
     """
     A data formed by a list of data sharing the same type/format
     """
 
-    structure = {'value':[AbstractData]}
+    structure = {'value':[AbstractData],
+                 #'_type': 'ListData',
+                }
 
     def get_format(self):
         return self.value[0].get_format()
@@ -76,7 +89,9 @@ class StructData(AbstractData):
     A data formed by a list properties referencing different data
     """
 
-    structure = {'properties':{basestring:AbstractData}}
+    structure = {'properties':{basestring:AbstractData},
+                 #'_type': 'StructData',
+                }
 
     def get_format(self):
         format = {property: value.get_format() \
