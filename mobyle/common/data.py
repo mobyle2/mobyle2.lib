@@ -40,7 +40,7 @@ class SimpleData(AbstractData):
     A data which has a simple type/format definition
     """
 
-    structure = {'type':basestring,
+    structure = {'type': basestring,
                  'format': basestring,
                  #'_type': 'SimpleData',
                 }
@@ -56,7 +56,8 @@ class RefData(SimpleData):
     A data whose value is stored on the file system
     """
 
-    structure = {'path':basestring,
+    structure = {'path': basestring,
+                 'size': int
                  #'_type': 'RefData',
                 }
 

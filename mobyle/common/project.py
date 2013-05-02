@@ -70,6 +70,7 @@ class ProjectData(Document):
                   'description' : basestring, 
                   'tags' : [basestring],
                   'project': ObjectId,
-                  'data': AbstractData
+                  'data': AbstractData,
+                  'status' : int
                   #TODO: add data provenance information
                 }
