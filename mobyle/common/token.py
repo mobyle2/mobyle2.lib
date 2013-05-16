@@ -23,7 +23,8 @@ class Token(Document):
     __database__ = Config.config().get('app:main','db_name')
 
     structure = { 'token' : basestring, 
-                  'timestamp' : datetime
+                  'timestamp' : datetime,
+                  'user' : basestring
                 }
 
     required_fields = ['token', 'timestamp']
