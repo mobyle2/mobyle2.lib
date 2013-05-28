@@ -9,6 +9,8 @@ Created on Nov. 23, 2012
 
 from mongokit import Document, ObjectId
 from mf.annotation import mf_decorator
+from mf.views import MF_LIST, MF_MANAGE
+from pyramid.security import remember, authenticated_userid
 
 from .connection import connection
 from .config import Config
@@ -58,6 +60,19 @@ class Project(Document):
         :type role: string.
         """
         self['users'].append({'user': user['_id'], 'role': role})
+
+    def my(self,control,request):
+        userid = authenticated_userid(request)
+        user = connection.User.find_one({'email' : userid})
+        if user and user['admin']:
+            return {}
+        if control == MF_LIST:
+            # User must be one of project users
+            return {"users": {"$elemMatch": {'user.$id': user['_id']}}}
+        if control == MF_MANAGE:
+            # User must be an admin of the project
+            return {"users": {"$elemMatch": {'user.$id': user['_id'], 'role': 'admin'}}}
+            
 
 @mf_decorator
 @connection.register
