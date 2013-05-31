@@ -257,6 +257,31 @@ class Job(Document):
         :rtype: boolean
         """
         return NotImplementedError
+
+    def my(self, control, request, authenticated_userid=None):
+        user = connection.User.find_one({'email' : authenticated_userid})
+        if user and user['admin']:
+            return {}
+        if control == MF_LIST:
+            projects = connection.Project.find({"users": {"$elemMatch": {'user': user['_id'] } } })
+            job_ids = []
+            for project in projects:
+                for job in project['jobs']:
+                    job_ids.append(job['_id'])
+            if not job_ids:
+                return None
+            # User must be one of project users
+            return {"_id": {"$in": job_ids}}
+        if control == MF_MANAGE:
+            # User must be an admin of the project
+            projects = connection.Project.find({"users": {"$elemMatch": {'user': user['_id'], 'role': 'admin' } } })
+            project_ids = []
+            for project in projects:
+                for job in project['jobs']:
+                    job_ids.append(job['_id'])
+            if not job_ids:
+                return None
+            return {"_id": {"$in": job_ids}}
         
         
 @mf_decorator   

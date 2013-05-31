@@ -4,7 +4,6 @@ from mongokit import Document
 import bcrypt
 from mf.annotation import mf_decorator
 from mf.views import MF_LIST, MF_MANAGE
-from pyramid.security import remember, authenticated_userid
 import uuid
 
 from .connection import connection
@@ -37,10 +36,9 @@ class User(Document):
         hashed = bcrypt.hashpw(password, self['hashed_password'])
         return hashed == self['hashed_password']
 
-    def my(self,control,request):
+    def my(self,control,request,authenticated_userid):
         # Get user
-        userid = authenticated_userid(request)
-        user  = connection.User.find_one({'email': userid})
+        user  = connection.User.find_one({'email': authenticated_userid})
         if control == MF_LIST:
             if user and user['admin']:
                 return {}

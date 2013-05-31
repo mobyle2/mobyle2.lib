@@ -8,7 +8,7 @@ from mobyle.common.config import Config
 config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 
 from mobyle.common.connection import connection
-from mobyle.common.token import Token
+from mobyle.common.tokens import Token
 
 class TestToken(unittest.TestCase):
 
