@@ -39,13 +39,12 @@ class User(Document):
     def my(self,control,request,authenticated_userid):
         # Get user
         user  = connection.User.find_one({'email': authenticated_userid})
+        if user and user['admin']:
+            return {}
         if control == MF_LIST:
-            if user and user['admin']:
-                return {}
-            else:
                 return None
         if control == MF_MANAGE:
-            return {'email' : userid}
+            return {'email' : authenticated_userid}
 
 
 
