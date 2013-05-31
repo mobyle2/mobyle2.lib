@@ -129,10 +129,6 @@ class TestProjectData(unittest.TestCase):
         self.example_user['admin'] = False
         self.example_user.save()
         filter = my_projectdata.my(MF_LIST, None, self.example_user['email'])
-        # {'users': {'$elemMatch': {'user':
-        # ObjectId('51a8b1192e71a87907e7fb76')}}}
-        print "## "+str(filter)
-        print "# "+str(my_projectdata['_id'])
         assert(filter is not None)
         assert(self.example_project['_id'] in filter['project']['$in'])
         assert(my_project2['_id'] in filter['project']['$in'])
