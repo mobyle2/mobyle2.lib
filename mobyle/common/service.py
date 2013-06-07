@@ -218,6 +218,21 @@ class Software(Document):
                }
               ]
 
+    def my(self,control,request,authenticated_userid):
+        # Get user
+        user = None
+        if authenticated_id:
+            user  = connection.User.find_one({'email': authenticated_userid})
+        if control == MF_LIST:
+            return{}
+        # Only admin can manage
+        if control == MF_MANAGE:
+            if user and user['admin']:
+                return {}
+            else:
+                return None
+
+
 @mf_decorator
 @connection.register
 class Package(Software):
@@ -225,6 +240,7 @@ class Package(Software):
     a package is a group of services.
     """
     __collection__ = 'packages'
+
 
 @mf_decorator
 @connection.register
