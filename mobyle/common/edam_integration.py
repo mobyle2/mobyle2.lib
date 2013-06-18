@@ -66,6 +66,7 @@ def parse_format(f,edamElement):
               
     for attribute in edamElement:
         at = attribute.split(': ')
+        
         try:
             if at[0]=="id":
                 f['id']=at[1]
@@ -78,7 +79,8 @@ def parse_format(f,edamElement):
             if at[0]=="synonym":
                 f['synonyms'].append(at[1])
             if at[0]=="relationship":
-                f['isFormatOf']=at[1].split(' ')[1]
+                
+                f['isFormatOf'].append(at[1].split(' ')[1])
         except IndexError:
             print at
 
