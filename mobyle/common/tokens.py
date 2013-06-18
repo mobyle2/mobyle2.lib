@@ -10,7 +10,6 @@ from datetime import datetime, timedelta
 from uuid import uuid4
 
 
-@mf_decorator
 @connection.register
 class Token(Document):
     """
@@ -58,4 +57,11 @@ class Token(Document):
         if remove:
             self.delete()
         return True
+
+    def my(self,control,request,authenticated_userid):
+        user  = connection.User.find_one({'email': authenticated_userid})
+        if user and user['admin']:
+            return {}
+        else:
+            return None
 

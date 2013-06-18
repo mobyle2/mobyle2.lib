@@ -8,6 +8,10 @@ config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common.connection import connection
 from mobyle.common import users
 
+from mf.views import MF_LIST, MF_MANAGE
+
+from mobyle.common.users import User
+
 class TestUser(unittest.TestCase):
 
     def setUp(self):
@@ -46,6 +50,25 @@ class TestUser(unittest.TestCase):
         self.assertFalse(user.check_password("incorrect") )
         
         user.save()
+
+    def test_my(self):
+        user = connection.User()
+        user['first_name'] = "Walter"
+        user['last_name'] = "Bishop"
+        user['email'] = "Bishop@nomail"
+        user['admin'] = False
+        user.save()
+        filter = user.my(MF_LIST, None, user['email'])
+        assert(filter is None)
+        filter = user.my(MF_MANAGE, None, user['email'])
+        assert(filter is not None and filter['email'] == user['email'])
+        user['admin'] = True
+        user.save()
+        filter = user.my(MF_LIST, None, user['email'])
+        assert(filter is not None)
+        filter = user.my(MF_MANAGE, None, user['email'])
+        assert(filter is not None and 'email' not in filter)
+
     
 if __name__ == '__main__':
     unittest.main()
