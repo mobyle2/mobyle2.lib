@@ -9,7 +9,7 @@ Created on Nov. 23, 2012
 
 from mongokit import Document, ObjectId
 from mf.annotation import mf_decorator
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT, MF_MANAGE
 
 from .connection import connection
 from .config import Config
@@ -34,6 +34,7 @@ class Project(Document):
     structure = { 'name' : basestring, 
                   'owner' : ObjectId, 
                   'jobs' : [ObjectId],
+                  'services' : [ObjectId],
                   #TODO: role may be modified for ACLs implementation?
                   'users' : [{'user': ObjectId, 'role': basestring}],
                   'notebook' : basestring
@@ -60,16 +61,18 @@ class Project(Document):
         """
         self['users'].append({'user': user['_id'], 'role': role})
 
-    def my(self, control, request, authenticated_userid=None):
+    def my(self, control, request, authenticated_userid=None,admin=False):
         user = connection.User.find_one({'email' : authenticated_userid})
-        if user and user['admin']:
+        if user and user['admin'] and admin:
             return {}
-        if control == MF_LIST:
-            # User must be one of project users
+        if control == MF_READ:
             return {"users": {"$elemMatch": {'user': user['_id']}}}
+        if control == MF_EDIT:
+            # User must be one of project users
+            return {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
         if control == MF_MANAGE:
             # User must be an admin of the project
-            return {"users": {"$elemMatch": {'user': user['_id'], 'role': 'admin'}}}
+            return {"users": {"$elemMatch": {'user': user['_id'], 'role': 'manager'}}}
             
 
 @mf_decorator
@@ -90,23 +93,18 @@ class ProjectData(Document):
 
     def my(self, control, request, authenticated_userid=None):
         user = connection.User.find_one({'email' : authenticated_userid})
-        if user and user['admin']:
+        if user and user['admin'] and admin:
             return {}
-        if control == MF_LIST:
-            projects = connection.Project.find({"users": {"$elemMatch": {'user': user['_id'] } } })
-            project_ids = []
-            for project in projects:
-                project_ids.append(project['_id'])
-            if not project_ids:
-                return None
+        if control == MF_READ:
+            project_filter = {"users": {"$elemMatch": {'user': user['_id']}}}
+        if control == MF_EDIT:
             # User must be one of project users
-            return {"project": {"$in": project_ids}}
+            project_filter = {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
         if control == MF_MANAGE:
             # User must be an admin of the project
-            projects = connection.Project.find({"users": {"$elemMatch": {'user': user['_id'], 'role': 'admin' } } })
-            project_ids = []
-            for project in projects:
-                project_ids.append(project['_id'])
-            if not project_ids:
-                return None
-            return {"project": {"$in": project_ids}}
+            project_filter = {"users": {"$elemMatch": {'user': user['_id'], 'role': 'manager'}}}
+        project_ids_curs = connection.Project.find(project_filter,{'_id':1})
+        project_ids = []
+        for project_id in project_ids_curs:
+            project_ids.append(project_id['_id'])
+        return {"project": {"$in": project_ids}}

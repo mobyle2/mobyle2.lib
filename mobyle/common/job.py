@@ -21,7 +21,7 @@ from .config import Config
 from .connection import connection
 from .mobyleError import MobyleError
 
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT, MF_MANAGE
 
 class MetatStatus(type):
     
@@ -262,29 +262,18 @@ class Job(Document):
 
     def my(self, control, request, authenticated_userid=None):
         user = connection.User.find_one({'email' : authenticated_userid})
-        if user and user['admin']:
+        if user and user['admin'] and admin:
             return {}
-        if control == MF_LIST:
-            projects = connection.Project.find({"users": {"$elemMatch": {'user': user['_id'] } } })
-            job_ids = []
-            for project in projects:
-                for job in project['jobs']:
-                    job_ids.append(job)
-            if not job_ids:
-                return None
+        if control == MF_READ:
+            project_filter = {"users": {"$elemMatch": {'user': user['_id']}}}
+        if control == MF_EDIT:
             # User must be one of project users
-            return {"_id": {"$in": job_ids}}
+            project_filter = {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
         if control == MF_MANAGE:
             # User must be an admin of the project
-            projects = connection.Project.find({"users": {"$elemMatch": {'user': user['_id'], 'role': 'admin' } } })
-            job_ids = []
-            for project in projects:
-                for job in project['jobs']:
-                    job_ids.append(job)
-            if not job_ids:
-                return None
-            return {"_id": {"$in": job_ids}}
-        
+            project_filter = {"users": {"$elemMatch": {'user': user['_id'], 'role': 'manager'}}}
+        job_ids = connection.Project.find(project_filter,{'jobs':1})
+        return {"_id": {"$in": job_ids}}
         
 @mf_decorator   
 @connection.register

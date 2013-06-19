@@ -9,7 +9,7 @@ Created on Jan 22, 2013
 """
 from mongokit import Document, SchemaDocument, IS
 from mf.annotation import mf_decorator
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 
 from .connection import connection
 from .config import Config
@@ -221,13 +221,14 @@ class Software(Document):
 
     def my(self,control,request,authenticated_userid):
         # Get user
+        print "services my"
         user = None
         if authenticated_userid:
             user  = connection.User.find_one({'email': authenticated_userid})
-        if control == MF_LIST:
+        if control == MF_READ:
             return{}
         # Only admin can manage
-        if control == MF_MANAGE:
+        if control == MF_EDIT:
             if user and user['admin']:
                 return {}
             else:

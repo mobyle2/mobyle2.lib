@@ -3,7 +3,7 @@
 from mongokit import Document
 import bcrypt
 from mf.annotation import mf_decorator
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 import uuid
 
 from .connection import connection
@@ -41,9 +41,7 @@ class User(Document):
         user  = connection.User.find_one({'email': authenticated_userid})
         if user and user['admin']:
             return {}
-        if control == MF_LIST:
-                return None
-        if control == MF_MANAGE:
+        else:
             return {'email' : authenticated_userid}
 
 
