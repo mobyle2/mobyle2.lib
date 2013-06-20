@@ -221,7 +221,6 @@ class Software(Document):
 
     def my(self,control,request,authenticated_userid):
         # Get user
-        print "services my"
         user = None
         if authenticated_userid:
             user  = connection.User.find_one({'email': authenticated_userid})

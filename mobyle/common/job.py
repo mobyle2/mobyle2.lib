@@ -21,7 +21,7 @@ from .config import Config
 from .connection import connection
 from .mobyleError import MobyleError
 
-from mf.views import MF_READ, MF_EDIT, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 
 class MetatStatus(type):
     
@@ -269,9 +269,6 @@ class Job(Document):
         if control == MF_EDIT:
             # User must be one of project users
             project_filter = {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
-        if control == MF_MANAGE:
-            # User must be an admin of the project
-            project_filter = {"users": {"$elemMatch": {'user': user['_id'], 'role': 'manager'}}}
         job_ids = connection.Project.find(project_filter,{'jobs':1})
         return {"_id": {"$in": job_ids}}
         

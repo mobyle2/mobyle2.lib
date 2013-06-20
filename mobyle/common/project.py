@@ -9,7 +9,7 @@ Created on Nov. 23, 2012
 
 from mongokit import Document, ObjectId
 from mf.annotation import mf_decorator
-from mf.views import MF_READ, MF_EDIT, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 
 from .connection import connection
 from .config import Config
@@ -70,9 +70,6 @@ class Project(Document):
         if control == MF_EDIT:
             # User must be one of project users
             return {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
-        if control == MF_MANAGE:
-            # User must be an admin of the project
-            return {"users": {"$elemMatch": {'user': user['_id'], 'role': 'manager'}}}
             
 
 @mf_decorator
@@ -100,9 +97,6 @@ class ProjectData(Document):
         if control == MF_EDIT:
             # User must be one of project users
             project_filter = {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
-        if control == MF_MANAGE:
-            # User must be an admin of the project
-            project_filter = {"users": {"$elemMatch": {'user': user['_id'], 'role': 'manager'}}}
         project_ids_curs = connection.Project.find(project_filter,{'_id':1})
         project_ids = []
         for project_id in project_ids_curs:

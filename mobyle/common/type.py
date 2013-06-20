@@ -15,7 +15,7 @@ from mf.annotation import mf_decorator
 from .connection import connection
 from .config import Config
 
-from mf.views import MF_READ, MF_EDIT, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 
 class AbstractType(Document):
     """
