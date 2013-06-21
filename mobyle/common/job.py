@@ -9,7 +9,7 @@
 # @license: GPLv3                      
 #===============================================================================
 
-from mongokit import Document, CustomType 
+from mongokit import Document, ObjectId, CustomType 
 import datetime
 from mf.annotation import mf_decorator
 import inspect
@@ -19,6 +19,7 @@ _log = logging.getLogger(__name__)
 
 from .config import Config
 from .connection import connection
+from .project import ProjectDocument
 from .mobyleError import MobyleError
 
 from mf.views import MF_READ, MF_EDIT
@@ -211,7 +212,7 @@ class CustomStatus(CustomType):
     
     
 
-class Job(Document):
+class Job(ProjectDocument):
     """
     Job is an abstract class that describes the common interface of all jobs
     """     
@@ -226,7 +227,8 @@ class Job(Document):
                  'owner' : basestring,
                  'message' : basestring,
                  'end_time' : datetime.datetime,
-                  }
+                 'project': ObjectId
+                }
 
     required_fields = ['status']
     
@@ -260,18 +262,6 @@ class Job(Document):
         """
         return NotImplementedError
 
-    def my(self, control, request, authenticated_userid=None):
-        user = connection.User.find_one({'email' : authenticated_userid})
-        if user and user['admin'] and admin:
-            return {}
-        if control == MF_READ:
-            project_filter = {"users": {"$elemMatch": {'user': user['_id']}}}
-        if control == MF_EDIT:
-            # User must be one of project users
-            project_filter = {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
-        job_ids = connection.Project.find(project_filter,{'jobs':1})
-        return {"_id": {"$in": job_ids}}
-        
 @mf_decorator   
 @connection.register
 class ClJob(Job):

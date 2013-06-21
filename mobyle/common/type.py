@@ -34,7 +34,8 @@ class AbstractType(Document):
 
     def my(self, control, request, authenticated_userid=None):
         user = connection.User.find_one({'email' : authenticated_userid})
-        if control == MF_READ or (user and user['admin'] and admin):
+        admin_mode = 'adminmode' in request.session
+        if control == MF_READ or (user and user['admin'] and admin_mode):
             return {}
         else:
             return None

@@ -39,7 +39,8 @@ class User(Document):
     def my(self,control,request,authenticated_userid):
         # Get user
         user  = connection.User.find_one({'email': authenticated_userid})
-        if user and user['admin']:
+        admin_mode = 'adminmode' in request.session
+        if user and user['admin'] and admin_mode:
             return {}
         else:
             return {'email' : authenticated_userid}

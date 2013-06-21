@@ -13,12 +13,7 @@ from mf.views import MF_READ, MF_EDIT
 
 from .connection import connection
 from .config import Config
-#from .job import Job
-#TODO: reimport as soon as Data object is MongoKit-compatible
-#from .data import Data
-#from .users import User
 from .data import AbstractData
-
 
 @mf_decorator
 @connection.register
@@ -33,11 +28,9 @@ class Project(Document):
 
     structure = { 'name' : basestring, 
                   'owner' : ObjectId, 
-                  'jobs' : [ObjectId],
-                  'services' : [ObjectId],
-                  #TODO: role may be modified for ACLs implementation?
                   'users' : [{'user': ObjectId, 'role': basestring}],
-                  'notebook' : basestring
+                  'notebook' : basestring,
+                  'public' : bool
                 }
 
     required_fields = ['name', 'owner']
@@ -61,20 +54,49 @@ class Project(Document):
         """
         self['users'].append({'user': user['_id'], 'role': role})
 
-    def my(self, control, request, authenticated_userid=None,admin=False):
+    @staticmethod
+    def my_project_acl_filter(control, request, authenticated_userid=None):
+        # find the user corresponding to the provided email
         user = connection.User.find_one({'email' : authenticated_userid})
-        if user and user['admin'] and admin:
-            return {}
-        if control == MF_READ:
-            return {"users": {"$elemMatch": {'user': user['_id']}}}
-        if control == MF_EDIT:
-            # User must be one of project users
-            return {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
+        # id is set if user exists, otherwise set to None so that the filter
+        # works even for unauthenticated users.
+        user_id = user['_id'] if user else None
+        # admin_mode tells wether the admin user is in admin mode and should access everything
+        admin_mode = hasattr(request,'session') and 'adminmode' in request.session
+        if user and user['admin'] and admin_mode:
+            # admin_mode = provide everything
+            project_filter = {}
+        elif control == MF_READ:
+            # read: elements for projects where the user is active or where he 
+            project_filter = {"$or": [{"users": {"$elemMatch": {'user': user_id}}},{'public':True}]}
+        elif control == MF_EDIT:
+            # User must be one of project contributors or managers
+            project_filter = {"users": {"$elemMatch": {'user': user_id, "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
+        return project_filter
+
+    def my(self, control, request, authenticated_userid=None):
+        return self.my_project_acl_filter(control, request, authenticated_userid)
             
+class ProjectDocument(Document):
+    """
+    ProjectDocument is an abstract class which defines the ACLs of project-contained elements.
+    The ACLs of such documents are completely defined by the users of the containing project
+    """
+
+    def my(self, control, request, authenticated_userid=None):
+        project_filter = Project.my_project_acl_filter(control, request, authenticated_userid)
+        if project_filter == {}:
+            return project_filter
+        else:
+            project_ids_curs = connection.Project.find(project_filter,{'_id':1})
+            project_ids = []
+            for project_id in project_ids_curs:
+                project_ids.append(project_id['_id'])
+            return {"project": {"$in": project_ids}}
 
 @mf_decorator
 @connection.register
-class ProjectData(Document):
+class ProjectData(ProjectDocument):
 
     __collection__ = 'projects_data'
     __database__ = Config.config().get('app:main','db_name')
@@ -88,17 +110,3 @@ class ProjectData(Document):
                   #TODO: add data provenance information
                 }
 
-    def my(self, control, request, authenticated_userid=None):
-        user = connection.User.find_one({'email' : authenticated_userid})
-        if user and user['admin'] and admin:
-            return {}
-        if control == MF_READ:
-            project_filter = {"users": {"$elemMatch": {'user': user['_id']}}}
-        if control == MF_EDIT:
-            # User must be one of project users
-            project_filter = {"users": {"$elemMatch": {'user': user['_id'], "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
-        project_ids_curs = connection.Project.find(project_filter,{'_id':1})
-        project_ids = []
-        for project_id in project_ids_curs:
-            project_ids.append(project_id['_id'])
-        return {"project": {"$in": project_ids}}
