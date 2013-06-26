@@ -2,8 +2,8 @@
 """
 Created on May 28, 2013
 
-@author: 
-@contact: 
+@author: Olivia Doppelt-Azeroual
+@contact: olivia.doppelt@pasteur.fr
 @organization: Institut Pasteur, CIB
 @license: GPLv3
 """
@@ -28,7 +28,7 @@ def parse_type(t,edamElement):
     : type
     """
     # @compléter
-    logger.debug("parsing edam type")
+    #logger.debug("parsing edam type")
 
     for attribute in edamElement:
         at = attribute.split(': ')
@@ -36,9 +36,10 @@ def parse_type(t,edamElement):
             if at[0]=="id":
                 t['id']=at[1]
             if at[0]=="name":
-                 t['name']=at[1]
+                t['name']=at[1]
             if at[0]=="def":
-                 t['definition']=at[1]
+                # removes the edam ontology url from definition
+                t['definition']=at[1].replace("[http://edamontology.org]","").replace("\"","")
             if at[0]=="synonym":
                  t['synonyms'].append(at[1])
             if at[0]=="is_a":
@@ -48,7 +49,8 @@ def parse_type(t,edamElement):
         except IndexError:
             logger.debug("IndexError in parse_type")
             pass
-#    print t
+    if not t['is_obsolete']:
+        t['is_obsolete'] = False
     return t
     
         
@@ -60,10 +62,8 @@ def parse_format(f,edamElement):
     :param f: format object to be filled
     : type
     """
-    logger.debug("parsing edam format")
-    #f['synonyms']=[]
-    #f['isFormatOf']=[]
-              
+    #logger.debug("parsing edam format")
+                 
     for attribute in edamElement:
         at = attribute.split(': ')
         
@@ -73,18 +73,17 @@ def parse_format(f,edamElement):
             if at[0]=="name":
                 f['name']=at[1]
             if at[0]=="def":
-                f['definition']=at[1]
+                f['definition']=at[1].replace("[http://edamontology.org]","").replace("\"","")
             if at[0]=="comment":
                 f['comment']=at[1]
             if at[0]=="synonym":
                 f['synonyms'].append(at[1])
             if at[0]=="relationship":
-                
                 f['isFormatOf'].append(at[1].split(' ')[1])
         except IndexError:
             print at
 
-#    print f
+
     
     return f
 
@@ -94,8 +93,11 @@ if __name__ == '__main__':
     parser.add_argument('--config', help="path to the Mobyle2 config file for DB injection")
     parser.add_argument('--edamfile', help="path to EDAM ontology file (obo format) to process")
     parser.add_argument('--logfile', help="outputs each edam element in a file")
-    parser.add_argument('action', choices=['init','update','from_scratch'], help="select which action to launch")
+    parser.add_argument('action', choices=['init','update'], help="select which action to launch")
     args = parser.parse_args()
+    t=None
+    f=None
+
     if args.config:
         # Init config
         config = Config(args.config).config()
@@ -105,11 +107,20 @@ if __name__ == '__main__':
         Type=connection.Type
         Format=connection.Format
 
+        # # action definition
+        # if args.action == 'init':
+        #      # vider la base
+        #     print Type.drop()
+        #     print Format
+        # else:
+        #     pass
+                
+
     else:
         from mobyle.common.type import Type, Format
   
-    t=None
-    f=None
+    #t=None
+    #f=None
     # opens the edam obo file
     edam=open(args.edamfile,'r')
 
