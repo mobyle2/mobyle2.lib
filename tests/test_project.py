@@ -12,7 +12,7 @@ from mobyle.common.data import ValueData
 from mobyle.common.project import Project, ProjectData
 from mobyle.common.users import User
 
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 
 class TestProject(unittest.TestCase):
 
@@ -50,35 +50,50 @@ class TestProject(unittest.TestCase):
         self.assertEqual(my_project['users'][0]['user'], user['_id'])
 
     def test_my(self):
-        user = connection.User()
-        user['first_name'] = "Walter"
-        user['last_name'] = "Bishop"
-        user['email'] = "Bishop@nomail"
-        user['admin'] = False
-        user.save()
-        my_project = connection.Project()
-        my_project['owner'] = user['_id']
-        my_project['name'] = 'MyProject'
-        my_project.save()
-        my_project2 = connection.Project()
-        my_project2['owner'] = self.example_user['_id']
-        my_project2['name'] = 'MyAdminProject'
-        my_project2.save()
-        filter = my_project.my(MF_LIST, None, user['email'])
-        # {'users': {'$elemMatch': {'user':
-        # ObjectId('51a8b1192e71a87907e7fb76')}}}
-        assert(filter is not None) 
-        assert(filter['users']['$elemMatch']['user'] == user['_id'])
-        filter = my_project.my(MF_MANAGE, None, user['email'])
-        assert(filter is not None)
-        assert(filter['users']['$elemMatch']['user'] == user['_id'])
-        assert(filter['users']['$elemMatch']['role'] == 'admin')
-        user['admin'] = True
-        user.save()
-        filter = my_project.my(MF_LIST, None, user['email'])
-        assert(filter is not None)
-        filter = my_project.my(MF_MANAGE, None, user['email'])
-        assert(filter is not None)
+        """
+        test MF-based ACLs
+        """
+        user1 = connection.User()
+        user1['first_name'] = "Walter"
+        user1['last_name'] = "Bishop"
+        user1['email'] = "Bishop@nomail"
+        user1['admin'] = True
+        user1.save()
+        class RequestMock(object):
+            def __init__(self, adminmode=False):
+                self.session = {}
+                if adminmode:
+                    self.session['adminmode']=True
+        admin_request = RequestMock(adminmode=True)
+        project1 = connection.Project()
+        project1['owner'] = user1['_id']
+        project1['name'] = 'Project 1'
+        project1['users'] = [{'user': user1['_id'], 'role': 'manager'}]
+        project1.save()
+        msg1 = "edit should be forbidden to unauthenticated users" 
+        filter1 = project1.my(MF_EDIT, None, None)
+        self.assertIs(filter1, None, msg1)
+        msg2 = "edit should be allowed to project contributors/managers"
+        filter2 = project1.my(MF_EDIT, None, user1['email'])
+        self.assertEqual(filter2, {'users': {'$elemMatch': \
+             {'$or': [{'role': 'contributor'}, {'role': 'manager'}],\
+               'user': user1['_id']}}}, msg2)
+        msg3 = "edit should be allowed everywhere in admin mode"
+        filter3 = project1.my(MF_EDIT, admin_request, user1['email'])
+        self.assertEqual(filter3, {}, msg3)
+        msg4 = "read should be allowed only on public projects for "\
+               + "unauthenticated users"
+        filter4 = project1.my(MF_READ, None, None)
+        self.assertEqual(filter4, {'public': True}, msg4)
+        msg5 = "read should be allowed on projects where user is member "\
+               + "or public projects"
+        filter5 = project1.my(MF_READ, None, user1['email'])
+        self.assertEqual(filter5,{'$or': [{'users': {'$elemMatch': \
+             {'user': user1['_id']}}},\
+             {'public': True}]}, msg5)
+        msg6 = "read should be allowed everywhere in admin mode"
+        filter6 = project1.my(MF_READ, admin_request, user1['email'])
+        self.assertEqual(filter6, {}, msg6)
 
 
 class TestProjectData(unittest.TestCase):
@@ -103,53 +118,13 @@ class TestProjectData(unittest.TestCase):
         self.example_project['users'] = [{'user': self.example_user['_id'], 'role': 'developper'}]
         self.example_project.save()
 
-
-    def test_my(self):
-        my_project2 = connection.Project()
-        my_project2['owner'] = self.example_user['_id']
-        my_project2['name'] = 'MyAdminProject'
-        my_project2['users'] = [{'user': self.example_user['_id'], 'role': 'admin'}]
-        my_project2.save()
-
-        v = ValueData()
-        v.value = "test"
-
-        my_projectdata = connection.ProjectData()
-        my_projectdata['name'] = 'MyProject'
-        my_projectdata['data'] = v
-        my_projectdata['project'] = self.example_project['_id']
-        my_projectdata.save()
-
-        my_projectdata2 = connection.ProjectData()
-        my_projectdata2['name'] = 'MyProject'
-        my_projectdata2['data'] = v
-        my_projectdata2['project'] = my_project2['_id']
-        my_projectdata2.save()
-
-        self.example_user['admin'] = False
-        self.example_user.save()
-        filter = my_projectdata.my(MF_LIST, None, self.example_user['email'])
-        assert(filter is not None)
-        assert(self.example_project['_id'] in filter['project']['$in'])
-        assert(my_project2['_id'] in filter['project']['$in'])
-        filter = my_projectdata.my(MF_MANAGE, None, self.example_user['email'])
-        assert(filter is not None)
-        assert(my_project2['_id'] in filter['project']['$in'])
-        assert(self.example_project['_id'] not in filter['project']['$in'])
-        self.example_user['admin'] = True
-        self.example_user.save()
-        filter = my_projectdata.my(MF_LIST, None, self.example_user['email'])
-        assert(filter is not None)
-        filter = my_projectdata.my(MF_MANAGE, None, self.example_user['email'])
-        assert(filter is not None)
-       
-    #def tearDown(self):
-        #objects = connection.User.find({})
-        #for object in objects:
-        #    object.delete()
-        #objects = connection.Project.find({})
-        #for object in objects:
-        #    object.delete()
+    def tearDown(self):
+        objects = connection.User.find({})
+        for object in objects:
+            object.delete()
+        objects = connection.Project.find({})
+        for object in objects:
+            object.delete()
     
     def test_projectdata(self):
         v = ValueData()
@@ -160,7 +135,7 @@ class TestProjectData(unittest.TestCase):
         my_projectdata['project'] = self.example_project['_id']
         my_projectdata.save()
         my_projectdata = connection.ProjectData.fetch()[0]
-        print my_projectdata['data'].__class__
         #TODO: ProjectData unit tests are not implemented at all...
+
 if __name__ == '__main__':
     unittest.main()
