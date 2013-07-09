@@ -68,7 +68,10 @@ class Project(Document):
             project_filter = {}
         elif control == MF_READ:
             # read: elements for projects where the user is active or where he 
-            project_filter = {"$or": [{"users": {"$elemMatch": {'user': user_id}}},{'public':True}]}
+            if user is None:
+                project_filter = {'public':True}
+            else:
+                project_filter = {"$or": [{"users": {"$elemMatch": {'user': user_id}}},{'public':True}]}
         elif control == MF_EDIT:
             # User must be one of project contributors or managers
             if user is None:
