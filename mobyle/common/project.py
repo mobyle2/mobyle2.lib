@@ -71,7 +71,10 @@ class Project(Document):
             project_filter = {"$or": [{"users": {"$elemMatch": {'user': user_id}}},{'public':True}]}
         elif control == MF_EDIT:
             # User must be one of project contributors or managers
-            project_filter = {"users": {"$elemMatch": {'user': user_id, "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
+            if user is None:
+                project_filter = None
+            else:
+                project_filter = {"users": {"$elemMatch": {'user': user_id, "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
         return project_filter
 
     def my(self, control, request, authenticated_userid=None):
