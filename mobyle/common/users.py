@@ -38,13 +38,18 @@ class User(Document):
 
     def my(self,control,request,authenticated_userid):
         # Get user
-        user  = connection.User.find_one({'email': authenticated_userid})
-        admin_mode = 'adminmode' in request.session
-        if user and user['admin'] and admin_mode:
-            return {}
+        user = connection.User.find_one({'email': authenticated_userid})
+        if user is None:
+            project_filter = None
         else:
-            return {'email' : authenticated_userid}
-
+            # admin_mode tells wether the admin user is in admin mode and should access everything
+            admin_mode = hasattr(request,'session') and 'adminmode' in request.session
+            if user and user['admin'] and admin_mode:
+                # admin_mode = provide everything
+                project_filter = {}
+            else:
+                project_filter = {'email' : authenticated_userid}
+        return project_filter
 
 
     
