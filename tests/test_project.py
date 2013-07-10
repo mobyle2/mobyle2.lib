@@ -14,8 +14,14 @@ from mobyle.common.users import User
 
 from mf.views import MF_READ, MF_EDIT
 
-class TestProject(unittest.TestCase):
+class RequestMock(object):
 
+    def __init__(self, adminmode=False):
+        self.session = {}
+        if adminmode:
+            self.session['adminmode']=True
+
+class TestProject(unittest.TestCase):
 
     def setUp(self):
         objects = connection.User.find({})
@@ -28,7 +34,6 @@ class TestProject(unittest.TestCase):
         self.example_user = connection.User()
         self.example_user['email'] = 'Emeline@example.com'
         self.example_user.save()
-       
     
     def test_project(self):
         my_project = connection.Project()
@@ -59,11 +64,6 @@ class TestProject(unittest.TestCase):
         user1['email'] = "Bishop@nomail"
         user1['admin'] = True
         user1.save()
-        class RequestMock(object):
-            def __init__(self, adminmode=False):
-                self.session = {}
-                if adminmode:
-                    self.session['adminmode']=True
         admin_request = RequestMock(adminmode=True)
         project1 = connection.Project()
         project1['owner'] = user1['_id']
@@ -95,9 +95,7 @@ class TestProject(unittest.TestCase):
         filter6 = project1.my(MF_READ, admin_request, user1['email'])
         self.assertEqual(filter6, {}, msg6)
 
-
 class TestProjectData(unittest.TestCase):
-
 
     def setUp(self):
         objects = connection.User.find({})
@@ -136,6 +134,144 @@ class TestProjectData(unittest.TestCase):
         my_projectdata.save()
         my_projectdata = connection.ProjectData.fetch()[0]
         #TODO: ProjectData unit tests are not implemented at all...
+
+class TestProjectDocument(unittest.TestCase):
+    """
+    TestProjectDocument tests the ProjectDocument ACL functionality
+    using ProjectData subclass because ProjectDocument is abstract
+    (not registered in MF)
+    """
+
+    def _setUpTestUser(self,userid,admin=False):
+        """
+        set up a test user, save it and return it
+        """
+        user = connection.User()
+        user['first_name'] = "first_name_%s" % str(userid)
+        user['last_name'] = "last_name_%s" % str(userid)
+        user['email'] = "user_%s@nomail" % str(userid)
+        user['admin'] = admin
+        user.save()
+        return user
+
+    def _setUpTestProject(self, projectid, owner, users):
+        """
+        set up a test project, save it and return it
+        """
+        project = connection.Project()
+        project['owner'] = owner['_id']
+        project['name'] = "project_%s" % str(projectid)
+        project['users'] = users
+        project.save()
+        return project
+
+    def setUp(self):
+        """
+        Set up the test case as follows:
+        Projects       1 | 2 | 3 Administrator?
+        User 1         M | C | W True
+        User 2         C | C | W False
+        User 3         x | x | x False
+        M=Manager, C=Contributor, W=Watcher
+        """
+        objects = connection.User.find({})
+        for o in objects:
+            o.delete()
+        objects = connection.Project.find({})
+        for o in objects:
+            o.delete()
+        objects = connection.ProjectData.find({})
+        for o in objects:
+            o.delete()
+        self.user1 = self._setUpTestUser(1,True)
+        self.user2 = self._setUpTestUser(2)
+        self.user3 = self._setUpTestUser(3)
+        self.project1 = self._setUpTestProject(1,self.user1,\
+                [{'user': self.user1['_id'], 'role': 'manager'},\
+                 {'user': self.user2['_id'], 'role': 'contributor'}])
+        self.project2 = self._setUpTestProject(2,self.user1,\
+                [{'user': self.user1['_id'], 'role': 'contributor'},\
+                 {'user': self.user2['_id'], 'role': 'contributor'}])
+        self.project3 = self._setUpTestProject(3,self.user1,\
+                [{'user': self.user1['_id'], 'role': 'watcher'},\
+                 {'user': self.user2['_id'], 'role': 'watcher'}])
+        self.admin_request = RequestMock(adminmode=True)
+
+    def test_my(self):
+        """
+        test MF-based ACLs
+        """
+        v = ValueData()
+        v.value = "test"
+        projectdoc = connection.ProjectData()
+        projectdoc['name'] = 'MyProject'
+        projectdoc['data'] = v
+        projectdoc['project'] = self.project1['_id']
+        projectdoc.save()
+        msg = "edit should be forbidden to unauthenticated users"
+        test_filter = projectdoc.my(MF_EDIT, None, None)
+        self.assertIs(test_filter, None, msg)
+        msg = "user1 should have an access to projects 1 and 2 in edit mode"
+        test_filter = projectdoc.my(MF_EDIT, None, self.user1['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': [self.project1["_id"], self.project2["_id"]]}}, msg)
+        msg = "user1 should have an access to all projects "+\
+              "in edit mode when admin"
+        test_filter = projectdoc.my(MF_EDIT, self.admin_request, \
+              self.user1['email'])
+        self.assertEqual(test_filter, {}, msg)
+        msg = "user2 should have an access to projects 1 and 2 in edit mode"
+        test_filter = projectdoc.my(MF_EDIT, None, self.user2['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': [self.project1["_id"], self.project2["_id"]]}}, msg)
+        msg = "user2 should have an access to projects 1 and 2 "+\
+              "in edit mode when pretending admin"
+        test_filter = projectdoc.my(MF_EDIT, self.admin_request, \
+              self.user2['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': [self.project1["_id"], self.project2["_id"]]}}, msg)
+        msg = "user3 should have an access to no project in edit mode"
+        test_filter = projectdoc.my(MF_EDIT, None, self.user3['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': []}}, msg)
+        msg = "user3 should have an access to no project "+\
+              "in edit mode when pretending admin"
+        test_filter = projectdoc.my(MF_EDIT, self.admin_request, \
+              self.user3['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': []}}, msg)
+        msg = "user1 should have an access to projects 1 2 3 in read mode"
+        test_filter = projectdoc.my(MF_READ, None, self.user1['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': [self.project1["_id"], self.project2["_id"],\
+                 self.project3["_id"]]}}, msg)
+        msg = "user1 should have an access to all projects "+\
+              "in read mode when admin"
+        test_filter = projectdoc.my(MF_READ, self.admin_request, \
+              self.user1['email'])
+        self.assertEqual(test_filter, {}, msg)
+        msg = "user2 should have an access to projects 1 2 3 in read mode"
+        test_filter = projectdoc.my(MF_READ, None, self.user2['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': [self.project1["_id"], self.project2["_id"],\
+                 self.project3["_id"]]}}, msg)
+        msg = "user2 should have an access to projects 1 2 3 "+\
+              "in read mode when pretending admin"
+        test_filter = projectdoc.my(MF_READ, self.admin_request, \
+              self.user2['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': [self.project1["_id"], self.project2["_id"],\
+                 self.project3["_id"]]}}, msg)
+        msg = "user3 should have an access to no project in read mode"
+        test_filter = projectdoc.my(MF_READ, None, self.user3['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': []}}, msg)
+        msg = "user3 should have an access to no project "+\
+              "in edit mode when pretending admin"
+        test_filter = projectdoc.my(MF_READ, self.admin_request, \
+              self.user3['email'])
+        self.assertEqual(test_filter, {'project': \
+                {'$in': []}}, msg)
 
 if __name__ == '__main__':
     unittest.main()
