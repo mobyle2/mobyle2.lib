@@ -8,9 +8,16 @@ config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common.connection import connection
 from mobyle.common import users
 
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 
 from mobyle.common.users import User
+
+class RequestMock(object):
+
+    def __init__(self, adminmode=False):
+        self.session = {}
+        if adminmode:
+            self.session['adminmode']=True
 
 class TestUser(unittest.TestCase):
 
@@ -58,18 +65,38 @@ class TestUser(unittest.TestCase):
         user['email'] = "Bishop@nomail"
         user['admin'] = False
         user.save()
-        filter = user.my(MF_LIST, None, user['email'])
-        assert(filter is None)
-        filter = user.my(MF_MANAGE, None, user['email'])
-        assert(filter is not None and filter['email'] == user['email'])
+        admin_request = RequestMock(adminmode=True)
+        msg = "unauthenticated user should not be able to read anything"
+        test_filter = user.my(MF_READ, None, None)
+        self.assertIs(test_filter, None, msg)
+        msg = "non-admin user should be able to read only itself"
+        test_filter = user.my(MF_READ, {'email':user['email']}, user['email'])
+        self.assertEquals(test_filter, {'email': user['email']}, msg)
         user['admin'] = True
         user.save()
-        filter = user.my(MF_LIST, None, user['email'])
-        assert(filter is not None)
-        filter = user.my(MF_MANAGE, None, user['email'])
-        assert(filter is not None and 'email' not in filter)
-
-    
+        msg = "admin user should be able to read everything in admin Mode"
+        test_filter = user.my(MF_READ, admin_request, user['email'])
+        self.assertEquals(test_filter, {}, msg)
+        msg = "admin user should be able to read only itself in non-admin Mode"
+        test_filter = user.my(MF_READ, None, user['email'])
+        self.assertEquals(test_filter, {'email': user['email']}, msg)
+        user['admin'] = True
+        user.save()
+        msg = "unauthenticated user should not be able to edit anything"
+        test_filter = user.my(MF_EDIT, None, None)
+        self.assertIs(test_filter, None, msg)
+        msg = "non-admin user should be able to edit only itself"
+        test_filter = user.my(MF_EDIT, {'email':user['email']}, user['email'])
+        self.assertEquals(test_filter, {'email': user['email']}, msg)
+        user['admin'] = True
+        user.save()
+        msg = "admin user should be able to edit everything in admin Mode"
+        test_filter = user.my(MF_EDIT, admin_request, user['email'])
+        self.assertEquals(test_filter, {}, msg)
+        msg = "admin user should be able to edit only itself in non-admin Mode"
+        test_filter = user.my(MF_EDIT, None, user['email'])
+        self.assertEquals(test_filter, {'email': user['email']}, msg)
+ 
 if __name__ == '__main__':
     unittest.main()
 
