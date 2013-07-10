@@ -91,8 +91,10 @@ class ProjectDocument(Document):
 
     def my(self, control, request, authenticated_userid=None):
         project_filter = Project.my_project_acl_filter(control, request, authenticated_userid)
-        if project_filter == {}:
+        # return directly project filter if it allows everything or nothing
+        if project_filter == {} or project_filter == None:
             return project_filter
+        # otherwise select the ids of the allowed projects
         else:
             project_ids_curs = connection.Project.find(project_filter,{'_id':1})
             project_ids = []
