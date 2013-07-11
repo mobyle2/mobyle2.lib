@@ -7,13 +7,13 @@ Created on Jan 22, 2013
 @organization: Institut Pasteur
 @license: GPLv3
 """
-from mongokit import Document, SchemaDocument, IS
+from mongokit import Document, ObjectId, SchemaDocument, IS
 from mf.annotation import mf_decorator
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 
 from .connection import connection
 from .config import Config
-
+from .project import ProjectDocument
 
 class Code(SchemaDocument):
     """
@@ -165,7 +165,7 @@ class OutputParagraph(Paragraph):
 
 @mf_decorator
 @connection.register
-class Software(Document):
+class Software(ProjectDocument):
     """
     top-level abstract element for different services and packages
     describes the common properties of these levels.     
@@ -205,7 +205,8 @@ class Software(Document):
                                        'type':basestring,
                                        # classification value
                                        'classification':basestring
-                                     }]
+                                     }],
+                  'project': ObjectId
                 }
 
     default_values = {}
@@ -218,21 +219,6 @@ class Software(Document):
                 'unique':True
                }
               ]
-
-    def my(self,control,request,authenticated_userid):
-        # Get user
-        user = None
-        if authenticated_userid:
-            user  = connection.User.find_one({'email': authenticated_userid})
-        if control == MF_LIST:
-            return{}
-        # Only admin can manage
-        if control == MF_MANAGE:
-            if user and user['admin']:
-                return {}
-            else:
-                return None
-
 
 @mf_decorator
 @connection.register

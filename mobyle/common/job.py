@@ -9,7 +9,7 @@
 # @license: GPLv3                      
 #===============================================================================
 
-from mongokit import Document, CustomType 
+from mongokit import Document, ObjectId, CustomType 
 import datetime
 from mf.annotation import mf_decorator
 import inspect
@@ -19,9 +19,10 @@ _log = logging.getLogger(__name__)
 
 from .config import Config
 from .connection import connection
+from .project import ProjectDocument
 from .mobyleError import MobyleError
 
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 
 class MetatStatus(type):
     
@@ -211,7 +212,7 @@ class CustomStatus(CustomType):
     
     
 
-class Job(Document):
+class Job(ProjectDocument):
     """
     Job is an abstract class that describes the common interface of all jobs
     """     
@@ -226,7 +227,8 @@ class Job(Document):
                  'owner' : basestring,
                  'message' : basestring,
                  'end_time' : datetime.datetime,
-                  }
+                 'project': ObjectId
+                }
 
     required_fields = ['status']
     
@@ -260,32 +262,6 @@ class Job(Document):
         """
         return NotImplementedError
 
-    def my(self, control, request, authenticated_userid=None):
-        user = connection.User.find_one({'email' : authenticated_userid})
-        if user and user['admin']:
-            return {}
-        if control == MF_LIST:
-            projects = connection.Project.find({"users": {"$elemMatch": {'user': user['_id'] } } })
-            job_ids = []
-            for project in projects:
-                for job in project['jobs']:
-                    job_ids.append(job)
-            if not job_ids:
-                return None
-            # User must be one of project users
-            return {"_id": {"$in": job_ids}}
-        if control == MF_MANAGE:
-            # User must be an admin of the project
-            projects = connection.Project.find({"users": {"$elemMatch": {'user': user['_id'], 'role': 'admin' } } })
-            job_ids = []
-            for project in projects:
-                for job in project['jobs']:
-                    job_ids.append(job)
-            if not job_ids:
-                return None
-            return {"_id": {"$in": job_ids}}
-        
-        
 @mf_decorator   
 @connection.register
 class ClJob(Job):

@@ -3,7 +3,7 @@
 from mongokit import Document
 import bcrypt
 from mf.annotation import mf_decorator
-from mf.views import MF_LIST, MF_MANAGE
+from mf.views import MF_READ, MF_EDIT
 import uuid
 
 from .connection import connection
@@ -38,14 +38,18 @@ class User(Document):
 
     def my(self,control,request,authenticated_userid):
         # Get user
-        user  = connection.User.find_one({'email': authenticated_userid})
-        if user and user['admin']:
-            return {}
-        if control == MF_LIST:
-                return None
-        if control == MF_MANAGE:
-            return {'email' : authenticated_userid}
-
+        user = connection.User.find_one({'email': authenticated_userid})
+        if user is None:
+            project_filter = None
+        else:
+            # admin_mode tells wether the admin user is in admin mode and should access everything
+            admin_mode = hasattr(request,'session') and 'adminmode' in request.session
+            if user and user['admin'] and admin_mode:
+                # admin_mode = provide everything
+                project_filter = {}
+            else:
+                project_filter = {'email' : authenticated_userid}
+        return project_filter
 
 
     
