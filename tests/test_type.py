@@ -38,9 +38,9 @@ class TestType(unittest.TestCase):
         test basic creation of a fake EDAM type
         """
          typetest = connection.Type()
-         typetest['id'] = "EDAM_0000"
+         typetest['id'] = "test_type"
          typetest.save()
-         types_list = connection.Type.find({'id':'EDAM_0000'})
+         types_list = connection.Type.find({'id':'test_type'})
          count = 0
          for typetest in types_list:
              count+=1
