@@ -22,8 +22,6 @@ from .connection import connection
 from .project import ProjectDocument
 from .mobyleError import MobyleError
 
-from mf.views import MF_READ, MF_EDIT
-
 class MetatStatus(type):
     
     def __init__(cls, name, bases, classdict ): 
