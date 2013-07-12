@@ -477,9 +477,8 @@ if __name__ == '__main__':
                 s = parse_package(JSONProxy(service))
             if s:
                 if args.config:
+                    s['project'] = project['_id']
                     s.save()
-                    project['services'].append(s['_id'])
-                    project.save()
                 if args.storeto:
                     fh = open(os.path.join(args.storeto, s['name']+'.json'),'w')
                     fh.write(json.dumps(s, sort_keys=True, indent=4, separators=(',', ': ')))
