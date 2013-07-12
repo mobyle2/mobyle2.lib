@@ -9,7 +9,6 @@ Created on Jan 22, 2013
 """
 from mongokit import Document, ObjectId, SchemaDocument, IS
 from mf.annotation import mf_decorator
-from mf.views import MF_READ, MF_EDIT
 
 from .connection import connection
 from .config import Config
@@ -231,7 +230,7 @@ class Package(Software):
 
 @mf_decorator
 @connection.register
-class Service(Software):
+class Service(Software, ProjectDocument):
     """
     a service is an executable piece of software
     """
@@ -243,7 +242,9 @@ class Service(Software):
                   # inputs
                   'inputs': InputParagraph,
                   # outputs
-                  'outputs': OutputParagraph
+                  'outputs': OutputParagraph,
+                  # project which the service belongs to
+                  'project': ObjectId
                 }
 
 @mf_decorator
