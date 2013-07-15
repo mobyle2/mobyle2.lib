@@ -33,8 +33,9 @@ def parse_type(t,edamElement):
     for attribute in edamElement:
         at = attribute.split(': ')
         try:
+            
             if at[0]=="id":
-                t['id']=at[1]
+                t['_id']=at[1]
             if at[0]=="name":
                 t['name']=at[1]
             if at[0]=="def":
@@ -43,7 +44,7 @@ def parse_type(t,edamElement):
             if at[0]=="synonym":
                  t['synonyms'].append(at[1])
             if at[0]=="is_a":
-                 t['subclassOf'].append(at[1])
+                 t['subclassOf'].append(at[1].split(' ')[0])
             if at[0]=="is_obsolete":
                  t['is_obsolete']= True
         except IndexError:
@@ -51,6 +52,7 @@ def parse_type(t,edamElement):
             pass
     if not t['is_obsolete']:
         t['is_obsolete'] = False
+
     return t
     
         
@@ -69,7 +71,7 @@ def parse_format(f,edamElement):
         
         try:
             if at[0]=="id":
-                f['id']=at[1]
+                f['_id']=at[1]
             if at[0]=="name":
                 f['name']=at[1]
             if at[0]=="def":
@@ -78,13 +80,12 @@ def parse_format(f,edamElement):
                 f['comment']=at[1]
             if at[0]=="synonym":
                 f['synonyms'].append(at[1])
-            if at[0]=="relationship":
-                f['isFormatOf'].append(at[1].split(' ')[1])
+            if at[0]=="is_a":
+                f['isFormatOf'].append(at[1].split(' ')[0])
         except IndexError:
             print at
 
 
-    
     return f
 
 
