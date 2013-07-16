@@ -35,7 +35,7 @@ def parse_type(t,edamElement):
         try:
             
             if at[0]=="id":
-                t['_id']=at[1]
+                t['id']=at[1]
             if at[0]=="name":
                 t['name']=at[1]
             if at[0]=="def":
@@ -71,7 +71,7 @@ def parse_format(f,edamElement):
         
         try:
             if at[0]=="id":
-                f['_id']=at[1]
+                f['id']=at[1]
             if at[0]=="name":
                 f['name']=at[1]
             if at[0]=="def":
