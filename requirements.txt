@@ -6,3 +6,4 @@ mongokit>=0.8.3
 mf>=0.1.24
 pygeoip
 uuid
+git+https://github.com/mobyle2/xml2json.git#egg=xml2json
