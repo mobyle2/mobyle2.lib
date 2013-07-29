@@ -32,7 +32,6 @@ mobyle.common API documentation
    status
    stats
    mobyleError
-   service_migration
 
 Indices and tables
 ==================
