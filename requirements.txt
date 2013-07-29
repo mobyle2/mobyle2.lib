@@ -3,6 +3,6 @@ pastedeploy
 pastescript
 py-bcrypt
 mongokit>=0.8.3
-mf>=0.1.23
+mf>=0.1.24
 pygeoip
 uuid
