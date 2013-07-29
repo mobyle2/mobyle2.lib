@@ -20,7 +20,7 @@ class FakeConnection(object):
         return param
 
 
-if os.environ['MOBYLE_NODB'] == True:
+if os.environ['MOBYLE_NODB'] == 'true':
     connection = FakeConnection() 
 else:
     connection = Connection(host = Config.config().get('app:main','db_uri'))
