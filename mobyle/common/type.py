@@ -8,15 +8,10 @@ Created on Mar 7, 2013
 @license: GPLv3
 """
 
-from mongokit import Document
-
 from mf.annotation import mf_decorator
 
 from mobyle.common.connection import connection
-from mobyle.common.config import Config
 from mobyle.common.term import Term
-
-from mf.views import MF_READ, MF_EDIT
 
 @mf_decorator
 @connection.register
