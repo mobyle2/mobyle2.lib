@@ -33,6 +33,7 @@ class AbstractTerm(Document):
         'name': basestring,
         'definition': basestring,
         'synonyms': [basestring],
+        'comment': basestring,
         'is_obsolete': bool
         }
 

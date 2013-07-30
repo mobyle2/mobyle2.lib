@@ -28,7 +28,7 @@ class Operation(Term):
 
     structure = {
         'has_input': [Type],
-        'has_output': [Type]
+        'has_output': [Type],
         'has_topic': [Topic]
     }
 

@@ -20,6 +20,10 @@ class Type(Term):
     type information for data based on EDAM ontology
     """
     __collection__ = 'types'
+    structure = {
+        'has_topic': [basestring],
+        'is_identifier_of': [basestring]
+        }
 
 @mf_decorator
 @connection.register
@@ -30,8 +34,7 @@ class Format(Term):
     __collection__ = 'formats'
 
     structure = {
-        'isFormatOf': [Type],
-        'comment': [basestring]
+        'is_format_of': [basestring]
         }
 
     

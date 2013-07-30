@@ -18,76 +18,40 @@ from mobyle.common.config import Config
 logger = logging.getLogger('mobyle.edam_integration')
 logger.setLevel(logging.INFO)
 
-
-def parse_type(t,edamElement):
+def parse_term(o,edamElement):
     """
-    parse EDAM type from an edam element extracted from a .obo file
-    : param t_dict: dictionary containing the EDAM type element
-    :type struct: dict
-    :param t: format object to be filled
-    : type
+    parse EDAM term from edam information extracted from a .obo file
+    :param o: term object to be filled
+    :type o: Term
+    :param edamElement: dictionary containing the EDAM information
+    :type edamElement: dict
     """
-    # @compléter
-    #logger.debug("parsing edam type")
-
     for attribute in edamElement:
         at = attribute.split(': ')
         try:
-            
             if at[0]=="id":
-                t['id']=at[1]
+                o['id']=at[1]
             if at[0]=="name":
-                t['name']=at[1]
+                o['name']=at[1]
             if at[0]=="def":
                 # removes the edam ontology url from definition
-                t['definition']=at[1].replace("[http://edamontology.org]","").replace("\"","")
+                o['definition']=at[1].replace("[http://edamontology.org]","").replace("\"","")
             if at[0]=="synonym":
-                 t['synonyms'].append(at[1])
+                o['synonyms'].append(at[1])
             if at[0]=="is_a":
-                 t['subclassOf'].append(at[1].split(' ')[0])
+                o['subclassOf'].append(at[1].split(' ')[0])
             if at[0]=="is_obsolete":
-                 t['is_obsolete']= True
-        except IndexError:
-            logger.debug("IndexError in parse_type")
+                o['is_obsolete']= True
+            if at[0]=="relationship":
+                relation = at[1].split(' ')
+                o[relation[0]].append(relation[1])
+        except Exception, e:
+            logger.error("Error while parsing term information %s" % str(attribute), exc_info=True)
+            logger.error(o['id'])
             pass
-    if not t['is_obsolete']:
-        t['is_obsolete'] = False
-
-    return t
-    
-        
-def parse_format(f,edamElement):
-    """
-    parse EDAM format from the edam.obo file
-    :param f_dict: the dictionary containing the EDAM format element
-    :type struct: dict
-    :param f: format object to be filled
-    : type
-    """
-    #logger.debug("parsing edam format")
-                 
-    for attribute in edamElement:
-        at = attribute.split(': ')
-        
-        try:
-            if at[0]=="id":
-                f['id']=at[1]
-            if at[0]=="name":
-                f['name']=at[1]
-            if at[0]=="def":
-                f['definition']=at[1].replace("[http://edamontology.org]","").replace("\"","")
-            if at[0]=="comment":
-                f['comment']=at[1]
-            if at[0]=="synonym":
-                f['synonyms'].append(at[1])
-            if at[0]=="is_a":
-                f['isFormatOf'].append(at[1].split(' ')[0])
-        except IndexError:
-            print at
-
-
-    return f
-
+    if not o['is_obsolete']:
+        o['is_obsolete'] = False
+    return o
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Integration of EDAM ontology in Mobyle2 DB")
@@ -96,8 +60,6 @@ if __name__ == '__main__':
     parser.add_argument('--logfile', help="outputs each edam element in a file")
     parser.add_argument('action', choices=['init','update'], help="select which action to launch")
     args = parser.parse_args()
-    t=None
-    f=None
 
     if args.config:
         # Init config
@@ -105,23 +67,27 @@ if __name__ == '__main__':
         # init db connection
         from mobyle.common.connection import connection
         from mobyle.common.type import Type, Format
+        from mobyle.common.operation import Operation
+        from mobyle.common.topic import Topic
         Type=connection.Type
         Format=connection.Format
-
-        # # action definition
-        # if args.action == 'init':
-        #      # vider la base
-        #     print Type.drop()
-        #     print Format
-        # else:
-        #     pass
+        Topic=connection.Topic
+        Operation=connection.Operation
+        # action definition
+        if args.action == 'init':
+            # empty collections
+            Type.collection.drop()
+            Format.collection.drop()
+            Topic.collection.drop()
+            Operation.collection.drop()
+        else:
+            pass
                 
 
     else:
         from mobyle.common.type import Type, Format
-  
-    #t=None
-    #f=None
+        from mobyle.common.operation import Operation
+        from mobyle.common.topic import Topic
     # opens the edam obo file
     edam=open(args.edamfile,'r')
 
@@ -133,39 +99,44 @@ if __name__ == '__main__':
     
     nbtype=0
     nbformat=0
-
+    nbtopic=0
+    nboperation=0
+    o = None
     for edam_element in edam_elements:
         # One element is a list of different edam field
         element=edam_element.split('\n')
         
         if len(element)>1:
             field=element[1].split(': ')
-            
             if field[1][0:9]=="EDAM_data":
-                t=Type()
-                parse_type(t,element)
+                o=Type()
+                parse_term(o,element)
                 nbtype=nbtype+1
 
-            else:
-                if field[1][0:11]=="EDAM_format":
-                    f=Format()
-                    parse_format(f,element)
-                    nbformat=nbformat+1
-                    
-        if t:
+            elif field[1][0:11]=="EDAM_format":
+                o=Format()
+                parse_term(o,element)
+                nbformat=nbformat+1
+            elif field[1][0:10]=="EDAM_topic":
+                o=Topic()
+                parse_term(o,element)
+                nbtopic+=1 
+            elif field[1][0:14]=="EDAM_operation":
+                o=Operation()
+                parse_term(o,element)
+                nboperation+=1
+        if o is not None:            
             if args.config:
-                t.save()
+		try:
+                    o.save()
+                except Exception, e:
+                    print o #TODO add real logging
+                    raise e
             if args.logfile:
                 log=open(args.logfile,'a')
-                log.write(t['id'])
+                log.write(o['id'])
                 log.close()
-        if f:
-            if args.config:
-                f.save()
-            if args.logfile:
-                log=open(args.logfile,'a')
-                log.write(f['id'])
-                log.close()
+            o=None
                     
         
 
