@@ -32,3 +32,4 @@ class Operation(Term):
         'has_topic': [Topic]
     }
 
+Operation.search_by('id')
