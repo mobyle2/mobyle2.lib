@@ -73,5 +73,3 @@ class TestService(unittest.TestCase):
         #service.validate()
         #service.save()
         
-if __name__ == '__main__':
-    unittest.main()

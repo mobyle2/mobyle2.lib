@@ -53,6 +53,3 @@ class TestJob(unittest.TestCase):
         job_2.save()
         self.assertGreater(job_2 , job_1)
     
-if __name__ == '__main__':
-    unittest.main()
-

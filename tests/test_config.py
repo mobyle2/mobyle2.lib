@@ -40,8 +40,3 @@ class TestConfig(unittest.TestCase):
         Config.reload()
         self.assertEqual(myconfig._config.get("app:main","db_uri"),"mongodb://samplehost")
 
-
-
-if __name__=='__main__':
-    unittest.main()
-

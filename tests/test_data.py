@@ -81,9 +81,3 @@ class TestCollectionData(unittest.TestCase):
     def test_dataType(self):
         self.assertEqual(self.my_collection_1.data_type, 'StringDataType')
 
-
-    
-
-if __name__=='__main__':
-    unittest.main()
-

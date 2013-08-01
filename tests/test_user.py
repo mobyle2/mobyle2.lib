@@ -47,6 +47,4 @@ class TestUser(unittest.TestCase):
         
         user.save()
     
-if __name__ == '__main__':
-    unittest.main()
 

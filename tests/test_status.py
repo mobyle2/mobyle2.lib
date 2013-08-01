@@ -10,12 +10,6 @@ Created on Aug 27, 2012
 '''
 import os
 import sys
-
-MOBYLE_HOME = os.path.abspath( os.path.join( os.path.dirname( __file__ ) , "../" ) )
-os.environ[ 'MOBYLE_HOME' ] = MOBYLE_HOME
-if ( MOBYLE_HOME ) not in sys.path:
-    sys.path.append( MOBYLE_HOME )
-    
 import unittest
 import inspect
 import types
@@ -116,6 +110,3 @@ class StatusTest(unittest.TestCase):
             s = Status(state)
             self.assertEqual( str(s) , attr.lower().replace('_', ' ') )
     
-if __name__ == "__main__":
-    #import sys;sys.argv = ['', 'Test.testName']
-    unittest.main()

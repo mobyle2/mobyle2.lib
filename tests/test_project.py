@@ -47,6 +47,3 @@ class TestProject(unittest.TestCase):
         my_project.add_user(user, "admin")
         self.assertEqual(my_project['users'][0]['user'], user)
 
-
-if __name__ == '__main__':
-    unittest.main()
