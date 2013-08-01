@@ -30,30 +30,30 @@ class Status(object):
     """reflect the different steps of a job life"""
     __metaclass__ = MetatStatus
     
-    """the system is not able to determine the status of the job"""
     UNKNOWN = u'unknown'
-    """init the job creation (working directory creation, job settings,...) the status changed for BUILDING when the user click on "run" """
+    """the system is not able to determine the status of the job"""
     INIT = u'init'
-    """the environment of the job is building ( building command line, ...)"""
+    """init the job creation (working directory creation, job settings,...) the status changed for BUILDING when the user click on "run" """
     BUILDING = u'building'
-    """The job is ready to be handle by the execution engine"""
+    """the environment of the job is building ( building command line, ...)"""
     TO_BE_SUBMITTED = u'to be submitted'
-    """the job has been submitted to the execution system"""
+    """The job is ready to be handle by the execution engine"""
     SUBMITTED = u'submitted'
-    """the job is pending in the execution system note that some system cannot pend a job (SYS)""" 
+    """the job has been submitted to the execution system"""
     PENDING = u'pending'
-    """the job is running"""
+    """the job is pending in the execution system note that some system cannot pend a job (SYS)"""
     RUNNING = u'running'
-    """the job is completed without error"""
+    """the job is running"""
     FINISHED = u'finished'
-    """an error occurred the job is stopped"""
+    """the job is completed without error"""
     ERROR = u'error'
-    """the job was stopped by an administrator or the user"""
+    """an error occurred the job is stopped"""
     KILLED = u'killed'
-    """the job is hold by the execution system"""
+    """the job was stopped by an administrator or the user"""
     HOLD = u'hold'
-    """the job is suspended by the user. when the user resume a paused job the status become TO_BE_SUBMITTED"""
+    """the job is hold by the execution system"""
     PAUSE = u'pause'
+    """the job is suspended by the user. when the user resume a paused job the status become TO_BE_SUBMITTED"""
         
     _transitions = {
                     UNKNOWN : [],
@@ -250,6 +250,14 @@ class Job(Document):
         """
         return self._id.generation_time
     
+    
+    @property
+    def id(self):
+        """
+        :return: the unique identifier of this job 
+        :rtype: 
+        """
+        return self._id
 
     def must_be_notified(self):
         """
