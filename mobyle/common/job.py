@@ -228,7 +228,20 @@ class Job(Document):
 
     required_fields = ['status']
     
-        
+    def __getstate__(self):
+        """
+        """
+        d = {}
+        d['name'] = self.name
+        d['status'] = self.status
+        d['owner'] = self.owner
+        d['message'] = self.message
+        d['end_time'] = self.end_time
+        d['_id'] = self._id
+        return d
+    
+         
+                
     def __cmp__(self, other):
         """
         :param other: a :class:`mobyle.common.job.Job` object I want to comared with self

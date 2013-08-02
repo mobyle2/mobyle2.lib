@@ -15,13 +15,13 @@ class TestJob(unittest.TestCase):
 
     def setUp(self):
         objects = connection.ClJob.find({})
-        for object in objects:
-            object.delete()
+        for obj in objects:
+            obj.delete()
        
     def tearDown(self):
        objects = connection.ClJob.find({})
-       for object in objects:
-           object.delete()
+       for obj in objects:
+           obj.delete()
 
 
     def test_insert(self):
