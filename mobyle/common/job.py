@@ -10,6 +10,9 @@
 #===============================================================================
 
 from mongokit import Document, CustomType 
+from mongokit.database import Database
+from mongokit.collection import Collection
+
 import datetime
 from mf.annotation import mf_decorator
 import inspect
@@ -208,7 +211,7 @@ class CustomStatus(CustomType):
         return isinstance(value, Status)
     
     
-
+@connection.register
 class Job(Document):
     """
     Job is an abstract class that describes the common interface of all jobs
@@ -224,9 +227,11 @@ class Job(Document):
                  'owner' : basestring,
                  'message' : basestring,
                  'end_time' : datetime.datetime,
+                 'has_been_notified' : bool,
                   }
 
     required_fields = ['status']
+    default_values = {'has_been_notified' : False}
     
     def __getstate__(self):
         """
@@ -237,10 +242,14 @@ class Job(Document):
         d['owner'] = self.owner
         d['message'] = self.message
         d['end_time'] = self.end_time
+        d['has_been_notified'] = self.has_been_notified
         d['_id'] = self._id
         return d
     
-         
+    def __setstate__(self, state):
+        self.connection = connection
+        self.db = Database(self.connection, self.__database__)
+        self.collection = Collection( self.db, self.__collection__)
                 
     def __cmp__(self, other):
         """
@@ -289,9 +298,6 @@ class ClJob(Job):
     
     use_dot_notation = True
     
-    structure = { 
-                'has_been_notified' : bool
-                }
     
     def must_be_notified(self):
         """
