@@ -7,12 +7,12 @@ Created on Jan 22, 2013
 @organization: Institut Pasteur
 @license: GPLv3
 """
-from mongokit import Document, SchemaDocument, IS
+from mongokit import Document, ObjectId, SchemaDocument, IS
 from mf.annotation import mf_decorator
 
 from .connection import connection
 from .config import Config
-
+from .project import ProjectDocument
 
 class Code(SchemaDocument):
     """
@@ -164,7 +164,7 @@ class OutputParagraph(Paragraph):
 
 @mf_decorator
 @connection.register
-class Software(Document):
+class Software(ProjectDocument):
     """
     top-level abstract element for different services and packages
     describes the common properties of these levels.     
@@ -204,7 +204,8 @@ class Software(Document):
                                        'type':basestring,
                                        # classification value
                                        'classification':basestring
-                                     }]
+                                     }],
+                  'project': ObjectId
                 }
 
     default_values = {}
@@ -226,9 +227,10 @@ class Package(Software):
     """
     __collection__ = 'packages'
 
+
 @mf_decorator
 @connection.register
-class Service(Software):
+class Service(Software, ProjectDocument):
     """
     a service is an executable piece of software
     """
@@ -240,7 +242,9 @@ class Service(Software):
                   # inputs
                   'inputs': InputParagraph,
                   # outputs
-                  'outputs': OutputParagraph
+                  'outputs': OutputParagraph,
+                  # project which the service belongs to
+                  'project': ObjectId
                 }
 
 @mf_decorator

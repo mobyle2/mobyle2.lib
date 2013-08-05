@@ -7,6 +7,9 @@ import time
 from mobyle.common.config import Config
 config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common.connection import connection
+
+from mobyle.common.users import User
+from mobyle.common.project import Project
 from mobyle.common.job import Status
 from mobyle.common.job import CustomStatus
 from mobyle.common.job import ClJob
@@ -15,14 +18,15 @@ class TestJob(unittest.TestCase):
 
     def setUp(self):
         objects = connection.ClJob.find({})
-        for obj in objects:
-            obj.delete()
+        for object in objects:
+            object.delete()
+        objects = connection.User.find({})
+        for object in objects:
+            object.delete()
+        objects = connection.Project.find({})
+        for object in objects:
+            object.delete()
        
-    def tearDown(self):
-       objects = connection.ClJob.find({})
-       for obj in objects:
-           obj.delete()
-
 
     def test_insert(self):
         status = Status(Status.INIT)
@@ -53,3 +57,7 @@ class TestJob(unittest.TestCase):
         job_2.save()
         self.assertGreater(job_2 , job_1)
     
+
+if __name__ == '__main__':
+    unittest.main()
+

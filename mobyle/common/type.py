@@ -8,64 +8,43 @@ Created on Mar 7, 2013
 @license: GPLv3
 """
 
-from mongokit import Document
-
 from mf.annotation import mf_decorator
 
-from .connection import connection
-from .config import Config
+from mobyle.common.connection import connection
+from mobyle.common.term import Term
 
-
-class AbstractType(Document):
+@mf_decorator
+@connection.register
+class Type(Term):
     """
-    Abstract class for type information based on EDAM ontology
+    type information for data based on EDAM ontology
     """
-
-    __collection__ = 'type'
-    __database__ = Config.config().get('app:main','db_name')
-
+    __collection__ = 'types'
     structure = {
-        'id': basestring,
-        'label': basestring,
-        'definition': basestring,
-        'synonyms': [basestring]
+        'has_topic': [basestring],
+        'is_identifier_of': [basestring]
         }
 
 @mf_decorator
 @connection.register
-class Type(AbstractType):
-    """
-    type information based on EDAM ontology
-    """
-
-
-    structure = {
-        'subclassOf': [AbstractType]
-        }
-    
-class AbstractFormat(Document):
-    """
-    Abstract class for format information based on EDAM ontology
-    """
-    structure = {
-        'id': basestring,
-        'name': basestring,
-        'definition': basestring,
-        'comments': basestring, 
-        'synonyms': [basestring], 
-        'isFormatOf': [Type]
-        }
-
-@mf_decorator
-@connection.register
-class Format(AbstractFormat):
+class Format(Term):
     """
     format information based on EDAM ontology
     """
-    __collection__ = 'format'
-    __database__ = Config.config().get('app:main','db_name')
+    __collection__ = 'formats'
 
     structure = {
-        'subclassOf': [AbstractFormat]
+        'is_format_of': [basestring]
         }
 
+    
+#    Voir si nécéssaire plus tard
+    # default_values = {}
+    # required_fields = [ 'id']
+    
+    # indexes = [
+    #     {
+    #         'fields':[id],
+    #         'unique':True
+    #         }
+    #     ]

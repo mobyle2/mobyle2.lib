@@ -11,4 +11,16 @@
 
 from mongokit import Connection
 from .config import Config
-connection = Connection(host = Config.config().get('app:main','db_uri'))
+import os
+
+class FakeConnection(object):
+    """Fake connection when no db is present for doc generation"""
+
+    def register(self, param):
+        return param
+
+
+if 'MOBYLE_NODB' in os.environ and os.environ['MOBYLE_NODB'] == 'true':
+    connection = FakeConnection() 
+else:
+    connection = Connection(host = Config.config().get('app:main','db_uri'))

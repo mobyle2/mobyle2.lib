@@ -440,6 +440,8 @@ if __name__ == '__main__':
                                           InputProgramParameter, \
                                           OutputProgramParameter, \
                                           Type
+        from mobyle.common import users
+        from mobyle.common import project
         Program = connection.Program
         Package = connection.Package
     else:
@@ -449,6 +451,10 @@ if __name__ == '__main__':
                                           InputProgramParameter, \
                                           OutputProgramParameter, \
                                           Type
+    if args.config:
+        user = connection.User.find_one({'email': config.get("app:main",'root_email')})
+        project = connection.Project.find_one({ 'owner' : user['_id'] })
+        print project
     if args.storeto:
         import json
     filenames = args.filenames
@@ -471,6 +477,7 @@ if __name__ == '__main__':
                 s = parse_package(JSONProxy(service))
             if s:
                 if args.config:
+                    s['project'] = project['_id']
                     s.save()
                 if args.storeto:
                     fh = open(os.path.join(args.storeto, s['name']+'.json'),'w')

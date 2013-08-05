@@ -9,7 +9,7 @@
 # @license: GPLv3                      
 #===============================================================================
 
-from mongokit import Document, CustomType 
+from mongokit import Document, ObjectId, CustomType 
 from mongokit.database import Database
 from mongokit.collection import Collection
 
@@ -22,6 +22,7 @@ _log = logging.getLogger(__name__)
 
 from .config import Config
 from .connection import connection
+from .project import ProjectDocument
 from .mobyleError import MobyleError
 
 class MetatStatus(type):
@@ -212,7 +213,7 @@ class CustomStatus(CustomType):
     
     
 @connection.register
-class Job(Document):
+class Job(ProjectDocument):
     """
     Job is an abstract class that describes the common interface of all jobs
     """     
@@ -228,7 +229,8 @@ class Job(Document):
                  'message' : basestring,
                  'end_time' : datetime.datetime,
                  'has_been_notified' : bool,
-                  }
+                 'project': ObjectId
+                }
 
     required_fields = ['status']
     default_values = {'has_been_notified' : False}
@@ -244,6 +246,7 @@ class Job(Document):
         d['end_time'] = self.end_time
         d['has_been_notified'] = self.has_been_notified
         d['_id'] = self._id
+        d['project'] = self.project
         return d
     
     def __setstate__(self, state):
@@ -287,8 +290,7 @@ class Job(Document):
         :rtype: boolean
         """
         return NotImplementedError
-        
-        
+
 @mf_decorator   
 @connection.register
 class ClJob(Job):
