@@ -10,8 +10,6 @@ config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 
 from mongokit import ValidationError
 
-
-
 from mobyle.common.connection  import connection
 from mobyle.common.type import *
 
@@ -46,6 +44,3 @@ class TestType(unittest.TestCase):
              count+=1
          self.assertEqual(count,1)
     
-if __name__ == '__main__':
-    import unittest
-    unittest.main()

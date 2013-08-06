@@ -14,6 +14,11 @@ import os
 import sys
 import unittest
      
+MOBYLE_HOME = os.path.abspath( os.path.join( os.path.dirname( __file__ ) , "../" ) )
+os.environ[ 'MOBYLE_HOME' ] = MOBYLE_HOME
+if ( MOBYLE_HOME ) not in sys.path:
+    sys.path.append( MOBYLE_HOME )
+         
 from argparse import ArgumentParser    
 parser = ArgumentParser()
 parser.add_argument("tests",

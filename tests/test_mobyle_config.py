@@ -33,6 +33,3 @@ class TestMobyleConfig(unittest.TestCase):
         config.save()
         config_list = connection.MobyleConfig.find_one({'datadir': '/var/lib/mobyle'})
         self.assertIsNotNone(config_list)
-    
-if __name__ == '__main__':
-    unittest.main()

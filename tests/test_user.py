@@ -55,7 +55,6 @@ class TestUser(unittest.TestCase):
         self.assertNotEqual(user['hashed_password'], '')
         self.assertTrue(user.check_password("verySecret") )
         self.assertFalse(user.check_password("incorrect") )
-        
         user.save()
 
     def test_my(self):

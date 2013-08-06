@@ -36,5 +36,3 @@ class TestMobyleStatistics(unittest.TestCase):
         self.assertEqual(stats['total'], 3)
         self.assertEqual(stats['jobs']['test1'], 2)
     
-if __name__ == '__main__':
-    unittest.main()
