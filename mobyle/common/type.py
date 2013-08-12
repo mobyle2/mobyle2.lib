@@ -25,6 +25,8 @@ class Type(Term):
         'is_identifier_of': [basestring]
         }
 
+Type.search_by('id')
+
 @mf_decorator
 @connection.register
 class Format(Term):
@@ -37,6 +39,7 @@ class Format(Term):
         'is_format_of': [basestring]
         }
 
+Format.search_by('id')
     
 #    Voir si nécéssaire plus tard
     # default_values = {}

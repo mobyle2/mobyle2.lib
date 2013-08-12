@@ -29,6 +29,7 @@ config = Config(args.config).config()
 from mobyle.common.connection import connection
 from mobyle.common import users
 from mobyle.common import project
+from mobyle.common import topic, operation
 # Create root user
 if connection.User.find({ 'first_name' : 'root' }).count() == 0:
     pwd = sha1("%s"%randint(1,1e99)).hexdigest()
@@ -52,7 +53,9 @@ if connection.User.find({ 'first_name' : 'root' }).count() == 0:
     project['users'].append({ 'user' : user['_id'], 'role' : 'admin'})
     project['public'] = True
     project.save()
-
+# create indexes
+for klass in [connection.Topic, connection.Operation]:
+    klass.generate_index(klass.collection)
 
 from mobyle.common.mobyleConfig import MobyleConfig
 #Create default config

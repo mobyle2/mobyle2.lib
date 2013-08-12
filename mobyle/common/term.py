@@ -56,4 +56,9 @@ class Term(AbstractTerm):
     structure = {
         'subclassOf': [AbstractTerm]
         }
-
+    indexes = [
+         {
+             'fields':'subclassOf',
+             'unique':False,
+         },
+     ]
