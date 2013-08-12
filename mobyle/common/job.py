@@ -256,7 +256,7 @@ class Job(ProjectDocument):
                 
     def __cmp__(self, other):
         """
-        :param other: a :class:`mobyle.common.job.Job` object I want to comared with self
+        :param other: a :class:`mobyle.common.job.Job` object I want to compared with self
         :type other: an AbstractJobRef instance
         :return: negative int if the other object was created before this one, 
                  positive integer if other is newer, or 0 if they are created at the same time.
@@ -299,6 +299,11 @@ class ClJob(Job):
     """ 
     
     use_dot_notation = True
+    
+    structure = {
+                 'cmd_line' : basestring,
+                 'cmd_env' : dict
+                }
     
     
     def must_be_notified(self):
