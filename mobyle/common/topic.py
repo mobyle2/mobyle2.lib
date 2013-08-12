@@ -25,3 +25,4 @@ class Topic(Term):
     """
     __collection__ = 'topics'
 
+Topic.search_by('id')
