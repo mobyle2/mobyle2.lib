@@ -35,7 +35,8 @@ class StatusTest(unittest.TestCase):
         self.queryable_status = [ Status(c) for c in (Status.SUBMITTED, Status.PENDING, Status.RUNNING, Status.HOLD) ]
         self.known_status = [ s for s in self.all_status_object if s.state != Status.UNKNOWN ]
         self.submittable_status = [ Status(Status.TO_BE_SUBMITTED) ]
-    
+        self.buildable_status = [ Status(Status.BUILDING) ]
+        self.active_status = [Status(s) for s in Status.active_states()]
     
     def test_init(self):
         for attr, val in self.all_status_tuple:
@@ -104,6 +105,25 @@ class StatusTest(unittest.TestCase):
             self.assertTrue( s.is_submittable() )
         for s in not_submittable:
             self.assertFalse( s.is_submittable() )
+    
+    def test_is_buildable(self):
+        not_buildable = [ s for s in self.all_status_object if s not in self.buildable_status]
+        for s in self.buildable_status:
+            self.assertTrue( s.is_buildable() )
+        for s in not_buildable:
+            self.assertFalse( s.is_buildable() )
+            
+    def test_is_active(self):
+        not_active = [ s for s in self.all_status_object if s not in self.active_status]
+        for s in self.active_status:
+            self.assertTrue( s.is_active() )
+        for s in not_active:
+            self.assertFalse( s.is_active() )        
+    
+    def test_active_states(self):
+        not_active = self.ended_status + [Status(Status.UNKNOWN)]
+        for s in not_active:
+            self.assertFalse( s in Status.active_states() )
             
     def test_str(self):
         for attr, state in self.all_status_tuple:
