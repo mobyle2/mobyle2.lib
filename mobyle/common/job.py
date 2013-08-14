@@ -181,7 +181,33 @@ class Status(object):
         """
         return self._state == self.TO_BE_SUBMITTED
 
-
+    def is_buildable(self):
+        """
+        :return: True if the job is ready to be build (prepare the job environment).
+        :rtype: bool
+        """
+        return self._state == self.BUILDING
+    
+    def is_active(self):
+        """
+        :return: True if the job state allow to be handle by the execengine.
+        :rtype: bool
+        """
+        return self.state in self.active_states()
+        
+    @classmethod
+    def active_states(cls):
+        """
+        :return: all state which than the job can be handle by the execution_system
+        :rtype: string
+        """
+        return [cls.BUILDING, 
+                cls.TO_BE_SUBMITTED,
+                cls.SUBMITTED,
+                cls.PENDING ,
+                cls.RUNNING ,
+                cls.HOLD ,
+                cls.PAUSE]
 
 
 class CustomStatus(CustomType):
@@ -273,7 +299,9 @@ class Job(ProjectDocument):
         
         :note: _id is available only after first mongokit save
         """
-        return self._id.generation_time
+        tz_aware = self._id.generation_time
+        tz_naive = tz_aware.replace(tzinfo = None)
+        return tz_naive
     
     
     @property
@@ -313,7 +341,7 @@ class ClJob(Job):
         """
         delay = 60
         if self.end_time:
-            return True if self.end_time - self.create_time > delay else False 
+            return self.end_time - self.create_time > datetime.timedelta(seconds = delay)  
         else:
             return False
 
