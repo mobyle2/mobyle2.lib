@@ -60,6 +60,17 @@ class TestJob(unittest.TestCase):
         job_2.save()
         self.assertGreater(job_2 , job_1)
     
+    def test_id(self):
+        status = Status(Status.INIT)
+        job = connection.Job()
+        job.name = "first job"
+        job.status = status
+        job.owner = "me"
+        job.save()
+        job_rcv = connection.Job.find_one({})
+        j_id = job_rcv['_id']
+        self.assertEqual(job.id, j_id)
+        
     def test_dir(self):
         status = Status(Status.INIT)
         job = connection.Job()
