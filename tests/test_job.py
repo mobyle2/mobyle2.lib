@@ -14,6 +14,8 @@ from mobyle.common.project import Project
 from mobyle.common.job import Status
 from mobyle.common.job import CustomStatus
 from mobyle.common.job import ClJob
+from mobyle.common.mobyleError import MobyleError
+
 
 class TestJob(unittest.TestCase):
 
@@ -58,6 +60,19 @@ class TestJob(unittest.TestCase):
         job_2.save()
         self.assertGreater(job_2 , job_1)
     
+    def test_dir(self):
+        status = Status(Status.INIT)
+        job = connection.Job()
+        job.name = "first job"
+        job.status = status
+        job.owner = "me"
+        job.save()
+        self.assertIsNone(job.dir)
+        job.dir = '/tmp'
+        self.assertEqual(job.dir, '/tmp')
+        with self.assertRaises(MobyleError):
+            job.dir = 'foo'
+            
     def test_ClJob(self):
         status = Status(Status.INIT)
         job_send = connection.ClJob()

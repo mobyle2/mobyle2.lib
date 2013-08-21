@@ -22,7 +22,7 @@ _log = logging.getLogger(__name__)
 
 from .config import Config
 from .connection import connection
-from .project import ProjectDocument
+from .project import ProjectDocument, Project
 from .mobyleError import MobyleError
 
 class MetatStatus(type):
@@ -255,11 +255,13 @@ class Job(ProjectDocument):
                  'message' : basestring,
                  'end_time' : datetime.datetime,
                  'has_been_notified' : bool,
-                 'project': ObjectId
+                 'project': ObjectId,
+                 '_dir' : basestring,
                 }
 
     required_fields = ['status']
-    default_values = {'has_been_notified' : False}
+    default_values = {'has_been_notified' : False,
+                      '_dir' : None}
     
     def __getstate__(self):
         """
@@ -273,6 +275,7 @@ class Job(ProjectDocument):
         d['has_been_notified'] = self.has_been_notified
         d['_id'] = self._id
         d['project'] = self.project
+        d['_dir']
         return d
     
     def __setstate__(self, state):
@@ -312,13 +315,48 @@ class Job(ProjectDocument):
         """
         return self._id
 
+
     def must_be_notified(self):
         """
         :return: True if a notification must be send a the end of job. False otherwise 
         :rtype: boolean
         """
         return NotImplementedError
-
+    
+    
+    @property
+    def dir(self):
+        """
+        :return: the job directory
+        :rtype: string
+        """
+        return self._dir
+    
+    
+    @dir.setter
+    def dir(self, dir):
+        """
+        set the path to the job directory. it can be set only one time.
+        
+        :param dir: the path to a directory
+        :type dir: string
+        :raise: :class:`MobyleError` if the dir is try to be set a second time. 
+        """
+        if self._dir is None:
+            self._dir = dir
+        else:
+            raise MobyleError("the job dir is already set and cannot be changed")
+        
+        
+    def get_project(self):
+        """
+        :return: the project in which this job has been created
+        :rtype: :class:`project.Project` object
+        """
+        project = connection.Project.find_one({"_id": self.project})
+        return project
+        
+    
 @mf_decorator   
 @connection.register
 class ClJob(Job):
