@@ -14,6 +14,7 @@ from mf.views import MF_READ, MF_EDIT
 from .connection import connection
 from .config import Config
 from .data import AbstractData
+from .mobyleError import MobyleError
 
 @mf_decorator
 @connection.register
@@ -30,11 +31,14 @@ class Project(Document):
                   'owner' : ObjectId, 
                   'users' : [{'user': ObjectId, 'role': basestring}],
                   'notebook' : basestring,
-                  'public' : bool
+                  'public' : bool,
+                  '_dir' : basestring
                 }
 
     required_fields = ['name', 'owner']
-
+    
+    default_values = {'_dir' : None}
+    
     @property	
     def creation_date(self):
         """
@@ -53,6 +57,31 @@ class Project(Document):
         :type role: string.
         """
         self['users'].append({'user': user['_id'], 'role': role})
+        
+
+    @property
+    def dir(self):
+        """
+        :return: the project directory
+        :rtype: string
+        """
+        return self['_dir']
+    
+    
+    @dir.setter
+    def dir(self, dir):
+        """
+        set the path to the project directory. it can be set only one time.
+        
+        :param dir: the path to a directory
+        :type dir: string
+        :raise: :class:`MobyleError` if the dir is try to be set a second time. 
+        """
+        if self['_dir'] is None:
+            self['_dir'] = dir
+        else:
+            raise MobyleError("the project dir is already set and cannot be changed")
+        
 
     @staticmethod
     def my_project_acl_filter(control, request, authenticated_userid=None):
@@ -82,6 +111,7 @@ class Project(Document):
 
     def my(self, control, request, authenticated_userid=None):
         return self.my_project_acl_filter(control, request, authenticated_userid)
+    
             
 class ProjectDocument(Document):
     """

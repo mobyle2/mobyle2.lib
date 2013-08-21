@@ -11,6 +11,7 @@ from mobyle.common.connection import connection
 from mobyle.common.data import ValueData
 from mobyle.common.project import Project, ProjectData
 from mobyle.common.users import User
+from mobyle.common.mobyleError import MobyleError
 
 from mf.views import MF_READ, MF_EDIT
 
@@ -53,6 +54,17 @@ class TestProject(unittest.TestCase):
         user.save()
         my_project.add_user(user, "admin")
         self.assertEqual(my_project['users'][0]['user'], user['_id'])
+    
+    def test_dir(self):
+        my_project = connection.Project()
+        my_project['owner'] = self.example_user['_id']
+        my_project['name'] = 'MyProject'
+        my_project.save()
+        self.assertIsNone(my_project.dir)
+        my_project.dir = '/tmp'
+        self.assertEqual(my_project.dir, '/tmp')
+        with self.assertRaises(MobyleError):
+            my_project.dir = 'foo'
 
     def test_my(self):
         """
