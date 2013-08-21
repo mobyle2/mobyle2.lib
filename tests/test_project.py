@@ -65,7 +65,17 @@ class TestProject(unittest.TestCase):
         self.assertEqual(my_project.dir, '/tmp')
         with self.assertRaises(MobyleError):
             my_project.dir = 'foo'
-
+    
+    def test_id(self):
+        my_project = connection.Project()
+        my_project['owner'] = self.example_user['_id']
+        my_project['name'] = 'MyProject'
+        my_project.save()
+        project_rcv = connection.Project.find_one({})
+        p_id = project_rcv['_id']
+        self.assertEqual(my_project.id, p_id)
+        
+        
     def test_my(self):
         """
         test MF-based ACLs

@@ -82,7 +82,16 @@ class Project(Document):
         else:
             raise MobyleError("the project dir is already set and cannot be changed")
         
+        
+    @property    
+    def id(self):
+        """
+        :return: the unique identifier of this project 
+        :rtype:
+        """
+        return self['_id']
 
+    
     @staticmethod
     def my_project_acl_filter(control, request, authenticated_userid=None):
         # find the user corresponding to the provided email
