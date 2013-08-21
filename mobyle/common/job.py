@@ -298,7 +298,7 @@ class Job(ProjectDocument):
     def create_time(self):
         """
         :return: the time of job creation
-        :rtype: datetime.datetime object
+        :rtype: datetime.datetime object (tz_naive)
         
         :note: _id is available only after first mongokit save
         """
