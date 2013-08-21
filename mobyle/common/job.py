@@ -259,7 +259,7 @@ class Job(ProjectDocument):
                  '_dir' : basestring,
                 }
 
-    required_fields = ['status']
+    required_fields = ['status', 'project']
     default_values = {'has_been_notified' : False,
                       '_dir' : None}
     
@@ -275,7 +275,7 @@ class Job(ProjectDocument):
         d['has_been_notified'] = self.has_been_notified
         d['_id'] = self._id
         d['project'] = self.project
-        d['_dir']
+        d['_dir'] = self._dir
         return d
     
     def __setstate__(self, state):
