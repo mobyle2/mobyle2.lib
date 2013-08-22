@@ -58,7 +58,7 @@ class TestJob(unittest.TestCase):
         job.status = self.status
         job.name = "first job"
         job.status = self.status
-        job.owner = "me"
+        job.owner = {'id': self.project.id, 'klass': 'Project'}
         job.save()
         
         job_list = connection.Job.find({'name': 'first job'})
@@ -72,14 +72,14 @@ class TestJob(unittest.TestCase):
         job_1.project = self.project.id
         job_1.name = "first job"
         job_1.status = self.status
-        job_1.owner = "me"
+        job_1.owner = {'id': self.project.id, 'klass': 'Project'}
         job_1.save()
         time.sleep(1)
         job_2 = connection.Job()
         job_2.project = self.project.id
         job_2.name = "first job"
         job_2.status = self.status
-        job_2.owner = "me"
+        job_2.owner = {'id': self.project.id, 'klass': 'Project'}
         job_2.save()
         self.assertGreater(job_2 , job_1)
     
@@ -88,7 +88,7 @@ class TestJob(unittest.TestCase):
         job.project = self.project.id
         job.name = "first job"
         job.status = self.status
-        job.owner = "me"
+        job.owner = {'id': self.project.id, 'klass': 'Project'}
         job.save()
         job_rcv = connection.Job.find_one({})
         j_id = job_rcv['_id']
@@ -99,7 +99,7 @@ class TestJob(unittest.TestCase):
         job.project = self.project.id
         job.name = "first job"
         job.status = self.status
-        job.owner = "me"
+        job.owner = {'id': self.project.id, 'klass': 'Project'}
         job.save()
         self.assertIsNone(job.dir)
         job.dir = '/tmp'
@@ -112,7 +112,7 @@ class TestJob(unittest.TestCase):
         job_send.project = self.project.id
         job_send.name = "first job"
         job_send.status = self.status
-        job_send.owner = "me"
+        job_send.owner = {'id': self.project.id, 'klass': 'Project'}
         
         #in mongo creation time does not record microsecond :((
         #need to remove them to be compare

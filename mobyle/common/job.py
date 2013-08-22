@@ -249,9 +249,10 @@ class Job(ProjectDocument):
     __database__ = Config.config().get('app:main','db_name')
 
     structure = {
+                '_type' : unicode,
                  'name' : basestring,
                  'status' : CustomStatus(),
-                 'owner' : basestring,
+                 'owner' : {'id': ObjectId, 'klass': basestring},
                  'message' : basestring,
                  'end_time' : datetime.datetime,
                  'has_been_notified' : bool,
@@ -267,6 +268,7 @@ class Job(ProjectDocument):
         """
         """
         d = {}
+        d['_type'] = self._type
         d['name'] = self.name
         d['status'] = self.status
         d['owner'] = self.owner
