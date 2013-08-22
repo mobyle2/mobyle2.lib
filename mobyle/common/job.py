@@ -268,7 +268,7 @@ class Job(ProjectDocument):
         """
         """
         d = {}
-        d['_type'] = self._type
+        #d['_type'] = self._type
         d['name'] = self.name
         d['status'] = self.status
         d['owner'] = self.owner
