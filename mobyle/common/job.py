@@ -249,7 +249,7 @@ class Job(ProjectDocument):
     __database__ = Config.config().get('app:main','db_name')
 
     structure = {
-                '_type' : unicode,
+                #'_type' : unicode,
                  'name' : basestring,
                  'status' : CustomStatus(),
                  'owner' : {'id': ObjectId, 'klass': basestring},
