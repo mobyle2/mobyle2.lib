@@ -277,15 +277,16 @@ class Job(ProjectDocument):
                  '_type' : unicode,
                  'name' : basestring,
                  'status' : CustomStatus(),
+                 #there is a bug in mongokit
+                 #see https://github.com/namlook/mongokit/issues/137
                  #'owner' : {'id': ObjectId, 'klass': basestring},
-                 'owner' : basestring,
+                 'owner' : dict,
                  'message' : basestring,
                  'end_time' : datetime.datetime,
                  'has_been_notified' : bool,
                  'project': ObjectId,
                  '_dir' : basestring,
                  'cmd_line': basestring,
-                 
                 }
 
     required_fields = ['status', 'project']
