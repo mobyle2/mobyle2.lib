@@ -35,42 +35,64 @@ class Status(object):
     __metaclass__ = MetatStatus
     
     UNKNOWN = u'unknown'
+    
     """the system is not able to determine the status of the job"""
     INIT = u'init'
-    """init the job creation (working directory creation, job settings,...) the status changed for BUILDING when the user click on "run" """
+    
+    TO_BE_BUILT = u'to be built'
+    """the job is ready to be handle by the execution engine, the status changed for BUILDING when the user click on "run" """
+    
     BUILDING = u'building'
-    """the environment of the job is building ( building command line, ...)"""
+    """the environment of the job is building (working directory creation, building command line, ...). this phase is handle by the building actor"""
+
     TO_BE_SUBMITTED = u'to be submitted'
-    """The job is ready to be handle by the execution engine"""
+    """The job is ready to be submitted to the execution system"""
+    
+    SUBMITTING = u"submitting"
+    """the job is submitting to right execution system, This phase is handle by the subitting actor"""
+    
     SUBMITTED = u'submitted'
-    """the job has been submitted to the execution system"""
+    """the job has been submitted to the execution system, the job acquire this status when it leave the sibmmitingActor"""
+    
+    UPDATING = u'updating'
+    """The execution system is querying to to update the status job. This status is more an technical status to avoid to update the same job at the same time twice"""
+    
     PENDING = u'pending'
     """the job is pending in the execution system note that some system cannot pend a job (SYS)"""
+    
     RUNNING = u'running'
     """the job is running"""
+
     FINISHED = u'finished'
     """the job is completed without error"""
+    
     ERROR = u'error'
     """an error occurred the job is stopped"""
+    
     KILLED = u'killed'
     """the job was stopped by an administrator or the user"""
+    
     HOLD = u'hold'
     """the job is hold by the execution system"""
+    
     PAUSE = u'pause'
     """the job is suspended by the user. when the user resume a paused job the status become TO_BE_SUBMITTED"""
         
     _transitions = {
                     UNKNOWN : [],
-                    INIT : [BUILDING, ERROR, KILLED, UNKNOWN],
+                    INIT : [TO_BE_BUILT, ERROR, KILLED, UNKNOWN],
+                    TO_BE_BUILT : [BUILDING, ERROR, KILLED, UNKNOWN],
                     BUILDING : [TO_BE_SUBMITTED, ERROR ,KILLED, UNKNOWN],
-                    TO_BE_SUBMITTED : [SUBMITTED, ERROR ,KILLED, UNKNOWN],
-                    SUBMITTED : [PENDING, ERROR, KILLED, UNKNOWN],
-                    PENDING : [RUNNING, ERROR, KILLED, UNKNOWN],
-                    RUNNING : [FINISHED, ERROR, KILLED, UNKNOWN],
+                    TO_BE_SUBMITTED : [SUBMITTING, ERROR ,KILLED, UNKNOWN],
+                    SUBMITTING : [SUBMITTED, ERROR ,KILLED, UNKNOWN],
+                    SUBMITTED : [UPDATING, ERROR, KILLED, UNKNOWN],
+                    UPDATING : [RUNNING, PENDING, HOLD, FINISHED, ERROR, KILLED, UNKNOWN],
+                    PENDING : [UPDATING, ERROR, KILLED, UNKNOWN],
+                    RUNNING : [UPDATING, ERROR, KILLED, UNKNOWN],
                     FINISHED : [],
                     ERROR : [],
                     KILLED : [],
-                    HOLD : [RUNNING, ERROR, KILLED, UNKNOWN],
+                    HOLD : [UPDATING, ERROR, KILLED, UNKNOWN],
                     PAUSE : [TO_BE_SUBMITTED, ERROR, KILLED, UNKNOWN]
                     }
     
@@ -186,7 +208,7 @@ class Status(object):
         :return: True if the job is ready to be build (prepare the job environment).
         :rtype: bool
         """
-        return self._state == self.BUILDING
+        return self._state == self.TO_BE_BUILT
     
     def is_active(self):
         """
@@ -201,9 +223,12 @@ class Status(object):
         :return: all state which than the job can be handle by the execution_system
         :rtype: string
         """
-        return [cls.BUILDING, 
+        return [cls.TO_BE_BUILT,
+                cls.BUILDING, 
                 cls.TO_BE_SUBMITTED,
+                cls.SUBMITTING,
                 cls.SUBMITTED,
+                cls.UPDATING,
                 cls.PENDING ,
                 cls.RUNNING ,
                 cls.HOLD ,
@@ -249,15 +274,18 @@ class Job(ProjectDocument):
     __database__ = Config.config().get('app:main','db_name')
 
     structure = {
-                #'_type' : unicode,
+                 '_type' : unicode,
                  'name' : basestring,
                  'status' : CustomStatus(),
-                 'owner' : {'id': ObjectId, 'klass': basestring},
+                 #'owner' : {'id': ObjectId, 'klass': basestring},
+                 'owner' : basestring,
                  'message' : basestring,
                  'end_time' : datetime.datetime,
                  'has_been_notified' : bool,
                  'project': ObjectId,
                  '_dir' : basestring,
+                 'cmd_line': basestring,
+                 
                 }
 
     required_fields = ['status', 'project']
@@ -268,7 +296,7 @@ class Job(ProjectDocument):
         """
         """
         d = {}
-        #d['_type'] = self._type
+        d['_type'] = self._type
         d['name'] = self.name
         d['status'] = self.status
         d['owner'] = self.owner
@@ -372,6 +400,15 @@ class ClJob(Job):
                  'cmd_line' : basestring,
                  'cmd_env' : dict
                 }
+    
+    def __getstate__(self):
+        """
+        """ 
+        d = super(ClJob, self).__getstate__() 
+        d['_type'] = self._type
+        d['cmd_line'] = self.cmd_line
+        d['cmd_env'] = self.cmd_env
+        return d
     
     
     def must_be_notified(self):

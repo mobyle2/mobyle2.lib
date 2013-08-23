@@ -10,32 +10,28 @@ state diagram of Status
 =======================
 .. digraph:: state_diagram
 
-     "INIT" -> "BUILDING" -> "TO_BE_SUBMITTED" -> "SUBMITTED";
-     "SUBMITTED" -> "PENDING";
-     "SUBMITTED" -> "RUNNING";
-     "SUBMITTED" -> "HOLD";
-     "SUBMITTED" -> "PAUSE";
-     "RUNNING" -> "PAUSE"
+     "INIT" -> "TO_BE_BUILT" -> "BUILDING" -> "TO_BE_SUBMITTED" -> "SUBMITTING" -> "SUBMITTED" -> "UPDATING";
+     "UPDATING" -> "RUNNING" ;
+     "RUNNING" -> "UPDATING";
+     "UPDATING" -> "PENDING";
+     "PENDING" -> "UPDATING";
+     "UPDATING" -> "HOLD";
+     "HOLD" -> "UPDATING";
+     "UPDATING" -> "FINISHED ;
+     
      "PAUSE" -> "TO_BE_SUBMITTED";
-     "RUNNING" -> "HOLD";
-     "HOLD" -> "RUNNING";
-     "RUNNING" -> "FINISHED";
+     
      "INIT" -> "KILLED";
-     "BUILDING" -> "KILLED";
+     "TO_BE_BUILT" -> "KILLED";
      "TO_BE_SUBMITTED" -> "KILLED";
-     "SUBMITTED" -> "KILLED";
-     "PENDING" -> "KILLED";
-     "PENDING" -> "RUNNING";
-     "RUNNING" -> "KILLED";
-     "HOLD" -> "KILLED";
+     "UPDATING" -> "KILLED";
      "PAUSE" -> "KILLED";
+     
      "INIT" -> "ERROR";
-     "BUILDING" -> "ERROR";
+     "TO_BE_BUILT" -> "ERROR";
      "TO_BE_SUBMITTED" -> "ERROR";
-     "SUBMITTED" -> "ERROR";
-     "PENDING" -> "ERROR";
-     "RUNNING" -> "ERROR";
-     "HOLD" -> "ERROR";
+     "UPDATING" -> "ERROR";
+     
      "PAUSE" -> "ERROR";
      "UNKNOWN";
      

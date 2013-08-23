@@ -35,7 +35,7 @@ class StatusTest(unittest.TestCase):
         self.queryable_status = [ Status(c) for c in (Status.SUBMITTED, Status.PENDING, Status.RUNNING, Status.HOLD) ]
         self.known_status = [ s for s in self.all_status_object if s.state != Status.UNKNOWN ]
         self.submittable_status = [ Status(Status.TO_BE_SUBMITTED) ]
-        self.buildable_status = [ Status(Status.BUILDING) ]
+        self.buildable_status = [ Status(Status.TO_BE_BUILT) ]
         self.active_status = [Status(s) for s in Status.active_states()]
     
     def test_init(self):
@@ -46,8 +46,8 @@ class StatusTest(unittest.TestCase):
         
     def test_transition(self):
         s = Status(Status.INIT)
-        s.state = Status.BUILDING
-        self.assertEqual(s.state, Status.BUILDING)
+        s.state = Status.TO_BE_BUILT
+        self.assertEqual(s.state, Status.TO_BE_BUILT)
         self.assertRaises(MobyleError, Status.state.fset, s, Status.FINISHED)
         s = Status(Status.KILLED)
         self.assertRaises(MobyleError, Status.state.fset, s, Status.KILLED)
