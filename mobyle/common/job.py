@@ -285,8 +285,7 @@ class Job(ProjectDocument):
                  'end_time' : datetime.datetime,
                  'has_been_notified' : bool,
                  'project': ObjectId,
-                 '_dir' : basestring,
-                 'cmd_line': basestring,
+                 '_dir' : basestring
                 }
 
     required_fields = ['status', 'project']
