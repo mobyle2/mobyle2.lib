@@ -171,7 +171,10 @@ class Software(ProjectDocument):
     """
     __database__ = Config.config().get('app:main', 'db_name')
 
-    structure = { 'name' : basestring,
+    structure = { 
+                  '_type': unicode,
+                  # software name
+                  'name' : basestring,
                   # version of the software
                   'version' : basestring,
                   # title
@@ -236,7 +239,6 @@ class Service(Software, ProjectDocument):
     """
     __collection__ = 'services'
     structure = {
-                  'type': basestring,
                   # package reference
                   'package' : Package,
                   # inputs
@@ -264,10 +266,6 @@ class Program(Service):
                           }]
                 }
 
-    default_values = {
-                      'type': u'program'
-                     }
-
 @mf_decorator
 @connection.register
 class Workflow(Service):
@@ -277,10 +275,6 @@ class Workflow(Service):
     """
     structure = {
                 }
-
-    default_values = {
-                      'type': u'workflow'
-                     }
 
 @mf_decorator
 @connection.register
@@ -292,6 +286,3 @@ class Widget(Service):
     structure = {
                 }
 
-    default_values = {
-                      'type': u'widget'
-                     }
