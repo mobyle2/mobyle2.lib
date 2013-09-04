@@ -36,6 +36,22 @@ class TestService(unittest.TestCase):
             count += 1
         self.assertEqual(count, 1)
 
+    def test_polymorphism(self):
+        """
+        test that the instance of the correct
+        service subclass is retrieved when querying
+        """
+        program = connection.Program()
+        program['name'] = "test_program_service"
+        program.save()
+        workflow = connection.Workflow()
+        workflow['name'] = "test_workflow_service"
+        workflow.save()
+        service = connection.Service.find_one({'name': 'test_program_service'})
+        self.assertTrue(isinstance(service,Program))
+        service = connection.Service.find_one({'name': 'test_program_service'})
+        self.assertTrue(isinstance(workflow,Workflow))
+
     def test_inputs_creation(self):
         """
         test creation of a service with an input
@@ -72,4 +88,6 @@ class TestService(unittest.TestCase):
         self.assertRaises(ValidationError, inputs.validate)
         #service.validate()
         #service.save()
-        
+
+if __name__ == '__main__':
+    unittest.main() 
