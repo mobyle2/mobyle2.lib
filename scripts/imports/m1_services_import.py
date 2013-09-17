@@ -454,7 +454,6 @@ if __name__ == '__main__':
     if args.config:
         user = connection.User.find_one({'email': config.get("app:main",'root_email')})
         project = connection.Project.find_one({ 'owner' : user['_id'] })
-        print project
     if args.storeto:
         import json
     filenames = args.filenames
