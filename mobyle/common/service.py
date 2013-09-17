@@ -7,7 +7,7 @@ Created on Jan 22, 2013
 @organization: Institut Pasteur
 @license: GPLv3
 """
-from mongokit import Document, ObjectId, SchemaDocument, IS
+from mongokit import Document, ObjectId, SchemaDocument, IS, ValidationError
 from mf.annotation import mf_decorator
 
 from .connection import connection
@@ -177,6 +177,8 @@ class Software(ProjectDocument):
                   'name' : basestring,
                   # version of the software
                   'version' : basestring,
+                  # public name, that allows permalinks
+                  'public_name' : basestring,
                   # title
                   'title' : basestring,
                   # description
@@ -215,12 +217,20 @@ class Software(ProjectDocument):
 
     required_fields = [ 'name' ]
 
-    indexes = [
-               {
-                'fields':['name', 'version'],
-                'unique':True
-               }
-              ]
+    def validate(self, *args, **kwargs):
+        """
+        set the path to the job directory. it can be set only one time.
+        
+        :param dir: the path to a directory
+        :type dir: string
+        :raise: :class:`MobyleError` if the dir is try to be set a second time. 
+        """
+        if (self['public_name']!=None):
+            if (self.collection.find({'public_name':self['public_name'], \
+                'version': self['version'],
+                '_id':{'$ne':self.get('_id',None)}}).count()>0):
+                raise ValidatorError('Public name / version already used.')
+        super(Software, self).validate(*args, **kwargs)
 
 @mf_decorator
 @connection.register
