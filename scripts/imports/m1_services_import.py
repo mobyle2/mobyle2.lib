@@ -428,6 +428,7 @@ if __name__ == '__main__':
     parser.add_argument('--config', help="path to the Mobyle2 config file for DB injection")
     parser.add_argument('--storeto', help="output the generated objects as JSON files")
     parser.add_argument('filenames', help="files you want to convert", nargs='+')
+    parser.add_argument('-public', action="store_true", default=False)
     args = parser.parse_args()
     if args.config:
         # Init config
@@ -475,6 +476,9 @@ if __name__ == '__main__':
             elif service.get('#tag')=='package':
                 s = parse_package(JSONProxy(service))
             if s:
+                print args.public
+                if args.public:
+                    s['public_name']=s['name']
                 if args.config:
                     s['project'] = project['_id']
                     s.save()
