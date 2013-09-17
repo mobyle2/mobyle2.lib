@@ -229,7 +229,7 @@ class Software(ProjectDocument):
             if (self.collection.find({'public_name':self['public_name'], \
                 'version': self['version'],
                 '_id':{'$ne':self.get('_id',None)}}).count()>0):
-                raise ValidatorError('Public name / version already used.')
+                raise ValidationError('Public name / version already used.')
         super(Software, self).validate(*args, **kwargs)
 
 @mf_decorator
