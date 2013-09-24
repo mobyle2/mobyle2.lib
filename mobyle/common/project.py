@@ -144,6 +144,11 @@ class ProjectDocument(Document):
 @mf_decorator
 @connection.register
 class ProjectData(ProjectDocument):
+    """
+    ProjectData describes a data linked to a project. It is referenced by jobs
+    and user data manager. A ProjectData can be persistent or not.
+    Data contains an AbstractData structure defining the data available.
+    """
 
     __collection__ = 'projects_data'
     __database__ = Config.config().get('app:main','db_name')
@@ -153,7 +158,12 @@ class ProjectData(ProjectDocument):
                   'tags' : [basestring],
                   'project': ObjectId,
                   'data': AbstractData,
-                  'status' : int
+                  'status' : int,
+                  'persistent' : bool,
+                  'path' : basestring
                   #TODO: add data provenance information
                 }
+
+    default_values = {'persistent' : False}
+
 
