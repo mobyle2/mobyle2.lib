@@ -25,7 +25,9 @@ class User(Document):
                  'type' : basestring,
                  'admin': bool,
                  'groups' : [ basestring ],
-                 'apikey' : basestring }
+                 'apikey' : basestring,
+                 'home_dir': basestring
+                 }
 
     default_values = { 'hashed_password' : '', 'admin': False, 'apikey' : uuid.uuid4().hex }
     

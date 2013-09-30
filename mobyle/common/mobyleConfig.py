@@ -33,16 +33,51 @@ class MobyleConfig(Document):
 
     __database__ = Config.config().get('app:main','db_name')
 
-    structure = { 'auth_mod' : basestring , 'mail' : { 'gateway' : basestring, 'user' : basestring, 'password' : basestring, 'origin' : basestring },
-                  'url' : basestring, 'datadir' : basestring, 'rootdir' : basestring, 'options' :  { 'apikey' : bool }
+    structure = { 'active' : bool,
+                  'auth_mod' : basestring ,
+                  'mail' : { 'gateway' : basestring,
+                             'user' : basestring,
+                             'password' : basestring,
+                             'origin' : basestring },
+                  'url' : basestring,
+                  'datadir' : basestring,
+                  'rootdir' : basestring,
+                  'options' :  { 'apikey' : bool },
+                  'auth': { 'ldap' : {
+                                'allow': bool,
+                                'host': basestring,
+                                'port': int,
+                                'dn': basestring,
+                                'filter': basestring
+                            }
+                    },
+                    'data': {
+                        'remote': {
+                            'allowed_protocols': basestring
+                        }
+                    }
     }
 
     default_values = {
+        'active': False,
         'options.apikey': False,
+        'auth.ldap.allow': False,
+        'auth.ldap.host': 'localhost',
+        'auth.ldap.port': 389,
+        'data.remote.allowed_protocols': 'http,ftp',
         'url': 'http://localhost',
         'datadir' : '/var/lib/mobyle',
         'rootdir' : '/usr/share/mobyle'
     }
+
+    @classmethod
+    def get_current(klass):
+        """
+        Return current active configuration
+
+        :return: active MobyleConfig
+        """
+        return connection.MobyleConfig.find_one({'active': True})
 
 
     def to_json(self):

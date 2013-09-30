@@ -61,5 +61,6 @@ from mobyle.common.mobyleConfig import MobyleConfig
 #Create default config
 if connection.MobyleConfig.find().count() == 0:
     cf = connection.MobyleConfig()
+    cf['active'] = True
     cf.save()
 

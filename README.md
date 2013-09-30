@@ -4,6 +4,15 @@ mobyle2.lib
 core part of mobyle2 project 
 
 
+requirements
+============
+
+python-ldap needs the following packages:
+
+Debian:
+* libldap2-dev
+* libsasl2-dev
+
 Usage notes:
 ============
 

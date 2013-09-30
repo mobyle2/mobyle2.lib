@@ -33,3 +33,9 @@ class TestMobyleConfig(unittest.TestCase):
         config.save()
         config_list = connection.MobyleConfig.find_one({'datadir': '/var/lib/mobyle'})
         self.assertIsNotNone(config_list)
+
+    def test_get_current(self):
+        config = connection.MobyleConfig()
+        config['active'] = True
+        config.save()
+        self.assertTrue(config['_id'] == MobyleConfig.get_current()['_id'])

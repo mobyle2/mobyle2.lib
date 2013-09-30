@@ -8,6 +8,10 @@ branches:
     - /^feature.*$/
     - master
 # command to install dependencies
+before_install:
+  - "sudo apt-get update -qq"
+  - "sudo apt-get install -qq libldap2-dev libsasl2-dev"
+
 install:
   - "pip install coverage"
   - "pip install python-coveralls"
