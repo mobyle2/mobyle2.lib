@@ -54,6 +54,9 @@ class MobyleConfig(Document):
                     'data': {
                         'remote': {
                             'allowed_protocols': basestring
+                        },
+                        'local': {
+                            'allowed_copy': bool
                         }
                     }
     }
@@ -65,6 +68,7 @@ class MobyleConfig(Document):
         'auth.ldap.host': 'localhost',
         'auth.ldap.port': 389,
         'data.remote.allowed_protocols': 'http,ftp',
+        'data.local.allowed_copy': False,
         'url': 'http://localhost',
         'datadir' : '/var/lib/mobyle',
         'rootdir' : '/usr/share/mobyle'
