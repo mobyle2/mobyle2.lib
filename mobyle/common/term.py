@@ -51,9 +51,10 @@ class Term(AbstractTerm):
     """
     Term information storage, including subclass references
     """
-
+    __collection__ = 'terms'
 
     structure = {
+        '_type': unicode,
         'subclassOf': [AbstractTerm]
         }
     indexes = [
@@ -62,3 +63,60 @@ class Term(AbstractTerm):
              'unique':False,
          },
      ]
+
+@mf_decorator
+@connection.register
+class DataTerm(Term):
+    """
+    type information for data based on EDAM ontology
+    """
+    #__collection__ = 'types'
+    structure = {
+        'has_topic': [basestring],
+        'is_identifier_of': [basestring]
+        }
+
+DataTerm.search_by('id')
+
+@mf_decorator
+@connection.register
+class FormatTerm(Term):
+    """
+    format information based on EDAM ontology
+    """
+    #__collection__ = 'formats'
+
+    structure = {
+        'is_format_of': [basestring]
+        }
+
+FormatTerm.search_by('id')
+
+@mf_decorator
+@connection.register
+class TopicTerm(Term):
+    """
+    Topic term
+    in EDAM: "A general bioinformatics subject or category, such as a field of
+    study, data, processing, analysis or technology"
+    """
+    #__collection__ = 'topics'
+
+TopicTerm.search_by('id')
+
+@mf_decorator
+@connection.register
+class OperationTerm(Term):
+    """
+    Operation term
+    in EDAM: "A function or process performed by a tool; what is done, but not (typically) how or in what context"
+    """
+    #__collection__ = 'operations'
+
+    structure = {
+        'has_input': [DataTerm],
+        'has_output': [DataTerm],
+        'has_topic': [TopicTerm]
+    }
+
+OperationTerm.search_by('id')

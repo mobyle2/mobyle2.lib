@@ -11,36 +11,36 @@ config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mongokit import ValidationError
 
 from mobyle.common.connection  import connection
-from mobyle.common.type import *
+from mobyle.common.term import *
 
 
 
 
-class TestType(unittest.TestCase):
-    """ Tests for the Type class
+class TestDataTerm(unittest.TestCase):
+    """ Tests for the DataTerm class
     """
 
     def setUp(self):
-        objects = connection.Type.find({})
+        objects = connection.DataTerm.find({})
         for object in objects:
             object.delete()
             
     def tearDown(self):
-        objects = connection.Type.find({})
+        objects = connection.DataTerm.find({})
         for object in objects:
             object.delete()
 
 
     def test_insert(self):
          """
-        test basic creation of a fake EDAM type
+        test basic creation of a fake EDAM data term
         """
-         typetest = connection.Type()
-         typetest['id'] = "test_type"
-         typetest.save()
-         types_list = connection.Type.find({'id':'test_type'})
+         data_term_test = connection.DataTerm()
+         data_term_test['id'] = "test_data_term"
+         data_term_test.save()
+         data_terms_list = connection.DataTerm.find({'id':'test_data_term'})
          count = 0
-         for typetest in types_list:
+         for data_term_test in data_terms_list:
              count+=1
          self.assertEqual(count,1)
     
