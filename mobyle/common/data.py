@@ -10,7 +10,8 @@ Created on Nov. 12, 2012
 @license: GPLv3
 '''
 
-from mongokit import SchemaDocument
+from mongokit import SchemaDocument, OR
+from .term import FormatTerm, DataTerm
 
 class AbstractData(SchemaDocument):
     """
@@ -20,86 +21,104 @@ class AbstractData(SchemaDocument):
     use_dot_notation = True
 
     structure = {
-                 "_type": unicode,
+                 "data_terms": [basestring]
                 }
+    @property
+    def schema(self):
+        return {'type':self._type}
 
-    def get_format(self):
-        raise NotImplementedError
-
-    def get_type(self):
-        raise NotImplementedError
-
-    @staticmethod
-    def get_instance(dict):
-        #TODO instanciate the right AbstractData subclass instance
-        # depending on the _type field
-        pass
+    def to_json(self):
+        return json.dumps(dict(self.items() + {'schema': self.schema}.items()))
 
 class SimpleData(AbstractData):
     """
-    A data which has a simple type/format definition
+    A data which has a simple data/format definition
     """
 
-    structure = {'type': basestring,
-                 'format': basestring,
-                 #'_type': 'SimpleData',
+    structure = {
+                 'value': None
+                }    
+
+class BooleanData(SimpleData):
+    """
+    A boolean data
+    """
+    _type='boolean'
+
+class IntegerData(SimpleData):
+    """
+    A boolean data
+    """
+    _type='integer'
+
+class FloatData(SimpleData):
+    """
+    A boolean data
+    """
+    _type='float'
+
+class StringData(SimpleData):
+    """
+    A boolean data
+    """
+    _type='float'
+
+class FormattedData(SimpleData):
+    """
+    A boolean data
+    """
+    _type='formatted'
+    structure = {
+                 "format_term": basestring
                 }
 
-    def get_format(self):
-        return self.format
+    @property
+    def schema(self):
+        d = super(FormattedData, self).schema
+        d['format'] = self.format_term
+        return d
 
-    def get_type(self):
-        return self.type
-
-class RefData(SimpleData):
+class ArrayData(AbstractData):
     """
-    A data whose value is stored on the file system
+    A data formed by a array of data items sharing the same type/format
     """
 
-    structure = {'path': basestring,
-                 'size': int
-                 #'_type': 'RefData',
+    structure = {
+                 'value':[AbstractData],
                 }
 
-class ValueData(SimpleData):
+    _type = 'array' 
+
+    @property
+    def schema(self):
+        d = super(ArrayData, self).schema
+        d['items'] = self.value[0].schema
+        return d
+
+class ObjectData(AbstractData):
     """
-    A data whose value is stored directly in the object
-    """
-
-    structure = {'value':basestring,
-                 #'_type': 'ValueData',
-                }
-
-class ListData(AbstractData):
-    """
-    A data formed by a list of data sharing the same type/format
-    """
-
-    structure = {'value':[AbstractData],
-                 #'_type': 'ListData',
-                }
-
-    def get_format(self):
-        return self.value[0].get_format()
-
-    def get_type(self):
-        return self.value[0].get_type()
-
-class StructData(AbstractData):
-    """
-    A data formed by a list properties referencing different data
+    A data formed by a object containing properties referencing different data
     """
 
     structure = {'properties':{basestring:AbstractData},
-                 #'_type': 'StructData',
                 }
 
-    def get_format(self):
-        format = {property: value.get_format() \
-                  for (property, value) in self.properties.items()}
-        return format
+    _type = 'object'
 
-    def get_type(self):
-        typ = {property: value.get_type() \
-               for (property, value) in self.properties.items()}
-        return typ
+    @property
+    def schema(self):
+        d = super(ObjectData, self).schema
+        d['properties'] = {property: value.schema \
+                  for (property, value) in self.properties.items()}
+        return d
+
+#el1 = BooleanData()
+#el1.value = True
+#el2 = IntegerData()
+#el2.value = 2
+#el3 = ObjectData()
+#el3.properties['b'] = el1
+#el3.properties['c'] = el2
+#for el in [el1, el2, el3]:
+#    print el.to_json()
+#    print el.schema
