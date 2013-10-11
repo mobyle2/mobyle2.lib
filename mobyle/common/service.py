@@ -23,7 +23,7 @@ class Code(SchemaDocument):
                 'perl': basestring
                 }
 
-class Type(SchemaDocument):
+class LegacyType(SchemaDocument):
     """
     type information
     WARNING: this is Mobyle1 information
@@ -59,7 +59,7 @@ class Parameter(Para):
                 'main': bool,
                 'hidden': bool,
                 'simple':bool,
-                'type': Type
+                'type': dict
                 }
 
 class Paragraph(Para):
