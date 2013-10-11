@@ -11,7 +11,10 @@ Created on Nov. 12, 2012
 '''
 
 from mongokit import SchemaDocument, OR
+import json, sys, inspect
+
 from .term import FormatTerm, DataTerm
+
 
 class AbstractData(SchemaDocument):
     """
@@ -23,12 +26,33 @@ class AbstractData(SchemaDocument):
     structure = {
                  "data_terms": [basestring]
                 }
+    _type=None
+
     @property
     def schema(self):
+        """
+        get the schema for this data object
+        
+        :returns: the schema for the data object
+        :rtype: dict
+        """
         return {'type':self._type}
 
+    def load_from_schema(self, contents_dict=None):
+        """
+        load prototype contents for the object from its properties schema 
+        :param contents_dict: the contents dictionary
+        :type contents_dict: dict
+        """
+        return
+
     def to_json(self):
-        return json.dumps(dict(self.items() + {'schema': self.schema}.items()))
+        """
+        serialize the object from its properties schema 
+        :param contents_dict: the contents dictionary
+        :type contents_dict: dict
+        """
+        return json.dumps({'schema': self.schema})
 
 class SimpleData(AbstractData):
     """
@@ -36,7 +60,7 @@ class SimpleData(AbstractData):
     """
 
     structure = {
-                 'value': None
+                 'value': basestring
                 }    
 
 class BooleanData(SimpleData):
@@ -47,25 +71,25 @@ class BooleanData(SimpleData):
 
 class IntegerData(SimpleData):
     """
-    A boolean data
+    An integer
     """
     _type='integer'
 
 class FloatData(SimpleData):
     """
-    A boolean data
+    A float
     """
     _type='float'
 
 class StringData(SimpleData):
     """
-    A boolean data
+    A string
     """
-    _type='float'
+    _type='string'
 
 class FormattedData(SimpleData):
     """
-    A boolean data
+    Data formatted according to an EDAM reference
     """
     _type='formatted'
     structure = {
@@ -105,6 +129,10 @@ class ObjectData(AbstractData):
 
     _type = 'object'
 
+    def load_from_schema(self, d=None):
+        for p, v in d["properties"].items():
+            self.properties[p] = v	
+        
     @property
     def schema(self):
         d = super(ObjectData, self).schema
@@ -112,13 +140,35 @@ class ObjectData(AbstractData):
                   for (property, value) in self.properties.items()}
         return d
 
-#el1 = BooleanData()
-#el1.value = True
-#el2 = IntegerData()
-#el2.value = 2
-#el3 = ObjectData()
-#el3.properties['b'] = el1
-#el3.properties['c'] = el2
-#for el in [el1, el2, el3]:
-#    print el.to_json()
-#    print el.schema
+class DataJSONDecoder(json.JSONDecoder):
+
+    def __init__(self):
+        json.JSONDecoder.__init__(self, object_hook=self.dict_to_object)
+	data_classes = inspect.getmembers(sys.modules[__name__], lambda member: inspect.isclass(member) and member.__module__ == __name__)
+        self.map = {}
+	for name, cls in data_classes:
+            if hasattr(cls, '_type'):
+	        self.map[cls._type] = cls
+
+    def dict_to_object(self, d):
+        if d.has_key("type"):
+            t = self.map[d["type"]](d)
+            t.load_from_schema(d)
+        else:
+            t = d
+        return t
+"""
+el1 = BooleanData()
+el1.value = True
+el2 = IntegerData()
+el2.value = 2
+el3 = ObjectData()
+el3.properties['b'] = el1
+el3.properties['c'] = el2
+decoder = DataJSONDecoder()
+for el in [el1, el2, el3]:
+    print "#  ", el.to_json()	
+    print "## ", json.dumps(el.schema)
+    print "###", type(decoder.decode(json.dumps(el.schema)))
+o = decoder.decode(json.dumps(el.schema))
+"""
