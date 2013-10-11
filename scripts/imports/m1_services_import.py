@@ -238,7 +238,7 @@ def parse_parameter(p_dict, service_type):
     parameter['main'] = p_dict.att('ismain') in ['1', 'true', 'True']
     parameter['hidden'] = p_dict.att('ishidden') in ['1', 'true', 'True']
     parameter['simple'] = p_dict.att('issimple') in ['1', 'true', 'True']
-    m_type = Type()
+    m_type = LegacyType()
     t_dict = p_dict.get('type')
     m_type['datatype']['class'] = t_dict.get('datatype').text('class')
     m_type['datatype']['superclass'] = t_dict.get('datatype').text('superclass')
@@ -255,7 +255,48 @@ def parse_parameter(p_dict, service_type):
                                           )
     for edam_type in p_dict.list('edam_type'):
         m_type['edam_types'].append(edam_type.att('ref'))
-    parameter['type'] = m_type
+    ptype = {}
+    #parameter['type'] = m_type
+    python_class = m_type['datatype']['superclass'] or m_type['datatype']['class']
+    biotypes = [el.text() for el in p_dict.get('type').list('biotype')]
+    if python_class=='Integer':
+        ptype['type'] = 'integer'
+    elif python_class=='Float':
+        ptype['type'] = 'float'
+    elif python_class=='Boolean':
+        ptype['type'] = 'boolean'
+    elif python_class=='String':
+        ptype['type'] = 'float'
+    elif python_class=='Choice':
+        ptype['type'] = 'string'
+        vlist = p_dict.get('vlist')
+        if vlist:
+            ptype['enum'] = []
+            for velem in vlist.list('velem'):
+                ptype['enum'].append(velem.get('value').text())
+        elif p_dict.get('flist'):
+            logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
+    elif python_class=='Sequence':
+        ptype['type'] = 'formatted'
+        if biotypes==['Protein']:
+            ptype['data_terms']='EDAM_data:1384' #Sequence alignment (protein)
+        elif biotypes==['DNA']:
+            ptype['data_terms']='EDAM_data:1383' #Sequence alignment (nucleic acid)
+        else:
+            ptype['data_terms']='EDAM_data:0863' #Sequence alignment
+    elif python_class=='Alignment':
+        ptype['type'] = 'formatted'
+        if biotypes==['Protein']:
+            ptype['data_terms']='EDAM_data:2976' #Protein sequence
+        elif biotypes==['DNA']:
+            ptype['data_terms']='EDAM_data:2977' #Nucleic acid sequence
+        else:
+            ptype['data_terms']='EDAM_data:2044' #Sequence
+
+    else:
+        logger.error("[not implemented] parameter class %s not processed for parameter %s" % (python_class, p_dict.text('name')))
+
+    parameter['type'] = ptype
     return parameter
 
 def parse_input_parameter(p_dict, parameter, service_type):
@@ -429,6 +470,7 @@ if __name__ == '__main__':
     parser.add_argument('--storeto', help="output the generated objects as JSON files")
     parser.add_argument('filenames', help="files you want to convert", nargs='+')
     parser.add_argument('-public', action="store_true", default=False)
+    parser.add_argument('-init', action="store_true", default=False)
     args = parser.parse_args()
     if args.config:
         # Init config
@@ -440,7 +482,7 @@ if __name__ == '__main__':
                                           InputParameter, OutputParameter, \
                                           InputProgramParameter, \
                                           OutputProgramParameter, \
-                                          Type
+                                          LegacyType
         from mobyle.common import users
         from mobyle.common import project
         Program = connection.Program
@@ -451,10 +493,13 @@ if __name__ == '__main__':
                                           InputParameter, OutputParameter, \
                                           InputProgramParameter, \
                                           OutputProgramParameter, \
-                                          Type
+                                          LegacyType
     if args.config:
         user = connection.User.find_one({'email': config.get("app:main",'root_email')})
         project = connection.Project.find_one({ 'owner' : user['_id'] })
+        if args.init:
+            connection.Program.collection.remove()
+            connection.Package.collection.remove()
     if args.storeto:
         import json
     filenames = args.filenames
@@ -476,7 +521,6 @@ if __name__ == '__main__':
             elif service.get('#tag')=='package':
                 s = parse_package(JSONProxy(service))
             if s:
-                print args.public
                 if args.public:
                     s['public_name']=s['name']
                 if args.config:
