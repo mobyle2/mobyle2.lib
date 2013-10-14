@@ -1,0 +1,12 @@
+#datatype-biotype/type-format_terms
+Integer/integer
+Float/float
+Boolean/boolean
+String/string
+Choice/string
+Sequence-Protein/formatted-EDAM_data:1384
+Sequence-DNA/formatted-EDAM_data:1383
+Sequence/formatted-EDAM_data:0863
+Alignment-Protein/formatted-EDAM_data:2976
+Alignment-DNA/formatted-EDAM_data:2977
+Alignment/formatted-EDAM_data:2044

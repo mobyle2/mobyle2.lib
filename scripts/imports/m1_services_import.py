@@ -143,6 +143,34 @@ class JSONProxy:
                 s += ET.tostring(internal_to_elem(d))
         return s
 
+class TypeConversionMap(object):
+
+    def __init__(self):
+        self.mapping = {}
+        mapping_file = open(os.path.join(os.path.dirname(__file__), 'types_mapping.txt'),'r')
+        for line in iter(mapping_file):
+            if not(line.startswith('#')):
+                key, value = line.strip().split('/')
+                self.mapping[key]=value
+        mapping_file.close()
+
+    def get_type(self, datatype_class, biotype):
+        key = datatype_class
+        if biotype is not None:
+            key += '-%s' % str(biotype)
+        value = self.mapping.get(key)
+        if not(value):
+            logger.error("[not implemented] parameter class %s / biotype %s not found in mapping (key %s)" % (datatype_class, biotype, key))
+            return None
+        if len(value.split('-'))==1:
+            return {'type':value}
+        else:
+            typ, data = value.split('-')
+            return {'type':typ,
+                    'data_terms':data}
+
+types_map = TypeConversionMap()
+
 def parse_software(d, s):
     """
     parse top-level elements of the software
@@ -259,43 +287,63 @@ def parse_parameter(p_dict, service_type):
     #parameter['type'] = m_type
     python_class = m_type['datatype']['superclass'] or m_type['datatype']['class']
     biotypes = [el.text() for el in p_dict.get('type').list('biotype')]
-    if python_class=='Integer':
-        ptype['type'] = 'integer'
-    elif python_class=='Float':
-        ptype['type'] = 'float'
-    elif python_class=='Boolean':
-        ptype['type'] = 'boolean'
-    elif python_class=='String':
-        ptype['type'] = 'float'
-    elif python_class=='Choice':
-        ptype['type'] = 'string'
-        vlist = p_dict.get('vlist')
-        if vlist:
-            ptype['enum'] = []
-            for velem in vlist.list('velem'):
-                ptype['enum'].append(velem.get('value').text())
-        elif p_dict.get('flist'):
-            logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
-    elif python_class=='Sequence':
-        ptype['type'] = 'formatted'
-        if biotypes==['Protein']:
-            ptype['data_terms']='EDAM_data:1384' #Sequence alignment (protein)
-        elif biotypes==['DNA']:
-            ptype['data_terms']='EDAM_data:1383' #Sequence alignment (nucleic acid)
-        else:
-            ptype['data_terms']='EDAM_data:0863' #Sequence alignment
-    elif python_class=='Alignment':
-        ptype['type'] = 'formatted'
-        if biotypes==['Protein']:
-            ptype['data_terms']='EDAM_data:2976' #Protein sequence
-        elif biotypes==['DNA']:
-            ptype['data_terms']='EDAM_data:2977' #Nucleic acid sequence
-        else:
-            ptype['data_terms']='EDAM_data:2044' #Sequence
-
-    else:
-        logger.error("[not implemented] parameter class %s not processed for parameter %s" % (python_class, p_dict.text('name')))
-
+    biotype = biotypes[0] if len(biotypes)==1 else None
+    ptype = types_map.get_type(python_class, biotype)
+    #if python_class=='Integer':
+    #    ptype['type'] = 'integer'
+    #elif python_class=='Float':
+    #    ptype['type'] = 'float'
+    #elif python_class=='Boolean':
+    #    ptype['type'] = 'boolean'
+    #elif python_class=='String':
+    #    ptype['type'] = 'string'
+    #elif python_class=='Choice':
+    #    ptype['type'] = 'string'
+    vlist = p_dict.get('vlist')
+    if vlist:
+        ptype['enum'] = []
+        for velem in vlist.list('velem'):
+            ptype['enum'].append(velem.get('value').text())
+    elif p_dict.get('flist'):
+        logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
+    #elif python_class=='Sequence':
+    #    ptype['type'] = 'formatted'
+    #    if biotypes==['Protein']:
+    #        ptype['data_terms']='EDAM_data:1384' #Sequence alignment (protein)
+    #    elif biotypes==['DNA']:
+    #        ptype['data_terms']='EDAM_data:1383' #Sequence alignment (nucleic acid)
+    #    else:
+    #        ptype['data_terms']='EDAM_data:0863' #Sequence alignment
+    #elif python_class=='Alignment':
+    #    ptype['type'] = 'formatted'
+    #    if biotypes==['Protein']:
+    #        ptype['data_terms']='EDAM_data:2976' #Protein sequence
+    #    elif biotypes==['DNA']:
+    #        ptype['data_terms']='EDAM_data:2977' #Nucleic acid sequence
+    #    else:
+    #        ptype['data_terms']='EDAM_data:2044' #Sequence
+    #else:
+    #    logger.error("[not implemented] parameter class %s not processed for parameter %s" % (python_class, p_dict.text('name')))
+    if ptype and ptype.get('type')=='formatted':
+        format_terms=[]
+        for data_format in t_dict.list('dataFormat'):
+            df = data_format.text()
+            if df=='FASTA':
+                format_terms.append('EDAM_format:2200') # FASTA-like
+            elif df=='CLUSTAL':
+                format_terms.append('EDAM_format:1982') # ClustalW format
+            elif df=='PHYLIPI':
+                format_terms.append('EDAM_format:1955') # PHYLIP interleaved sequence format
+            elif df=='PHYLIPS':
+                format_terms.append('EDAM_format:1956') # PHYLIP non-interleaved sequence format
+            elif df=='STOCKHOLM':
+                format_terms.append('EDAM_format:1961') # Stockholm multiple sequence alignment format
+            elif df=='EMBL':
+                format_terms.append('EDAM_format:1927') # EMBL format
+            elif df=='GENBANK':
+                format_terms.append('EDAM_format:1936') # GenBank format
+        if format_terms:
+           ptype['format_terms']=format_terms
     parameter['type'] = ptype
     return parameter
 
