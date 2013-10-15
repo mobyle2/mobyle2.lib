@@ -1,0 +1,8 @@
+#Mobyle1 format/format_term
+FASTA/EDAM_format:2200
+CLUSTAL/EDAM_format:1982
+PHYLIPI/EDAM_format:1955
+PHYLIPS/EDAM_format:1956
+STOCKHOLM/EDAM_format:1961
+EMBL/EDAM_format:1927
+GENBANK/EDAM_format:1936
