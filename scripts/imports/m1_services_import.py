@@ -309,9 +309,9 @@ def parse_parameter(p_dict, service_type):
     ptype = types_map.get_type(python_class, biotype) or {}
     vlist = p_dict.get('vlist')
     if vlist:
-        ptype['enum'] = []
+        ptype['options'] = []
         for velem in vlist.list('velem'):
-            ptype['enum'].append(velem.get('value').text())
+            ptype['options'].append({'label':velem.get('label').text(), 'value':velem.get('value').text()})
     elif p_dict.get('flist'):
         logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
     if ptype and ptype.get('type')=='formatted':
