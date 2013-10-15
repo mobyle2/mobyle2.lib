@@ -4,6 +4,7 @@ Float/float
 Boolean/boolean
 String/string
 Choice/string
+Filename/string
 Sequence-Protein/formatted-EDAM_data:1384
 Sequence-DNA/formatted-EDAM_data:1383
 Sequence/formatted-EDAM_data:0863
