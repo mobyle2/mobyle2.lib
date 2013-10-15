@@ -314,10 +314,13 @@ def parse_parameter(p_dict, service_type):
             ptype['options'].append({'label':velem.get('label').text(), 'value':velem.get('value').text()})
     elif p_dict.get('flist'):
         logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
+    vdef = p_dict.get('vdef')
+    if vdef:
+        values = [v.text() for v in vdef.list('value')]
+        ptype['default'] = values[0] if len(values)==1 else values
     if ptype and ptype.get('type')=='formatted':
         format_terms=[]
         for data_format in t_dict.list('dataFormat'):
-            logger.error(data_format.text())
             df = formats_map.get_format(data_format.text())
             if df:
                 format_terms.append(df)
