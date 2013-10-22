@@ -13,3 +13,4 @@ Alignment-DNA/formatted-EDAM_data:2977
 Alignment/formatted-EDAM_data:2044
 DistanceMatrix/formatted-EDAM_data:0870
 PhylipDistanceMatrix/formatted-EDAM_data:0870
+Tree/formatted-EDAM_data:0872
