@@ -183,12 +183,54 @@ class FormatConversionMap(object):
         mapping_file.close()
 
     def get_format(self, mobyle1_format):
-        value = self.mapping.get(mobyle1_format)
-        if not(value):
-            logger.error("[not implemented] format %s not found in mapping" % (mobyle1_format))
-        return value
+        try:
+            value = self.mapping.get(mobyle1_format)
+            if not(value):
+                logger.error("[not implemented] format %s not found in mapping" % (mobyle1_format))
+            return value
+        except:
+            logger.error("error retrieving format %s in mapping" % (mobyle1_format))
+            return None
 
 formats_map = FormatConversionMap()
+
+class TopicConversionMap(object):
+
+    def __init__(self):
+        self.mapping = {}
+        mapping_file = open(os.path.join(os.path.dirname(__file__), 'topic_mapping.txt'),'r')
+        for line in iter(mapping_file):
+            if not(line.startswith('#')):
+                key, value = line.strip().split('/')
+                self.mapping[key]=value.split(',')
+        mapping_file.close()
+
+    def get_topic(self, service_name):
+        values = self.mapping.get(service_name)
+        if not(values):
+            logger.error("[not implemented] topic for service %s not found in mapping" % (service_name))
+        return values
+
+topics_map = TopicConversionMap()
+
+class OperationConversionMap(object):
+
+    def __init__(self):
+        self.mapping = {}
+        mapping_file = open(os.path.join(os.path.dirname(__file__), 'operation_mapping.txt'),'r')
+        for line in iter(mapping_file):
+            if not(line.startswith('#')):
+                key, value = line.strip().split('/')
+                self.mapping[key]=value.split(',')
+        mapping_file.close()
+
+    def get_operation(self, service_name):
+        values = self.mapping.get(service_name)
+        if not(values):
+            logger.error("[not implemented] operation for service %s not found in mapping" % (service_name))
+        return values
+
+operation_map = OperationConversionMap()
 
 def parse_software(d, s):
     """
@@ -222,9 +264,11 @@ def parse_software(d, s):
     for cat in d.list('category'):
         s['classifications'].append({'type':'mobyle1', \
                                      'classification':cat.text()})
-    for cat in d.list('edam_cat'):
-        s['classifications'].append({'type':'EDAM', \
-                                     'classification':cat.att('ref')})
+    #for cat in d.list('edam_cat'):
+    #    s['classifications'].append({'type':'EDAM', \
+    #                                 'classification':cat.att('ref')})
+    s['operations'] = operation_map.get_operation(s['name']) or []
+    s['topics'] = topics_map.get_topic(s['name']) or []
     if d.get('package'):
         package_name = d.get('package').text('name')
         logger.info('software %s belongs to package %s, linking...' %\

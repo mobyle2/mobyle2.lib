@@ -210,6 +210,9 @@ class Software(ProjectDocument):
                                        # classification value
                                        'classification':basestring
                                      }],
+                  # operations
+                  'operations': [basestring],
+                  'topics': [basestring],
                   'project': ObjectId
                 }
 
