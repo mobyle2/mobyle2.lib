@@ -176,6 +176,8 @@ hmmindex/EDAM_operation:0227
 hmmpfam/EDAM_operation:0342
 hmmsearch/EDAM_operation:0351
 mafft/EDAM_operation:0492
+weighbor/EDAM_operation:0546
+mfold/EDAM_operation:0278
 #pima
 #predator
 #repeatoire

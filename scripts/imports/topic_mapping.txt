@@ -175,3 +175,5 @@ hmmindex/EDAM_topics:0188
 hmmpfam/EDAM_topics:0188
 hmmsearch/EDAM_topics:0188
 mafft/EDAM_topic:0182
+weighbor/EDAM_topic:0084
+mfold/EDAM_topics:0697
