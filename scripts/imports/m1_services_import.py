@@ -19,7 +19,6 @@ from mobyle.common.config import Config
 # pylint: disable=C0103
 #        Invalid name "logger" for type constant
 logger = logging.getLogger('mobyle.service_migration')
-logger.setLevel(logging.INFO)
 
 class JSONProxy:
     """
@@ -541,6 +540,8 @@ def get_loader(path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Migrate Mobyle1 XML files to Mobyle2')
     parser.add_argument('--config', help="path to the Mobyle2 config file for DB injection")
+    parser.add_argument('--loglevel', help=\
+           "logging level for the import script, use this to override the configuration")
     parser.add_argument('--storeto', help="output the generated objects as JSON files")
     parser.add_argument('filenames', help="files you want to convert", nargs='+')
     parser.add_argument('-public', action="store_true", default=False)
@@ -568,6 +569,11 @@ if __name__ == '__main__':
                                           InputProgramParameter, \
                                           OutputProgramParameter, \
                                           LegacyType
+    if args.loglevel:
+        try:
+            logger.setLevel(args.loglevel)
+        except ValueError, ve:
+            logger.error("invalid logging level specified %s, loglevel is ignored" % args.loglevel)
     if args.config:
         user = connection.User.find_one({'email': config.get("app:main",'root_email')})
         project = connection.Project.find_one({ 'owner' : user['_id'] })
