@@ -147,6 +147,7 @@ class TypeConversionMap(object):
     def __init__(self):
         self.mapping = {}
         mapping_file = open(os.path.join(os.path.dirname(__file__), 'types_mapping.txt'),'r')
+        self.missing = set()
         for line in iter(mapping_file):
             if not(line.startswith('#')):
                 key, value = line.strip().split('/')
@@ -159,6 +160,7 @@ class TypeConversionMap(object):
             key += '-%s' % str(biotype)
         value = self.mapping.get(key)
         if not(value):
+            self.missing.add('%s/%s' % (datatype_class, biotype))
             logger.error("[not implemented] parameter class %s / biotype %s not found in mapping (key %s)" % (datatype_class, biotype, key))
             return None
         if len(value.split('-'))==1:
@@ -168,6 +170,7 @@ class TypeConversionMap(object):
             return {'type':typ,
                     'data_terms':data}
 
+
 types_map = TypeConversionMap()
 
 class FormatConversionMap(object):
@@ -175,6 +178,7 @@ class FormatConversionMap(object):
     def __init__(self):
         self.mapping = {}
         mapping_file = open(os.path.join(os.path.dirname(__file__), 'formats_mapping.txt'),'r')
+        self.missing = set()
         for line in iter(mapping_file):
             if not(line.startswith('#')):
                 key, value = line.strip().split('/')
@@ -185,6 +189,7 @@ class FormatConversionMap(object):
         try:
             value = self.mapping.get(mobyle1_format)
             if not(value):
+                self.missing.add(mobyle1_format)
                 logger.error("[not implemented] format %s not found in mapping" % (mobyle1_format))
             return value
         except:
@@ -198,6 +203,7 @@ class TopicConversionMap(object):
     def __init__(self):
         self.mapping = {}
         mapping_file = open(os.path.join(os.path.dirname(__file__), 'topic_mapping.txt'),'r')
+        self.missing = set()
         for line in iter(mapping_file):
             if not(line.startswith('#')):
                 key, value = line.strip().split('/')
@@ -207,6 +213,7 @@ class TopicConversionMap(object):
     def get_topic(self, service_name):
         values = self.mapping.get(service_name)
         if not(values):
+            self.missing.add(service_name)
             logger.error("[not implemented] topic for service %s not found in mapping" % (service_name))
         return values
 
@@ -217,6 +224,7 @@ class OperationConversionMap(object):
     def __init__(self):
         self.mapping = {}
         mapping_file = open(os.path.join(os.path.dirname(__file__), 'operation_mapping.txt'),'r')
+        self.missing = set()
         for line in iter(mapping_file):
             if not(line.startswith('#')):
                 key, value = line.strip().split('/')
@@ -226,10 +234,11 @@ class OperationConversionMap(object):
     def get_operation(self, service_name):
         values = self.mapping.get(service_name)
         if not(values):
+            self.missing.add(service_name)
             logger.error("[not implemented] operation for service %s not found in mapping" % (service_name))
         return values
 
-operation_map = OperationConversionMap()
+operations_map = OperationConversionMap()
 
 def parse_software(d, s):
     """
@@ -266,7 +275,7 @@ def parse_software(d, s):
     #for cat in d.list('edam_cat'):
     #    s['classifications'].append({'type':'EDAM', \
     #                                 'classification':cat.att('ref')})
-    s['operations'] = operation_map.get_operation(s['name']) or []
+    s['operations'] = operations_map.get_operation(s['name']) or []
     s['topics'] = topics_map.get_topic(s['name']) or []
     if d.get('package'):
         package_name = d.get('package').text('name')
@@ -616,3 +625,10 @@ if __name__ == '__main__':
         except Exception, exc:
             logger.error("Error processing file %s: %s" % 
                          (filename, exc.message), exc_info=True)
+    for variable, file_name in [(types_map, 'missing_mapped_types'),
+                                  (formats_map, 'missing_mapped_formats'),
+                                  (topics_map, 'missing_mapped_topics'),
+                                  (operations_map, 'missing_mapped_operations')]:
+        report_file = open(file_name,'w')
+        report_file.writelines([item+'\n' for item in variable.missing])
+        report_file.close()
