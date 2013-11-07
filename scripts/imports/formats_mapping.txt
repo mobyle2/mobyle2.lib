@@ -1,11 +1,13 @@
 #Mobyle1 format/format_term
 FASTA/EDAM_format:2200
+Fasta/EDAM_format:2200
 CLUSTAL/EDAM_format:1982
 PHYLIPI/EDAM_format:1955
 PHYLIPS/EDAM_format:1956
 STOCKHOLM/EDAM_format:1961
 EMBL/EDAM_format:1927
 GENBANK/EDAM_format:1936
+Genbank/EDAM_format:1936
 NEWICK/EDAM_format:1910
 NEXUS/EDAM_format:1912
 GCG/EDAM_format:1935
@@ -13,6 +15,7 @@ NBRF/EDAM_format:1948
 PIR/EDAM_format:1948
 RAW/EDAM_format:1957
 SWISSPROT/EDAM_format:2188
+Uniprot/EDAM_format:2188
 GFF/EDAM_format:2305
 #CT
 #RNAML
