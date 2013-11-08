@@ -370,6 +370,9 @@ def parse_parameter(p_dict, service_type):
     if vdef:
         values = [v.text() for v in vdef.list('value')]
         ptype['default'] = values[0] if len(values)==1 else values
+        if ptype.get('type')=='boolean':
+            # standardise default value for boolean types to true or false
+            ptype['default'] = True if ptype['default'] in ['true',1,True] else False
     if ptype and ptype.get('type')=='formatted':
         format_terms=[]
         for data_format in t_dict.list('dataFormat'):
