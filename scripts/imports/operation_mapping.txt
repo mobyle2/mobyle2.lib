@@ -200,3 +200,6 @@ mfold/EDAM_operation:0278
 #cap3
 #cif
 #closestBed
+newicktops/EDAM_operation:0567
+drawtree/EDAM_operation:0567
+drawgram/EDAM_operation:0567

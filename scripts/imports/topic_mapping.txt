@@ -177,3 +177,6 @@ hmmsearch/EDAM_topics:0188
 mafft/EDAM_topic:0182
 weighbor/EDAM_topic:0084
 mfold/EDAM_topics:0697
+newicktops/EDAM_topics:0092,EDAM_topics:0084
+drawtree/EDAM_topics:0092,EDAM_topics:0084
+drawgram/EDAM_topics:0092,EDAM_topics:0084
