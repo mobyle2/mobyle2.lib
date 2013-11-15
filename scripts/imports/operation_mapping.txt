@@ -203,3 +203,5 @@ mfold/EDAM_operation:0278
 newicktops/EDAM_operation:0567
 drawtree/EDAM_operation:0567
 drawgram/EDAM_operation:0567
+squizz_checker/EDAM_operation:0336
+squizz_convert/EDAM_operation:0335
