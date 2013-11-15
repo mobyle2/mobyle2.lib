@@ -13,6 +13,7 @@ from mf.annotation import mf_decorator
 from .connection import connection
 from .config import Config
 from .project import ProjectDocument
+from .type import TypeAdapter
 
 class Code(SchemaDocument):
     """
@@ -59,7 +60,7 @@ class Parameter(Para):
                 'main': bool,
                 'hidden': bool,
                 'simple':bool,
-                'type': dict
+                'type': TypeAdapter
                 }
 
 class Paragraph(Para):
