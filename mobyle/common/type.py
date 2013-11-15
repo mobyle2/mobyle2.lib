@@ -4,27 +4,18 @@ Created on Nov. 13, 2013
 
 @license: GPLv3
 '''
-from mongokit import SchemaDocument
+from mongokit import CustomType
 
 # pylint: disable=W0201,R0904,R0913
 
-class _Type(SchemaDocument):
+class _Type(object):
     """
     A superclass representing any of the types
     """
-    use_dot_notation = True
 
-    structure = {
-        '_type': unicode,
-        'data_terms' : [basestring]
-    }
-
-    def __init__(self, doc=None, gen_skel=True, gen_auth_types=True, \
-                 validate=True, lang='en', fallback_lang='en', dict_repr=None):
-        super(_Type, self).__init__(doc=doc, gen_skel=gen_skel,
-                                    gen_auth_types=False,
-                                    lang=lang, fallback_lang=fallback_lang)
+    def __init__(self, dict_repr=None):
         self._type = _CLASS_TO_TYPE[self.__class__]
+        self.data_terms = []
         if dict_repr:
             self.set_structure(dict_repr)
 
@@ -76,10 +67,6 @@ class FormattedType(_SimpleType):
     Type describing data formatted according to an EDAM reference
     """
 
-    structure = {
-        'format_term' : basestring
-    }
-
     def encode(self):
         dict_repr = super(FormattedType, self).encode()
         dict_repr['format_term'] = self.format_term
@@ -94,10 +81,6 @@ class ArrayType(_Type):
     Type describing data formed by a array of data items sharing
     the same type/format
     """
-
-    structure = {
-        'items_type' : _Type
-    }
 
     def encode(self):
         dict_repr = super(ArrayType, self).encode()
@@ -114,10 +97,6 @@ class StructType(_Type):
     Type describing data formed by a object containing properties
     referencing different data
     """
-
-    structure = {
-        'properties' : {basestring:_Type}
-    }
 
     def encode(self):
         dict_repr = super(StructType, self).encode()
@@ -152,3 +131,16 @@ def get_type(dict_repr):
     """        
     type_object = _TYPE_TO_CLASS[dict_repr["_type"]](dict_repr=dict_repr)
     return type_object
+
+class TypeAdapter(CustomType):
+    
+    mongo_type = dict
+    python_type = _Type
+ 
+    def to_bson(self, value):
+        return value.encode()
+    
+    def to_python(self, value):
+        if value is not None:
+            return get_type(value)
+
