@@ -565,22 +565,18 @@ if __name__ == '__main__':
         # init db connection
         from mobyle.common.connection import connection
         from mobyle.common.service import Service, Program, Package
-        from mobyle.common.service import InputParagraph, OutputParagraph, \
-                                          InputParameter, OutputParameter, \
-                                          InputProgramParameter, \
-                                          OutputProgramParameter, \
-                                          LegacyType
         from mobyle.common import users
         from mobyle.common import project
         Program = connection.Program
         Package = connection.Package
     else:
         from mobyle.common.service import Service, Program, Package
-        from mobyle.common.service import InputParagraph, OutputParagraph, \
-                                          InputParameter, OutputParameter, \
-                                          InputProgramParameter, \
-                                          OutputProgramParameter, \
-                                          LegacyType
+    from mobyle.common.service import InputParagraph, OutputParagraph, \
+	                              InputParameter, OutputParameter, \
+	                              InputProgramParameter, \
+	                              OutputProgramParameter, \
+	                              LegacyType
+    from mobyle.common.type import *
     if args.loglevel:
         try:
             logger.setLevel(args.loglevel)
