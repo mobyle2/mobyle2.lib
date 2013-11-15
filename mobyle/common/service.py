@@ -222,11 +222,9 @@ class Software(ProjectDocument):
 
     def validate(self, *args, **kwargs):
         """
-        set the path to the job directory. it can be set only one time.
+        validate the public name of the service if it has one.
         
-        :param dir: the path to a directory
-        :type dir: string
-        :raise: :class:`MobyleError` if the dir is try to be set a second time. 
+        :raise: :class:`ValidationError` if the public name is already used. 
         """
         if (self['public_name']!=None):
             if (self.collection.find({'public_name':self['public_name'], \
