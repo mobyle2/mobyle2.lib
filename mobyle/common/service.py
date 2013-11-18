@@ -60,7 +60,7 @@ class Parameter(Para):
                 'main': bool,
                 'hidden': bool,
                 'simple':bool,
-                'type': TypeAdapter
+                'type': TypeAdapter()
                 }
 
 class Paragraph(Para):

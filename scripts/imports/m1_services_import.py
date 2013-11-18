@@ -164,10 +164,10 @@ class TypeConversionMap(object):
             logger.error("[not implemented] parameter class %s / biotype %s not found in mapping (key %s)" % (datatype_class, biotype, key))
             return None
         if len(value.split('-'))==1:
-            return {'type':value}
+            return {'_type':value}
         else:
             typ, data = value.split('-')
-            return {'type':typ,
+            return {'_type':typ,
                     'data_terms':data}
 
 
@@ -337,6 +337,17 @@ def parse_parameter(p_dict, service_type):
     parameter['main'] = p_dict.att('ismain') in ['1', 'true', 'True']
     parameter['hidden'] = p_dict.att('ishidden') in ['1', 'true', 'True']
     parameter['simple'] = p_dict.att('issimple') in ['1', 'true', 'True']
+    # Mobyle2 type
+    t_dict = p_dict.get('type')
+    m1_class = t_dict.get('datatype').text('class')
+    m1_biotypes = [biotype.text() for biotype in t_dict.list('biotype')]
+    m1_biotype = m1_biotypes[0] if len(m1_biotypes)==1 else None
+    type_string = types_map.get_type(m1_class, m1_biotype)
+    if type_string:
+        m2_type = get_type(type_string)
+        print m2_type
+        parameter['type'] = m2_type
+    """
     m_type = LegacyType()
     t_dict = p_dict.get('type')
     m_type['datatype']['class'] = t_dict.get('datatype').text('class')
@@ -381,7 +392,7 @@ def parse_parameter(p_dict, service_type):
                 format_terms.append(df)
         if format_terms:
            ptype['format_terms']=format_terms
-    parameter['type'] = ptype
+    """
     return parameter
 
 def parse_input_parameter(p_dict, parameter, service_type):

@@ -8,29 +8,14 @@ from mongokit import CustomType
 
 # pylint: disable=W0201,R0904,R0913
 
-class _Type(object):
+class _Type(MKStruct):
     """
     A superclass representing any of the types
     """
-
-    def __init__(self, dict_repr=None):
-        self._type = _CLASS_TO_TYPE[self.__class__]
-        self.data_terms = []
-        if dict_repr:
-            self.set_structure(dict_repr)
-
-    def encode(self):
-        """
-        encode this object as a python dictionary
-        """
-        return {'_type': _CLASS_TO_TYPE[self.__class__],
-                'data_terms': self.data_terms}
-    
-    def set_structure(self, dict_repr):
-        """
-        decode the properties of this object from a python dictionary
-        """
-        self.data_terms = dict_repr['data_terms']
+    structure = {
+                 '_type':None,
+                 'data_terms':[]
+                }
 
 class _SimpleType(_Type):
     """
@@ -69,12 +54,12 @@ class FormattedType(_SimpleType):
 
     def encode(self):
         dict_repr = super(FormattedType, self).encode()
-        dict_repr['format_term'] = self.format_term
+        dict_repr['format_terms'] = self.format_terms
         return dict_repr
     
     def set_structure(self, dict_repr):
         super(FormattedType, self).set_structure(dict_repr)
-        self.format_term = dict_repr['format_term']
+        self.format_terms = dict_repr.get('format_terms',[])
 
 class ArrayType(_Type):
     """
@@ -104,7 +89,6 @@ class StructType(_Type):
         for property_name, property_type in self.properties.items():
             dict_repr['properties'][property_name] = property_type.encode()
         return dict_repr
-
     
     def set_structure(self, dict_repr):
         super(StructType, self).set_structure(dict_repr)
@@ -138,7 +122,8 @@ class TypeAdapter(CustomType):
     python_type = _Type
  
     def to_bson(self, value):
-        return value.encode()
+        if value is not None:
+            return value.encode()
     
     def to_python(self, value):
         if value is not None:
