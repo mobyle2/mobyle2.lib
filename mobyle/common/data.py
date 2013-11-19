@@ -10,11 +10,7 @@ Created on Nov. 12, 2012
 @license: GPLv3
 '''
 
-from mongokit import SchemaDocument, OR
-import json, sys, inspect
-
-from .term import FormatTerm, DataTerm
-
+from mongokit import SchemaDocument
 
 class AbstractData(SchemaDocument):
     """
@@ -24,151 +20,86 @@ class AbstractData(SchemaDocument):
     use_dot_notation = True
 
     structure = {
-                 "data_terms": [basestring]
+                 "_type": unicode,
                 }
-    _type=None
 
-    @property
-    def schema(self):
-        """
-        get the schema for this data object
-        
-        :returns: the schema for the data object
-        :rtype: dict
-        """
-        return {'type':self._type}
+    def get_format(self):
+        raise NotImplementedError
 
-    def load_from_schema(self, contents_dict=None):
-        """
-        load prototype contents for the object from its properties schema 
-        :param contents_dict: the contents dictionary
-        :type contents_dict: dict
-        """
-        return
+    def get_type(self):
+        raise NotImplementedError
 
-    def to_json(self):
-        """
-        serialize the object from its properties schema 
-        :param contents_dict: the contents dictionary
-        :type contents_dict: dict
-        """
-        return json.dumps({'schema': self.schema})
+    @staticmethod
+    def get_instance(dict):
+        #TODO instanciate the right AbstractData subclass instance
+        # depending on the _type field
+        pass
 
 class SimpleData(AbstractData):
     """
-    A data which has a simple data/format definition
+    A data which has a simple type/format definition
     """
 
-    structure = {
-                 'value': basestring
-                }    
-
-class BooleanData(SimpleData):
-    """
-    A boolean data
-    """
-    _type='boolean'
-
-class IntegerData(SimpleData):
-    """
-    An integer
-    """
-    _type='integer'
-
-class FloatData(SimpleData):
-    """
-    A float
-    """
-    _type='float'
-
-class StringData(SimpleData):
-    """
-    A string
-    """
-    _type='string'
-
-class FormattedData(SimpleData):
-    """
-    Data formatted according to an EDAM reference
-    """
-    _type='formatted'
-    structure = {
-                 "format_term": basestring
+    structure = {'type': basestring,
+                 'format': basestring,
+                 #'_type': 'SimpleData',
                 }
 
-    @property
-    def schema(self):
-        d = super(FormattedData, self).schema
-        d['format'] = self.format_term
-        return d
+    def get_format(self):
+        return self.format
 
-class ArrayData(AbstractData):
+    def get_type(self):
+        return self.type
+
+class RefData(SimpleData):
     """
-    A data formed by a array of data items sharing the same type/format
+    A data whose value is stored on the file system
     """
 
-    structure = {
-                 'value':[AbstractData],
+    structure = {'path': basestring,
+                 'size': int
+                 #'_type': 'RefData',
                 }
 
-    _type = 'array' 
-
-    @property
-    def schema(self):
-        d = super(ArrayData, self).schema
-        d['items'] = self.value[0].schema
-        return d
-
-class ObjectData(AbstractData):
+class ValueData(SimpleData):
     """
-    A data formed by a object containing properties referencing different data
+    A data whose value is stored directly in the object
+    """
+
+    structure = {'value':basestring,
+                 #'_type': 'ValueData',
+                }
+
+class ListData(AbstractData):
+    """
+    A data formed by a list of data sharing the same type/format
+    """
+
+    structure = {'value':[AbstractData],
+                 #'_type': 'ListData',
+                }
+
+    def get_format(self):
+        return self.value[0].get_format()
+
+    def get_type(self):
+        return self.value[0].get_type()
+
+class StructData(AbstractData):
+    """
+    A data formed by a list properties referencing different data
     """
 
     structure = {'properties':{basestring:AbstractData},
+                 #'_type': 'StructData',
                 }
 
-    _type = 'object'
-
-    def load_from_schema(self, d=None):
-        for p, v in d["properties"].items():
-            self.properties[p] = v	
-        
-    @property
-    def schema(self):
-        d = super(ObjectData, self).schema
-        d['properties'] = {property: value.schema \
+    def get_format(self):
+        format = {property: value.get_format() \
                   for (property, value) in self.properties.items()}
-        return d
+        return format
 
-class DataJSONDecoder(json.JSONDecoder):
-
-    def __init__(self):
-        json.JSONDecoder.__init__(self, object_hook=self.dict_to_object)
-	data_classes = inspect.getmembers(sys.modules[__name__], lambda member: inspect.isclass(member) and member.__module__ == __name__)
-        self.map = {}
-	for name, cls in data_classes:
-            if hasattr(cls, '_type'):
-	        self.map[cls._type] = cls
-
-    def dict_to_object(self, d):
-        if d.has_key("type"):
-            t = self.map[d["type"]](d)
-            t.load_from_schema(d)
-        else:
-            t = d
-        return t
-"""
-el1 = BooleanData()
-el1.value = True
-el2 = IntegerData()
-el2.value = 2
-el3 = ObjectData()
-el3.properties['b'] = el1
-el3.properties['c'] = el2
-decoder = DataJSONDecoder()
-for el in [el1, el2, el3]:
-    print "#  ", el.to_json()	
-    print "## ", json.dumps(el.schema)
-    print "###", type(decoder.decode(json.dumps(el.schema)))
-o = decoder.decode(json.dumps(el.schema))
-"""
+    def get_type(self):
+        typ = {property: value.get_type() \
+               for (property, value) in self.properties.items()}
+        return typ
