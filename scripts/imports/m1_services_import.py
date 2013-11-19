@@ -342,34 +342,21 @@ def parse_parameter(p_dict, service_type):
     m1_class = t_dict.get('datatype').text('class')
     m1_biotypes = [biotype.text() for biotype in t_dict.list('biotype')]
     m1_biotype = m1_biotypes[0] if len(m1_biotypes)==1 else None
-    type_string = types_map.get_type(m1_class, m1_biotype)
-    if type_string:
-        m2_type = TypeAdapter.to_python(type_string)
+    type_ds = types_map.get_type(m1_class, m1_biotype)
+    if type_ds:
+        m2_type = TypeAdapter.to_python(type_ds)
+        for data_format in t_dict.list('dataFormat'):
+            df = formats_map.get_format(data_format.text())
+            if df:
+                m2_type['format_terms'].append(df)
+        vlist = p_dict.get('vlist')
+        if vlist:
+            for velem in vlist.list('velem'):
+                m2_type['options'].append({'label':velem.get('label').text(), 'value':velem.get('value').text()})
+        elif p_dict.get('flist'):
+            logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
         parameter['type'] = m2_type
-        print parameter['type']
     """
-    m_type = LegacyType()
-    t_dict = p_dict.get('type')
-    m_type['datatype']['class'] = t_dict.get('datatype').text('class')
-    m_type['datatype']['superclass'] = t_dict.get('datatype').text('superclass')
-    for biotype in t_dict.list('biotype'):
-        m_type['biotypes'].append(biotype.text())
-    for data_format in t_dict.list('dataFormat'):
-        m_type['formats'].append(data_format.text())
-    m_type['card'] = t_dict.text('card')
-    for biomoby in t_dict.list('biomoby'):
-        m_type['biomoby_datatypes'].append(
-                                           {'datatype':biomoby.text('datatype'),
-                                           'namespace':biomoby.text('namespace')
-                                           }
-                                          )
-    for edam_type in p_dict.list('edam_type'):
-        m_type['edam_types'].append(edam_type.att('ref'))
-    ptype = {}
-    python_class = m_type['datatype']['superclass'] or m_type['datatype']['class']
-    biotypes = [el.text() for el in p_dict.get('type').list('biotype')]
-    biotype = biotypes[0] if len(biotypes)==1 else None
-    ptype = types_map.get_type(python_class, biotype) or {}
     vlist = p_dict.get('vlist')
     if vlist:
         ptype['options'] = []

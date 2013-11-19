@@ -54,6 +54,9 @@ class StringType(_Type):
     """
     A string
     """
+    structure = {
+                 'options':[]
+                }
     pass
 
 class FormattedType(_Type):
