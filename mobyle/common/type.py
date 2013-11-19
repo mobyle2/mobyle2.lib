@@ -16,7 +16,8 @@ class _Type(MKStruct):
     """
     structure = {
                  '_type':None,
-                 'data_terms':[]
+                 'data_terms':[],
+                 'default':None
                 }
 
     def to_bson(self):
@@ -36,7 +37,9 @@ class BooleanType(_Type):
     """
     A boolean
     """
-    pass
+    structure = {
+                 'default':bool
+                }
 
 class IntegerType(_Type):
     """

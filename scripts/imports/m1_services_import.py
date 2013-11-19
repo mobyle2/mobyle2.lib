@@ -355,31 +355,14 @@ def parse_parameter(p_dict, service_type):
                 m2_type['options'].append({'label':velem.get('label').text(), 'value':velem.get('value').text()})
         elif p_dict.get('flist'):
             logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
+        vdef = p_dict.get('vdef')
+        if vdef:
+	    values = [v.text() for v in vdef.list('value')]
+            m2_type['default'] = values[0] if len(values)==1 else values
+            if m2_type.get('_type')=='boolean':
+	        # standardize default value for boolean types to true or false
+	        m2_type['default'] = True if m2_type['default'] in ['true',1,True] else False
         parameter['type'] = m2_type
-    """
-    vlist = p_dict.get('vlist')
-    if vlist:
-        ptype['options'] = []
-        for velem in vlist.list('velem'):
-            ptype['options'].append({'label':velem.get('label').text(), 'value':velem.get('value').text()})
-    elif p_dict.get('flist'):
-        logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
-    vdef = p_dict.get('vdef')
-    if vdef:
-        values = [v.text() for v in vdef.list('value')]
-        ptype['default'] = values[0] if len(values)==1 else values
-        if ptype.get('type')=='boolean':
-            # standardise default value for boolean types to true or false
-            ptype['default'] = True if ptype['default'] in ['true',1,True] else False
-    if ptype and ptype.get('type')=='formatted':
-        format_terms=[]
-        for data_format in t_dict.list('dataFormat'):
-            df = formats_map.get_format(data_format.text())
-            if df:
-                format_terms.append(df)
-        if format_terms:
-           ptype['format_terms']=format_terms
-    """
     return parameter
 
 def parse_input_parameter(p_dict, parameter, service_type):
