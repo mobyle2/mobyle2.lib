@@ -15,7 +15,9 @@ from .config import Config
 from .project import ProjectDocument
 from .type import TypeAdapter
 
-class Code(SchemaDocument):
+from mobyle.common.mk_struct import MKStruct, MKStructAdapter
+
+class Code(MKStruct):
     """
     python or perl code to be evaluated
     """
@@ -24,7 +26,7 @@ class Code(SchemaDocument):
                 'perl': basestring
                 }
 
-class LegacyType(SchemaDocument):
+class LegacyType(MKStruct):
     """
     type information
     WARNING: this is Mobyle1 information
@@ -41,14 +43,14 @@ class LegacyType(SchemaDocument):
                 'edam_types': [basestring]
                 }
 
-class Para(SchemaDocument):
+class Para(MKStruct):
     """
     parent class for parameters and paragraphs
     """
     structure = {
                 'name': basestring,
                 'prompt': basestring,
-                'precond': Code,
+                'precond': MKStructAdapter(Code),
                 'comment': basestring
                 }
 
@@ -68,7 +70,7 @@ class Paragraph(Para):
     a service paragraph
     """
     structure = {
-                'children': [Para]
+                'children': [MKStructAdapter(Para)]
                 }
 
 class OutputProgramParagraph(Paragraph):
@@ -85,7 +87,7 @@ class InputParameter(Parameter):
     """
     structure = {
                 'mandatory':bool,
-                'ctrl':Code
+                'ctrl':MKStructAdapter(Code)
                 }
 
 class OutputParameter(Parameter):
@@ -107,7 +109,7 @@ class OutputProgramParameter(OutputParameter):
     output parameter for a program
     """
     structure = {
-                'filenames': Code
+                'filenames': MKStructAdapter(Code)
                 }
 
 class InputProgramParameter(InputParameter):
@@ -117,7 +119,7 @@ class InputProgramParameter(InputParameter):
     structure = {
                 'command': bool,
                 'argpos': int,
-                'format': Code,
+                'format': MKStructAdapter(Code),
                 'paramfile': basestring
                 }
 
@@ -252,11 +254,11 @@ class Service(Software, ProjectDocument):
     __collection__ = 'services'
     structure = {
                   # package reference
-                  'package' : Package,
+                  'package' : MKStructAdapter(Package),
                   # inputs
-                  'inputs': InputParagraph,
+                  'inputs': MKStructAdapter(InputParagraph),
                   # outputs
-                  'outputs': OutputParagraph,
+                  'outputs': MKStructAdapter(OutputParagraph),
                   # project which the service belongs to
                   'project': ObjectId
                 }

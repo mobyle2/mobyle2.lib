@@ -12,26 +12,39 @@ class MKStruct(dict):
 
     def __init__(self, values={}):
         super(MKStruct, self).__init__(self)
-        new_structure = {}
-        if hasattr(super(MKStruct, self),'structure'):
-            new_structure.update(super(MKStruct, self).structure)
-        if hasattr(self,'structure'):
-            new_structure.update(self.structure)
-        self.structure = new_structure
+        self.structure = self._populate_structure()
         for key, value in self.structure.items():
-            print key, value
             if type(value) in [int, str]:
                 self[key]=value
+            elif type(value) is list:
+                self[key] = []
+            elif type(value) is dict:
+                self[key] = {}
         if values:
             for key, value in values.items():
                 self[key]=value
 
+    def _populate_structure(self):
+        new_structure = {}
+        for cls in self.__class__.mro()[::-1]:
+            if cls is not object:
+                if hasattr(cls,'structure'):
+                    new_structure.update(cls.structure)
+        return new_structure
+
     def __setitem__(self, key, val):
     	if key not in self.structure.keys():
-            raise KeyError
+            raise KeyError("Trying to set key %s in object, not part of authorized properties %s" % (key, self.structure.keys()))
         #elif not(isinstance(val,self.structure[key])):
         #    raise ValueError   
     	super(MKStruct, self).__setitem__(key, val)
+
+    def to_bson(self):
+        return self
+
+    @classmethod
+    def to_python(cls, value):
+        return cls(value)
 
 class MKStructAdapter(CustomType):
     structure = {
@@ -42,11 +55,12 @@ class MKStructAdapter(CustomType):
 
     def __init__(self, python_class):
         super(MKStructAdapter, self).__init__()
-        self.python_type = python_class
+        self.python_class = python_class
 
     def to_bson(self, value):
-        return value
+        if value is not None:
+            return value.to_bson()
     
     def to_python(self, value):
         if value is not None:
-            return self.python_type(value)
+            return self.python_class.to_python(value)

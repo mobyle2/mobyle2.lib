@@ -344,9 +344,9 @@ def parse_parameter(p_dict, service_type):
     m1_biotype = m1_biotypes[0] if len(m1_biotypes)==1 else None
     type_string = types_map.get_type(m1_class, m1_biotype)
     if type_string:
-        m2_type = get_type(type_string)
-        print m2_type
+        m2_type = TypeAdapter.to_python(type_string)
         parameter['type'] = m2_type
+        print parameter['type']
     """
     m_type = LegacyType()
     t_dict = p_dict.get('type')

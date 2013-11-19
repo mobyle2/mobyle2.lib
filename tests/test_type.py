@@ -26,19 +26,20 @@ class TestType(unittest.TestCase):
 
     def setUp(self):
         self.type = _Type()
+        self.type_adapter = TypeAdapter()
         self.data_terms = ['test', 'test2']
-	self.type.data_terms = self.data_terms
-        self.encoded_type = self.type.encode()
-        self.decoded_type = get_type(self.encoded_type)
+        self.type['data_terms'] = self.data_terms
+        self.encoded_type = self.type_adapter.to_bson(self.type)
+        self.decoded_type = self.type_adapter.to_python(self.encoded_type)
 
     def test_encode(self):
-	self.assertEqual(self.encoded_type,
+        self.assertEqual(self.encoded_type,
                          {'_type':None,
                           'data_terms':self.data_terms})                
 
     def test_decode(self):
         self.assertIs(type(self.decoded_type),_Type)
-        self.assertIs(self.decoded_type.data_terms,self.data_terms)
+        self.assertIs(self.decoded_type['data_terms'],self.data_terms)
 
 class TestBooleanType(unittest.TestCase):
     """
@@ -47,8 +48,9 @@ class TestBooleanType(unittest.TestCase):
 
     def setUp(self):
         self.type = BooleanType()
-        self.encoded_type = self.type.encode()
-        self.decoded_type = get_type(self.encoded_type)
+        self.type_adapter = TypeAdapter()
+        self.encoded_type = self.type_adapter.to_bson(self.type)
+        self.decoded_type = self.type_adapter.to_python(self.encoded_type)
 
     def test_decode(self):
         self.assertIs(type(self.decoded_type),BooleanType)
@@ -60,17 +62,22 @@ class TestStructType(unittest.TestCase):
 
     def setUp(self):
         self.type = StructType()
+        self.type_adapter = TypeAdapter()
         self.properties = {'a':BooleanType(), 'b': BooleanType()}
-        self.type.properties = self.properties
-        self.encoded_type = self.type.encode()
-        self.decoded_type = get_type(self.encoded_type)
+        self.type['properties'] = self.properties
+        self.encoded_type = self.type_adapter.to_bson(self.type)
+        self.decoded_type = self.type_adapter.to_python(self.encoded_type)
+
+    def test_encode(self):
+        self.assertIs(type(self.encoded_type),dict)
+        self.assertIs(type(self.encoded_type['properties']['a']),dict)
+        self.assertIs(type(self.encoded_type['properties']['b']),dict)
+
 
     def test_decode(self):
-        self.assertIs(type(self.encoded_type['properties']['a']),dict)
-        self.assertIs(type(self.decoded_type.properties['a']),BooleanType)
         self.assertIs(type(self.decoded_type),StructType)
-        self.assertIs(type(self.decoded_type.properties['a']),BooleanType)
-        self.assertIs(type(self.decoded_type.properties['b']),BooleanType)
+        self.assertIs(type(self.decoded_type['properties']['a']),BooleanType)
+        self.assertIs(type(self.decoded_type['properties']['b']),BooleanType)
 
 class _Type2(MKStruct):
     """
@@ -115,6 +122,7 @@ class TestTypeAdapter(unittest.TestCase):
 
     def test_create_document(self):
         self.doc = connection.TypeAdapterDoc()
+        self.doc.save()
         self.type = BooleanType()
         self.doc['test_type'] = self.type
         self.doc.save()
@@ -122,7 +130,6 @@ class TestTypeAdapter(unittest.TestCase):
         self.doc.save()
         self.doc['test_schemadoc_type']['nested_type'] = self.type
         self.doc.save()
-        print self.doc
         self.doc2 = connection.TypeAdapterDoc.find_one()
         self.assertIs(type(self.doc2['test_type']),BooleanType)
 
