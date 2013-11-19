@@ -4,7 +4,7 @@ Created on Nov. 18, 2013
 
 @license: GPLv3
 '''
-from mongokit import CustomType
+from mongokit import CustomType, ValidationError
 
 class MKStruct(dict):
 
@@ -39,7 +39,17 @@ class MKStruct(dict):
         #    raise ValueError   
     	super(MKStruct, self).__setitem__(key, val)
 
+    validators = {}
+
+    def validate(self):
+        for key, validator in self.validators.items():
+            try:
+                validator(self[key])
+            except Exception, exc:
+                raise ValidationError(exc)
+
     def to_bson(self):
+        self.validate()
         return self
 
     @classmethod
