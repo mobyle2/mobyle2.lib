@@ -25,13 +25,8 @@ class RequestMock(object):
 class TestProject(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.User.find({})
-        for object in objects:
-            object.delete()
-        objects = connection.Project.find({})
-        for object in objects:
-            object.delete()
-
+        connection.User.collection.remove({})
+        connection.Project.collection.remove({})
         self.example_user = connection.User()
         self.example_user['email'] = 'Emeline@example.com'
         self.example_user.save()
@@ -74,7 +69,6 @@ class TestProject(unittest.TestCase):
         project_rcv = connection.Project.find_one({})
         p_id = project_rcv['_id']
         self.assertEqual(my_project.id, p_id)
-        
         
     def test_my(self):
         """
@@ -120,15 +114,9 @@ class TestProject(unittest.TestCase):
 class TestProjectData(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.User.find({})
-        for o in objects:
-            o.delete()
-        objects = connection.Project.find({})
-        for o in objects:
-            o.delete()
-        objects = connection.ProjectData.find({})
-        for o in objects:
-            o.delete()
+        connection.User.collection.remove({})
+        connection.Project.collection.remove({})
+        connection.ProjectData.collection.remove({})
         self.example_user = connection.User()
         self.example_user['email'] = 'Emeline@example.com'
         self.example_user.save()
@@ -137,14 +125,6 @@ class TestProjectData(unittest.TestCase):
         self.example_project['name'] = 'MyProject'
         self.example_project['users'] = [{'user': self.example_user['_id'], 'role': 'developper'}]
         self.example_project.save()
-
-    def tearDown(self):
-        objects = connection.User.find({})
-        for object in objects:
-            object.delete()
-        objects = connection.Project.find({})
-        for object in objects:
-            object.delete()
     
     def test_projectdata(self):
         v = ValueData()
@@ -196,15 +176,9 @@ class TestProjectDocument(unittest.TestCase):
         User 3         x | x | x False
         M=Manager, C=Contributor, W=Watcher
         """
-        objects = connection.User.find({})
-        for o in objects:
-            o.delete()
-        objects = connection.Project.find({})
-        for o in objects:
-            o.delete()
-        objects = connection.ProjectData.find({})
-        for o in objects:
-            o.delete()
+        connection.User.collection.remove({})
+        connection.Project.collection.remove({})
+        connection.ProjectData.collection.remove({})
         self.user1 = self._setUpTestUser(1,True)
         self.user2 = self._setUpTestUser(2)
         self.user3 = self._setUpTestUser(3)

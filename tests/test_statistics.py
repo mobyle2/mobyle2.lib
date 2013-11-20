@@ -16,14 +16,7 @@ from mobyle.common.stats.stat import HourlyStatistic, DailyStatistic, MonthlySta
 class TestMobyleStatistics(unittest.TestCase):
 
     def setUp(self):
-       objects = connection.HourlyStatistic.find({})
-       for object in objects:
-           object.delete()
-       
-    def tearDown(self):
-       objects = connection.HourlyStatistic.find({})
-       for object in objects:
-           object.delete()
+       connection.HourlyStatistic.collection.remove({})
 
     def test_insert(self):
         stat = connection.HourlyStatistic()

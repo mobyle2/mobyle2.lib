@@ -95,15 +95,7 @@ class TestTypeAdapter(unittest.TestCase):
     """
 
     def setUp(self):
-        self.reset_db()
-
-    def tearDown(self):
-        self.reset_db()
-
-    def reset_db(self):
-        objects = connection.TypeAdapterDoc.find({})
-        for object in objects:
-            object.delete()
+        connection.TypeAdapterDoc.collection.remove({})
 
     def test_create_document(self):
         self.doc = connection.TypeAdapterDoc()

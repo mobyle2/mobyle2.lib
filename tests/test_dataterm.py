@@ -21,15 +21,7 @@ class TestDataTerm(unittest.TestCase):
     """
 
     def setUp(self):
-        objects = connection.DataTerm.find({})
-        for object in objects:
-            object.delete()
-            
-    def tearDown(self):
-        objects = connection.DataTerm.find({})
-        for object in objects:
-            object.delete()
-
+        objects = connection.DataTerm.collection.remove({})
 
     def test_insert(self):
          """
@@ -43,4 +35,3 @@ class TestDataTerm(unittest.TestCase):
          for data_term_test in data_terms_list:
              count+=1
          self.assertEqual(count,1)
-    
