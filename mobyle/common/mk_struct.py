@@ -34,7 +34,7 @@ class MKStruct(dict):
 
     def __setitem__(self, key, val):
     	if key not in self.structure.keys():
-            raise KeyError("Trying to set key %s in object, not part of authorized properties %s" % (key, self.structure.keys()))
+            raise KeyError("Trying to set key '%s' in object, not part of authorized properties %s" % (key, self.structure.keys()))
         #elif not(isinstance(val,self.structure[key])):
         #    raise ValueError   
     	super(MKStruct, self).__setitem__(key, val)
