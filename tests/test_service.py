@@ -47,9 +47,9 @@ class TestService(unittest.TestCase):
         workflow = connection.Workflow()
         workflow['name'] = "test_workflow_service"
         workflow.save()
-        service = connection.Service.find_one({'name': 'test_program_service'})
+        service = connection.Service.fetch_one({'name': 'test_program_service'})
         self.assertTrue(isinstance(service,Program))
-        service = connection.Service.find_one({'name': 'test_program_service'})
+        service = connection.Service.fetch_one({'name': 'test_program_service'})
         self.assertTrue(isinstance(workflow,Workflow))
 
     def test_inputs_creation(self):
