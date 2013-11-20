@@ -14,14 +14,7 @@ from mobyle.common.service import *
 class TestService(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.Service.find({})
-        for object in objects:
-            object.delete()
-       
-    def tearDown(self):
-        objects = connection.Service.find({})
-        for object in objects:
-            object.delete()
+        connection.Service.collection.remove({})
 
     def test_insert(self):
         """
