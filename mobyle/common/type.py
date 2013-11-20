@@ -6,11 +6,11 @@ Created on Nov. 13, 2013
 '''
 from mongokit import CustomType
 
-from mobyle.common.mk_struct import MKStruct, MKStructAdapter
+from .mk_struct import MKStruct, MKStructAdapter
 
 # pylint: disable=W0201,R0904,R0913
 
-class _Type(MKStruct):
+class Type(MKStruct):
     """
     A superclass representing any of the types
     """
@@ -33,7 +33,7 @@ class _Type(MKStruct):
     def __repr__(self):
         return "[%s]%s" % (self.__class__.__name__,dict(self)) 
 
-class BooleanType(_Type):
+class BooleanType(Type):
     """
     A boolean
     """
@@ -41,19 +41,19 @@ class BooleanType(_Type):
                  'default':bool
                 }
 
-class IntegerType(_Type):
+class IntegerType(Type):
     """
     An integer
     """
     pass
 
-class FloatType(_Type):
+class FloatType(Type):
     """
     A float
     """
     pass
 
-class StringType(_Type):
+class StringType(Type):
     """
     A string
     """
@@ -62,7 +62,7 @@ class StringType(_Type):
                 }
     pass
 
-class FormattedType(_Type):
+class FormattedType(Type):
     """
     Type describing data formatted according to an EDAM reference
     """
@@ -70,7 +70,7 @@ class FormattedType(_Type):
                  'format_terms':[]
                 }
 
-class ArrayType(_Type):
+class ArrayType(Type):
     """
     Type describing data formed by a array of data items sharing
     the same type/format
@@ -79,7 +79,7 @@ class ArrayType(_Type):
                  'items_type':[]
                 }
 
-class StructType(_Type):
+class StructType(Type):
     """
     Type describing data formed by a object containing properties
     referencing different data
@@ -104,7 +104,7 @@ class StructType(_Type):
         return obj
 
 _TYPE_TO_CLASS = {
-        None: _Type,
+        None: Type,
         'boolean': BooleanType,
         'integer': IntegerType,
         'float': FloatType,
@@ -119,7 +119,7 @@ _CLASS_TO_TYPE = dict((v, k) for k, v in _TYPE_TO_CLASS.iteritems())
 class TypeAdapter(CustomType):
 
     mongo_type = dict
-    python_type = _Type
+    python_type = Type
  
     def to_bson(self, value):
         if value is not None:

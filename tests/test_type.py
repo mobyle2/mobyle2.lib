@@ -9,7 +9,6 @@ import unittest
 import os.path
 
 from mobyle.common.type import *
-from mobyle.common.type import _Type
 from mongokit import Document, SchemaDocument
 
 from mobyle.common.config import Config
@@ -21,11 +20,11 @@ from mobyle.common.mk_struct import MKStruct, MKStructAdapter
 
 class TestType(unittest.TestCase):
     """
-    Test the _Type class
+    Test the Type class
     """
 
     def setUp(self):
-        self.type = _Type()
+        self.type = Type()
         self.type_adapter = TypeAdapter()
         self.data_terms = ['test', 'test2']
         self.type['data_terms'] = self.data_terms
@@ -38,7 +37,7 @@ class TestType(unittest.TestCase):
                           'data_terms':self.data_terms})                
 
     def test_decode(self):
-        self.assertIs(type(self.decoded_type),_Type)
+        self.assertIs(type(self.decoded_type),Type)
         self.assertIs(self.decoded_type['data_terms'],self.data_terms)
 
 class TestBooleanType(unittest.TestCase):
@@ -79,22 +78,8 @@ class TestStructType(unittest.TestCase):
         self.assertIs(type(self.decoded_type['properties']['a']),BooleanType)
         self.assertIs(type(self.decoded_type['properties']['b']),BooleanType)
 
-class _Type2(MKStruct):
-    """
-    A superclass representing any of the types
-    """
-    structure = {
-                 '_type':None,
-                 'data_terms':[]
-                }
-
-class BooleanType2(MKStruct):
-    structure = {
-                 '_type':'boolean'
-                }
-
 class TypeMKStruct(MKStruct):
-    structure = {'nested_type':MKStructAdapter(BooleanType2)}
+    structure = {'nested_type':MKStructAdapter(BooleanType)}
 
 @connection.register
 class TypeAdapterDoc(Document):
