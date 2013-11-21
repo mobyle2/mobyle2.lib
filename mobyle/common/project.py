@@ -14,6 +14,7 @@ from mf.views import MF_READ, MF_EDIT
 from .connection import connection
 from .config import Config
 from .data import AbstractData
+from .mk_struct import MKStruct, MKStructAdapter
 from .mobyleError import MobyleError
 
 @mf_decorator
@@ -157,7 +158,7 @@ class ProjectData(ProjectDocument):
                   'description' : basestring, 
                   'tags' : [basestring],
                   'project': ObjectId,
-                  'data': AbstractData,
+                  'data': MKStructAdapter(AbstractData),
                   'status' : int,
                   'persistent' : bool,
                   'path' : basestring

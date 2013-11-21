@@ -9,6 +9,8 @@ import unittest
 import os.path
 
 from mobyle.common.type import *
+from mobyle.common.data import *
+
 from mongokit import Document, SchemaDocument
 
 from mobyle.common.config import Config
@@ -68,10 +70,9 @@ class TestStructType(unittest.TestCase):
         self.decoded_type = self.type_adapter.to_python(self.encoded_type)
 
     def test_encode(self):
-        self.assertIs(type(self.encoded_type),dict)
-        self.assertIs(type(self.encoded_type['properties']['a']),dict)
-        self.assertIs(type(self.encoded_type['properties']['b']),dict)
-
+        self.assertIsInstance(self.encoded_type,dict)
+        self.assertIsInstance(self.encoded_type['properties']['a'],dict)
+        self.assertIsInstance(self.encoded_type['properties']['b'],dict)
 
     def test_decode(self):
         self.assertIs(type(self.decoded_type),StructType)

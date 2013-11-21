@@ -20,18 +20,15 @@ class Type(MKStruct):
                  'default':None
                 }
 
-    def to_bson(self):
-        value = self
-        value['_type'] = _CLASS_TO_TYPE[value.__class__]
-        if value is not None:
-            return dict(value)
-
-    @classmethod
-    def to_python(cls, value):
-        return cls(value)
+    def __init__(self, values={}):
+        MKStruct.__init__(self, values=values)
+        self['_type'] = _CLASS_TO_TYPE[self.__class__]
 
     def __repr__(self):
         return "[%s]%s" % (self.__class__.__name__,dict(self)) 
+
+    def check_value(self, value):
+        raise NotImplementedError()
 
 class BooleanType(Type):
     """
@@ -41,11 +38,17 @@ class BooleanType(Type):
                  'default':bool
                 }
 
+    def check_value(self, value):
+        if not(type(value)==bool):
+            raise TypeError("value %s is not an boolean" % value)
+
 class IntegerType(Type):
     """
     An integer
     """
-    pass
+    def check_value(self, value):
+        if not(type(value)==int):
+            raise TypeError("value %s is not an integer" % value)
 
 class FloatType(Type):
     """
@@ -87,21 +90,6 @@ class StructType(Type):
     structure = {
                  'properties':{}
                 }
-
-    def to_bson(self):
-        bson_struct = super(StructType, self).to_bson()
-        bson_struct['properties']={}
-        for key, value in self['properties'].items():
-            bson_struct['properties'][key]=value.to_bson()
-        return bson_struct
-
-    @classmethod
-    def to_python(cls, value):
-        obj = cls(value)
-        obj['properties']={}
-        for key, value in value['properties'].items():
-            obj['properties'][key]=TypeAdapter.to_python(value)
-        return obj
 
 _TYPE_TO_CLASS = {
         None: Type,
