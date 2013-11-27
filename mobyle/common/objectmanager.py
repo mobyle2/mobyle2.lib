@@ -121,6 +121,7 @@ class ObjectManager:
         :type uid: basestring
         :return: ProjectData
         '''
+        uid = str(uid)
         return connection.ProjectData.find_one({"_id": ObjectId(uid)})
 
     @classmethod
@@ -138,6 +139,7 @@ class ObjectManager:
         :type lifetime: int
         :return: basetring, token
         '''
+        uid = str(uid)
         token_path = os.path.join(ObjectManager.get_storage_path(uid),file_path)
         temptoken = connection.Token()
         temptoken.generate(lifetime)
@@ -174,6 +176,7 @@ class ObjectManager:
         :param uid: Name of the file (uid)
         :type uid: str
         '''
+        uid = str(uid)
         if options is None:
             options = {}
         if 'uncompress' not in options:
@@ -486,7 +489,6 @@ class ObjectManager:
         :type fid: str
         :return: array of commit date and message dict
         '''
-
         if not ObjectManager.use_repo:
             return []
         dataset = connection.ProjectData.find_one({'_id': ObjectId(fid)})
