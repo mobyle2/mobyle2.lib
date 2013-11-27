@@ -8,3 +8,5 @@ pygeoip
 uuid
 git+https://github.com/mobyle2/xml2json.git#egg=xml2json
 python-ldap
+gitpython==0.3.2.RC1
+pairtree

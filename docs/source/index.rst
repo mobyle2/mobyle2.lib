@@ -32,6 +32,7 @@ mobyle.common API documentation
    status
    stats
    mobyleError
+   objectmanager
 
 Indices and tables
 ==================
