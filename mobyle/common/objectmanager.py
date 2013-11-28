@@ -96,7 +96,7 @@ class ObjectManager:
         return repository
 
     @classmethod
-    def get_repository_index(self, uid):
+    def get_repository_index(cls, uid):
         ''' Get repository index'''
         return ObjectManager.get_repository(uid).index
 
@@ -150,7 +150,8 @@ class ObjectManager:
         temptoken.save()
         return temptoken['token']
 
-    def _delete_file(self, uid, options=None):
+    @classmethod
+    def _delete_file(cls, uid, options=None):
         '''
         Delete file from storage directly or via repo
         '''
@@ -169,7 +170,8 @@ class ObjectManager:
         path = ObjectManager._get_file_root(uid)
         obj.del_file(uid, path)
 
-    def delete(self, uid, options=None):
+    @classmethod
+    def delete(cls, uid, options=None):
         '''
         Delete a file from storage and database
 
@@ -193,13 +195,13 @@ class ObjectManager:
                 # This is a RefData
                 if 'path' in dataset['data']:
                     options['name'] = dataset['name']
-                    self._delete_file(uid, options)
+                    ObjectManager._delete_file(uid, options)
                 else:
                     for value in dataset['data']['value']:
                         if 'path' in value:
                             fpath = os.path.basename(value['path'])
                             options['name'] = fpath
-                            self._delete_file(fpath, options)
+                            ObjectManager._delete_file(fpath, options)
         except Exception:
             logging.error("Error while trying to delete ")
             #traceback.print_exc(file=sys.stdout)
@@ -256,7 +258,8 @@ class ObjectManager:
         filetypes = re.compile('\.(tar\.gz|bz2|zip)')
         return filetypes.search(filepath)
 
-    def update(self, status, options):
+    @classmethod
+    def update(cls, status, options):
         '''
         Update the status of the object
 
@@ -269,7 +272,7 @@ class ObjectManager:
         dataset = connection.ProjectData.find_one({"_id": ObjectId(options['id'])})
 
         if status == ObjectManager.DOWNLOADED and options['uncompress'] and\
-        self.isarchive(options['name']):
+        ObjectManager.isarchive(options['name']):
             status = ObjectManager.UNCOMPRESS
 
         if status == ObjectManager.SYMLINK:
@@ -281,7 +284,7 @@ class ObjectManager:
             # Data is downloaded and eventually uncompressed
             Config.config()
             uid = str(dataset['_id'])
-            path = self._get_file_root(uid)
+            path = ObjectManager._get_file_root(uid)
             obj = ObjectManager.storage.get_object(uid)
             if options['uncompress']:
                 msg = 'Add: '
@@ -302,14 +305,14 @@ class ObjectManager:
                         subdata = RefData()
                         subdata['path'] = filespath
                         subdata['size'] = \
-                                os.path.getsize(self.get_storage_path() +
+                                os.path.getsize(ObjectManager.get_storage_path() +
                                 subdata['path'])
                         fullsize += subdata['size']
                         subdata['type'] = options['type']
                         dataset['data']['value'].append(subdata)
                         # Update history
                         if ObjectManager.use_repo:
-                            index = self.get_repository_index(uid)
+                            index = ObjectManager.get_repository_index(uid)
                             index.add([os.path.basename(filepath)])
                             if 'msg' not in options:
                                 msg += os.path.basename(filepath) + ","
@@ -321,39 +324,39 @@ class ObjectManager:
                         newoptions['uncompress'] = False
                         newoptions['group'] = False
                         newoptions['id'] = None
-                        self.store(os.path.basename(filepath),
+                        ObjectManager.store(os.path.basename(filepath),
                             filepath, newoptions)
                 if not options['group']:
                     # remove current obj, each sub file is a new independant
                     # object
-                    self.delete(uid, options)
+                    ObjectManager.delete(uid, options)
                     # We have managed child object
                     # now we can leave
                     return
                 else:
                     # Commit history
                     if ObjectManager.use_repo:
-                        index = self.get_repository_index(uid)
+                        index = ObjectManager.get_repository_index(uid)
                         index.commit(msg)
             else:
                 dataset['data']['path'] = \
                     pairtree.id2path(uid) + "/" + \
-                    self._get_file_root(uid) + "/" + uid
+                    ObjectManager._get_file_root(uid) + "/" + uid
 
                 if status == ObjectManager.SYMLINK:
                     # Not taken into account for quota
                     dataset['data']['size'] = 0
-                    dirname = os.path.dirname(os.path.join(self.get_storage_path(),dataset['data']['path']))
+                    dirname = os.path.dirname(os.path.join(ObjectManager.get_storage_path(),dataset['data']['path']))
                     if not os.path.exists(dirname):
                         os.mkdir(dirname)
                     os.symlink(options['file'],
-                                self.get_storage_path() +
+                                ObjectManager.get_storage_path() +
                                 dataset['data']['path'])
                 else:
                     with open(options['file'], 'rb') as stream:
                         obj.add_bytestream(uid, stream, path)
                     dataset['data']['size'] = \
-                        os.path.getsize(self.get_storage_path() +
+                        os.path.getsize(ObjectManager.get_storage_path() +
                         dataset['data']['path'])
 
                 dataset['data']['type'] = options['type']
@@ -386,7 +389,7 @@ class ObjectManager:
                     fformat = detector.detect_by_extension(dataset['name'])
                     datapath = dataset['data']['path']
                 if fformat is None:
-                    (fformat, mime) = detector.detect(self.get_storage_path() +
+                    (fformat, mime) = detector.detect(ObjectManager.get_storage_path() +
                                         datapath)
             else:
                 fformat = options['format']
@@ -400,7 +403,8 @@ class ObjectManager:
             from mobyle.data.manager.background import uncompress
             uncompress.delay(options['file'], options)
 
-    def store(self, name, infile, options=None):
+    @classmethod
+    def store(cls, name, infile, options=None):
         '''
         Adds a new dataset and store input file
 
@@ -429,20 +433,19 @@ class ObjectManager:
         uid = str(dataset['_id'])
         obj = ObjectManager.storage.get_object(uid)
         with open(infile, 'rb') as stream:
-            obj.add_bytestream(uid, stream, self._get_file_root(uid))
+            obj.add_bytestream(uid, stream, ObjectManager._get_file_root(uid))
 
         dataset['name'] = name
         #dataset['uid'] = uid
         dataset['data']['path'] = pairtree.id2path(uid) +\
-                                "/" + self._get_file_root(uid) + "/" + uid
+                                "/" + ObjectManager._get_file_root(uid) + "/" + uid
         dataset['status'] = ObjectManager.DOWNLOADED
-        if options['uncompress'] and self.isarchive(name) is not None:
+        if options['uncompress'] and ObjectManager.isarchive(name) is not None:
             dataset['status'] = ObjectManager.UNCOMPRESS
             options['original_format'] = options['format']
             options['format'] = 'archive'
 
-        dataset['data']['size'] = os.path.getsize(self.get_storage_path() +
-                                                    dataset['data']['path'])
+        dataset['data']['size'] = os.path.getsize(ObjectManager.get_storage_path() + dataset['data']['path'])
         if 'project' in options:
             dataset['project'] = ObjectId(options['project'])
 
@@ -451,8 +454,8 @@ class ObjectManager:
             detector = BioFormat()
             fformat = detector.detect_by_extension(dataset['name'])
             if fformat is None:
-                (fformat, mime) = detector.detect(self.get_storage_path() +
-                                                    dataset['data']['path'])
+                (fformat, mime) =
+                detector.detect(ObjectManager.get_storage_path() + dataset['data']['path'])
         else:
             fformat = options['format']
 
@@ -467,10 +470,10 @@ class ObjectManager:
             newoptions = deepcopy(options)
             newoptions['id'] = str(dataset['_id'])
             newoptions['format'] = options['original_format']
-            uncompress.delay(self.get_file_path(str(dataset['_id'])), newoptions)
+            uncompress.delay(ObjectManager.get_file_path(str(dataset['_id'])), newoptions)
 
         if ObjectManager.use_repo and not options['uncompress']:
-            index = self.get_repository_index(uid)
+            index = ObjectManager.get_repository_index(uid)
             index.add([uid])
             if 'msg' in options:
                 msg = options['msg']
@@ -481,7 +484,8 @@ class ObjectManager:
         #return str(dataset['_id'])
         return dataset
 
-    def history(self, fid):
+    @classmethod
+    def history(cls, fid):
         '''
         Get historical data from repository commits
 
@@ -493,13 +497,10 @@ class ObjectManager:
             return []
         dataset = connection.ProjectData.find_one({'_id': ObjectId(fid)})
         uid = str(dataset['_id'])
-        #path = pairtree.id2path(uid) + "/"+ self._get_file_root(uid) +
-        # '/'+ uid
-        repo = self.get_repository(uid)
+        repo = ObjectManager.get_repository(uid)
         head = repo.head
         commits = []
         for commit in head.commit.iter_parents(paths='', skip=0):
-            #if commit.count(paths=path) >= 0:
             commits.append({'committed_date': commit.committed_date,
                             'message': commit.message})
         return commits

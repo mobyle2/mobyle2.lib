@@ -15,6 +15,7 @@ from .connection import connection
 from .config import Config
 from .data import AbstractData
 from .mobyleError import MobyleError
+from .objectmanager import ObjectManager
 
 @mf_decorator
 @connection.register
@@ -166,4 +167,21 @@ class ProjectData(ProjectDocument):
 
     default_values = {'persistent' : False}
 
+    def get_file_path(self):
+        '''Get root path for files of the dataset'''
+        return ObjectManager.get_file_path(str(self['_id']))
 
+
+    def schema(self, schema=None):
+        '''Update schema if parameter is not None, return schema'''
+        if schema is not None:
+            self['data'] = schema
+            self.save()
+        return self['data']
+
+    def status(self, status=None):
+        '''Update schema if parameter is not None, return schema'''
+        if status is not None:
+            self['status'] = status
+            self.save()
+        return self['status']
