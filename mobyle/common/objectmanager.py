@@ -389,8 +389,7 @@ class ObjectManager:
                     fformat = detector.detect_by_extension(dataset['name'])
                     datapath = dataset['data']['path']
                 if fformat is None:
-                    (fformat, mime) = detector.detect(ObjectManager.get_storage_path() +
-                                        datapath)
+                    (fformat, mime) = detector.detect(ObjectManager.get_storage_path() + datapath)
             else:
                 fformat = options['format']
 
@@ -454,8 +453,7 @@ class ObjectManager:
             detector = BioFormat()
             fformat = detector.detect_by_extension(dataset['name'])
             if fformat is None:
-                (fformat, mime) =
-                detector.detect(ObjectManager.get_storage_path() + dataset['data']['path'])
+                (fformat, mime) = detector.detect(ObjectManager.get_storage_path() + dataset['data']['path'])
         else:
             fformat = options['format']
 
