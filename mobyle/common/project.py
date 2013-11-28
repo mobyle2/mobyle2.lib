@@ -185,3 +185,20 @@ class ProjectData(ProjectDocument):
             self['status'] = status
             self.save()
         return self['status']
+
+    def save_with_history(self, files=None, msg=None):
+        '''
+        Save object and update git repo if available
+
+        :param files: List of relative path of new or updated files in dataset
+        :type files: list
+        :param msg: optional msg for the update
+        :type msg: str
+        '''
+        if files is not None and files and ObjectManager.use_repo:
+            index = ObjectManager.get_repository_index(str(self['_id']))
+            index.add(files)
+            if msg is None:
+                msg = "Update data"
+            index.commit(msg)
+        self.save()

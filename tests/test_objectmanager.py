@@ -59,7 +59,7 @@ class TestObjectManager(unittest.TestCase):
 
         my_dataset.schema(my_schema)
         my_dataset.status(ObjectManager.READY)
-        my_dataset.save()
+        my_dataset.save_with_history(['test.fake'],'new file')
         self.assertEqual(my_dataset['status'], ObjectManager.READY)
         self.assertTrue(os.path.exists(os.path.join(my_path, 'test.fake')))
         ObjectManager.delete(my_dataset['_id'])
