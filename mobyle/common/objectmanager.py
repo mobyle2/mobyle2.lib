@@ -159,17 +159,16 @@ class ObjectManager:
         '''
         obj = ObjectManager.storage.get_object(uid)
 
-        # If origin is a archive, it has not been added
-        # to the repository
-        if ObjectManager.use_repo and not options['uncompress']:
-            index = ObjectManager.get_repository_index(uid)
-            index.remove([uid])
-            if 'msg' in options:
-                msg = options['msg']
-            else:
-                msg = "File removed"
-            index.commit(msg + " " + options['name'])
-        obj.del_path(ObjectManager._get_file_root(uid),True)
+
+        #if ObjectManager.use_repo and not options['uncompress']:
+        #    index = ObjectManager.get_repository_index(uid)
+        #    index.remove([uid])
+        #    if 'msg' in options:
+        #        msg = options['msg']
+        #    else:
+        #        msg = "File removed"
+        #    index.commit(msg + " " + options['name'])
+        obj.del_path(ObjectManager._get_file_root(uid), True)
 
     @classmethod
     def delete(cls, uid, options=None):
@@ -218,6 +217,8 @@ class ObjectManager:
         '''
         if options is None:
             options = {'uncompress': False}
+        if 'uncompress' not in options:
+            options['uncompress'] = False
         Config.config()
         #uid = uuid.uuid4().hex
         dataset = connection.ProjectData()
