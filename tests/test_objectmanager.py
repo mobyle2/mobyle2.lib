@@ -260,3 +260,9 @@ class TestObjectManager(unittest.TestCase):
         history = ObjectManager.history(my_dataset['_id'])
         self.assertTrue(history is not None and len(history) == 1)
 
+    def test_isarchive(self):
+        self.assertTrue(ObjectManager.isarchive('test.zip') is not None)
+        self.assertTrue(ObjectManager.isarchive('test.tar.gz') is not None)
+        self.assertTrue(ObjectManager.isarchive('test.bz2') is not None)
+        self.assertTrue(ObjectManager.isarchive('test.txt') is None)
+
