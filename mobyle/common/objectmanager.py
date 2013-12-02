@@ -355,7 +355,7 @@ class ObjectManager:
                     # Not taken into account for quota
                     dataset['data']['size'] = 0
                     storage_path = os.path.join(ObjectManager.get_storage_path())
-                    dirname = os.path.dirname(storage_path, filepath)
+                    dirname = os.path.dirname(filepath)
                     if not os.path.exists(dirname):
                         os.mkdir(dirname)
                     os.symlink(options['files'][0], filepath)
