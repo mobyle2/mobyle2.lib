@@ -24,6 +24,9 @@ from mobyle.common.detector import BioFormat
 
 
 class AccessMode:
+    """
+    Defines the mode of access to a data
+    """
 
     READONLY = 0
     READWRITE = 1
