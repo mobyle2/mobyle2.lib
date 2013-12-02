@@ -5,8 +5,8 @@
 Object Manager
 **************
 
-The ObjectManager makes use of an *options* dict to specify the current options to
-manage the file(s):
+The ObjectManager makes use of an *options* dict to specify the current options
+to manage the file(s)::
 
     options[‘project’] = id of the project, as str
     options[‘uncompress’] = bool , is the base file an archive uncompressed
