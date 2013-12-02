@@ -7,10 +7,11 @@ from mobyle.common.config import Config
 config = Config(os.path.join(os.path.dirname(__file__), 'test.conf'))
 
 from mobyle.common.connection import connection
-from mobyle.common.objectmanager import ObjectManager
+from mobyle.common.objectmanager import ObjectManager, AccessMode
 from mobyle.common.data import RefData, ListData, StructData
 from mobyle.common.users import User
 from mobyle.common.project import Project
+from mobyle.common.tokens import Token
 
 
 # Initiliase object manager
@@ -141,3 +142,121 @@ class TestObjectManager(unittest.TestCase):
         ObjectManager.delete(my_dataset['_id'])
         self.assertFalse(os.path.exists(os.path.join(my_path, 'new.fake')))
         self.assertTrue(ObjectManager.get(my_dataset['_id']) is None)
+
+    def test_get_token(self):
+        options = {}
+        options['project'] = str(self.my_project['_id'])
+
+        my_dataset = ObjectManager.add("sample", options, False)
+        token = ObjectManager.get_token(my_dataset['_id'], ['test.fake'],
+                                        AccessMode.READONLY)
+        data_token = connection.Token.find_one({"token": token})
+        self.assertTrue(data_token['data']['id'] == str(my_dataset['_id']))
+        self.assertTrue(data_token['data']['access'] == AccessMode.READONLY)
+        self.assertTrue(data_token['data']['file'][0] == 'test.fake')
+
+    def test_update_projectdata(self):
+        options = {}
+        options['project'] = str(self.my_project['_id'])
+
+        my_dataset = ObjectManager.add("sample", options, False)
+        # now, my dataset status is “QUEUED”
+        self.assertEqual(my_dataset['status'], ObjectManager.QUEUED)
+        # Get path to the objects
+        my_path = my_dataset.get_file_path()
+
+        # Write a file to the dataset directory
+        sample_file = os.path.join(os.path.dirname(__file__), 'test.fake')
+
+        options['id'] = str(my_dataset['_id'])
+        options['format'] = 'text'
+        options['type'] = 'text/plain'
+        options['uncompress'] = False
+        options['group'] = False
+        options['file'] = sample_file
+        ObjectManager.update(ObjectManager.DOWNLOADED, options)
+        my_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
+        file_name = my_dataset_from_manager['data']['path']
+        self.assertTrue(os.path.exists(os.path.join(my_path, file_name)))
+        self.assertEqual(my_dataset_from_manager['status'], ObjectManager.DOWNLOADED)
+
+    def test_update_projectdata_after_uncompress_not_grouped(self):
+        options = {}
+        options['project'] = str(self.my_project['_id'])
+
+        my_dataset = ObjectManager.add("sample", options, False)
+        # now, my dataset status is “QUEUED”
+        self.assertEqual(my_dataset['status'], ObjectManager.QUEUED)
+
+        # Write a file to the dataset directory
+        sample_file1 = os.path.join(os.path.dirname(__file__), 'test.fake')
+        sample_file2 = os.path.join(os.path.dirname(__file__), 'test.conf')
+
+        options['id'] = str(my_dataset['_id'])
+        options['format'] = 'auto'
+        options['type'] = 'text/plain'
+        options['uncompress'] = True
+        options['group'] = False
+        options['files'] = [sample_file1, sample_file2]
+        new_datasets = ObjectManager.update(ObjectManager.DOWNLOADED, options)
+
+        my_dataset_from_manager = ObjectManager.get(new_datasets[0])
+        self.assertTrue(my_dataset_from_manager['status'] == ObjectManager.DOWNLOADED)
+        self.assertTrue(len(new_datasets) == 2)
+        main_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
+        self.assertTrue(main_dataset_from_manager is None)
+
+    def test_update_projectdata_after_uncompress_grouped(self):
+        options = {}
+        options['project'] = str(self.my_project['_id'])
+
+        my_dataset = ObjectManager.add("sample", options, False)
+        # now, my dataset status is “QUEUED”
+        self.assertEqual(my_dataset['status'], ObjectManager.QUEUED)
+        # Get path to the objects
+        my_path = my_dataset.get_file_path()
+
+        # Write a file to the dataset directory
+        sample_file1 = os.path.join(os.path.dirname(__file__), 'test.fake')
+        sample_file2 = os.path.join(os.path.dirname(__file__), 'test.conf')
+
+        options['id'] = str(my_dataset['_id'])
+        options['format'] = 'auto'
+        options['type'] = 'text/plain'
+        options['uncompress'] = True
+        options['group'] = True
+        options['files'] = [sample_file1, sample_file2]
+        ObjectManager.update(ObjectManager.DOWNLOADED, options)
+
+        main_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
+        self.assertTrue(main_dataset_from_manager is not None)
+        self.assertTrue(len(main_dataset_from_manager['data']['value']) == 2)
+        file_name = main_dataset_from_manager['data']['value'][0]['path']
+        self.assertTrue(os.path.exists(os.path.join(my_path, file_name)))
+        self.assertEqual(file_name, 'test.fake')
+        file_name = main_dataset_from_manager['data']['value'][1]['path']
+        self.assertTrue(os.path.exists(os.path.join(my_path, file_name)))
+        self.assertEqual(file_name, 'test.conf')
+
+    def test_history(self):
+        options = {}
+        options['project'] = str(self.my_project['_id'])
+
+        my_dataset = ObjectManager.add("sample", options, False)
+        # now, my dataset status is “QUEUED”
+        self.assertEqual(my_dataset['status'], ObjectManager.QUEUED)
+
+        # Write a file to the dataset directory
+        sample_file1 = os.path.join(os.path.dirname(__file__), 'test.fake')
+        sample_file2 = os.path.join(os.path.dirname(__file__), 'test.conf')
+
+        options['id'] = str(my_dataset['_id'])
+        options['format'] = 'text'
+        options['type'] = 'text/plain'
+        options['uncompress'] = True
+        options['group'] = True
+        options['files'] = [sample_file1, sample_file2]
+        ObjectManager.update(ObjectManager.DOWNLOADED, options)
+        history = ObjectManager.history(my_dataset['_id'])
+        self.assertTrue(history is not None and len(history) == 1)
+

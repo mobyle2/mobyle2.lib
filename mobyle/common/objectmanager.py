@@ -127,14 +127,14 @@ class ObjectManager:
         return connection.ProjectData.find_one({"_id": ObjectId(uid)})
 
     @classmethod
-    def get_token(cls, uid, file_path, mode=AccessMode.READONLY, lifetime=3600):
+    def get_token(cls, uid, files_path, mode=AccessMode.READONLY, lifetime=3600):
         '''
         Return a temporary token to serve a dataset file
 
         :param uid: Id of the dataset
         :type uid: basestring
-        :param file_path: relative path to the file in the dataset
-        :type file_path: basetring
+        :param files_path: relative path to the files in the dataset
+        :type files_path: list
         :param mode: allowed access mode
         :type mode: AccessMode.READONLY, AccessMode.READWRITE
         :param lifetime: duration of the token in seconds
@@ -142,11 +142,11 @@ class ObjectManager:
         :return: basetring, token
         '''
         uid = str(uid)
-        token_path = os.path.join(ObjectManager.get_storage_path(uid), file_path)
         temptoken = connection.Token()
         temptoken.generate(lifetime)
         token_data = dict()
-        token_data['file'] = token_path
+        token_data['id'] = uid
+        token_data['file'] = files_path
         token_data['access'] = mode
         temptoken['data'] = token_data
         temptoken.save()
@@ -265,11 +265,15 @@ class ObjectManager:
         :param status: Status of the  upload/download \
                     (QUEUED,DOWNLOADING,DOWNLOADED,ERROR)
         :type status: int
+        :return: list of updated datasets id
         '''
-        dataset = connection.ProjectData.find_one({"_id": ObjectId(options['id'])})
 
-        if status == ObjectManager.DOWNLOADED and options['uncompress'] and\
-        ObjectManager.isarchive(options['name']):
+        dataset = connection.ProjectData.find_one({"_id": ObjectId(options['id'])})
+        updated_datasets = [options['id']]
+
+        if status == ObjectManager.DOWNLOADED and\
+        'uncompress' in options and options['uncompress'] and\
+        'name' in options and ObjectManager.isarchive(options['name']):
             status = ObjectManager.UNCOMPRESS
 
         if status == ObjectManager.SYMLINK:
@@ -289,7 +293,10 @@ class ObjectManager:
                     msg = options['msg']
                 if options['group']:
                     dataset['data'] = ListData()
-                #    dataset['data']['path'] = pairtree.id2path(uid) + path
+
+                else:
+                    updated_datasets = []
+
                 for filepath in options['files']:
                     if options['group']:
                         # Copy files
@@ -301,6 +308,7 @@ class ObjectManager:
                                      '/' + os.path.basename(filepath)
                         subdata = RefData()
                         subdata['path'] = os.path.basename(filepath)
+                        subdata['name'] = os.path.basename(filepath)
                         subdata['size'] = \
                                 os.path.getsize(ObjectManager.get_storage_path() +
                                 filespath)
@@ -321,30 +329,30 @@ class ObjectManager:
                         newoptions['uncompress'] = False
                         newoptions['group'] = False
                         newoptions['id'] = None
-                        ObjectManager.store(os.path.basename(filepath),
+                        new_dataset = ObjectManager.store(os.path.basename(filepath),
                             filepath, newoptions)
+                        updated_datasets.append(str(new_dataset['_id']))
                 if not options['group']:
                     # remove current obj, each sub file is a new independant
                     # object
                     ObjectManager.delete(uid, options)
                     # We have managed child object
                     # now we can leave
-                    return
+                    return updated_datasets
                 else:
                     # Commit history
                     if ObjectManager.use_repo:
                         index = ObjectManager.get_repository_index(uid)
                         index.commit(msg)
+
             else:
-                #dataset['data']['path'] = \
-                #    pairtree.id2path(uid) + "/" + \
-                #    ObjectManager._get_file_root(uid) + "/" + uid
                 dataset['data']['path'] = uid
                 filepath = os.path.join(dataset.get_file_path(), uid)
                 if status == ObjectManager.SYMLINK:
                     # Not taken into account for quota
                     dataset['data']['size'] = 0
-                    dirname = os.path.dirname(os.path.join(ObjectManager.get_storage_path(),filepath))
+                    storage_path = os.path.join(ObjectManager.get_storage_path())
+                    dirname = os.path.dirname(storage_path, filepath)
                     if not os.path.exists(dirname):
                         os.mkdir(dirname)
                     os.symlink(options['file'], filepath)
@@ -373,7 +381,7 @@ class ObjectManager:
             if options['format'] == 'auto':
                 # Try auto-detect
                 detector = BioFormat()
-                if dataset['data']['_type'].__class__.__name__ == 'ListData':
+                if dataset['data'].__class__.__name__ == 'ListData':
                     for subdata in dataset['data']['value']:
                         fformat = detector.detect_by_extension(subdata['name'])
                         if fformat is not None:
@@ -398,6 +406,8 @@ class ObjectManager:
             # delay decompression
             from mobyle.data.manager.background import uncompress
             uncompress.delay(options['file'], options)
+
+        return updated_datasets
 
     @classmethod
     def store(cls, name, infile, options=None):
@@ -434,8 +444,6 @@ class ObjectManager:
         dataset['name'] = name
         dataset['data']['path'] = uid
         filepath = os.path.join(dataset.get_file_path(), uid)
-        #dataset['data']['path'] = pairtree.id2path(uid) +\
-        #                        "/" + ObjectManager._get_file_root(uid) + "/" + uid
         dataset['status'] = ObjectManager.DOWNLOADED
         if options['uncompress'] and ObjectManager.isarchive(name) is not None:
             dataset['status'] = ObjectManager.UNCOMPRESS
@@ -489,14 +497,15 @@ class ObjectManager:
         :type fid: str
         :return: array of commit date and message dict
         '''
+        fid = str(fid)
         if not ObjectManager.use_repo:
             return []
         dataset = connection.ProjectData.find_one({'_id': ObjectId(fid)})
         uid = str(dataset['_id'])
         repo = ObjectManager.get_repository(uid)
-        head = repo.head
         commits = []
-        for commit in head.commit.iter_parents(paths='', skip=0):
+        #for commit in head.commit.iter_parents(paths='', skip=0):
+        for commit in repo.iter_commits():
             commits.append({'committed_date': commit.committed_date,
                             'message': commit.message})
         return commits

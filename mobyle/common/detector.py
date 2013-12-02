@@ -54,7 +54,7 @@ class SquizzDetector (object):
         format = libbioseq.sequence_format(f)
         if format == SEQFMT_NONE:
             format = libbioali.align_format(f)
-            libc.fclose(f) 
+            libc.fclose(f)
             if format == ALIFMT_NONE:
                 return None
             return SquizzDetector.alignformats[format]
@@ -173,19 +173,19 @@ class BioFormat (object):
         :type filename: str
         :return: tuple (format,mimetype)
         '''
-        format = self.detect_by_extension(filename)
-        if format:
-            return (format,self.mimetypes[format])
+        fformat = self.detect_by_extension(filename)
+        if fformat:
+            return (fformat, self.mimetypes[fformat])
 
         for detector in BioFormat.detectors:
-            logging.debug("Try detector "+detector.__name__)
+            logging.debug("Try detector " + detector.__name__)
             curdetector = detector()
-            format = curdetector.detect(filename)
-            if format is not None:
+            fformat = curdetector.detect(filename)
+            if fformat is not None:
                 mime = 'application/octet-stream'
-                if format in self.mimetypes:
-                    mime = self.mimetypes[format]
-                return (format,mime)
+                if fformat in self.mimetypes:
+                    mime = self.mimetypes[fformat]
+                return (fformat, mime)
 
         return (None,None)
 
