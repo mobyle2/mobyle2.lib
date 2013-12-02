@@ -15,7 +15,7 @@ manage the file(s):
         options[‘group’] = bool , if uncompress is True, should all files be a single dataset or one dataset per file (group of files or independent files)
        options[‘files’] = list of file paths to copy in the dataset(s) according to group
     else:
-        options[‘file’] = path to the file to copy in the dataset
+        options[‘files’] = list of path to the files to copy in the dataset
 
     options[‘format’] = EDAM format or “auto” . If auto, a call to BioFormat detector will be done to try to detect the format and type
     options[‘type’] = EDAM type

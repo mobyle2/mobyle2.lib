@@ -173,7 +173,7 @@ class TestObjectManager(unittest.TestCase):
         options['type'] = 'text/plain'
         options['uncompress'] = False
         options['group'] = False
-        options['file'] = sample_file
+        options['files'] = [sample_file]
         ObjectManager.update(ObjectManager.DOWNLOADED, options)
         my_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
         file_name = my_dataset_from_manager['data']['path']

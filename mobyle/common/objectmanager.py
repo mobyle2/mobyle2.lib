@@ -287,7 +287,7 @@ class ObjectManager:
             uid = str(dataset['_id'])
             path = ObjectManager._get_file_root(uid)
             obj = ObjectManager.storage.get_object(uid)
-            if options['uncompress']:
+            if options['uncompress'] or len(options['files'])>1:
                 msg = 'Add: '
                 if 'msg' in options:
                     msg = options['msg']
@@ -355,9 +355,9 @@ class ObjectManager:
                     dirname = os.path.dirname(storage_path, filepath)
                     if not os.path.exists(dirname):
                         os.mkdir(dirname)
-                    os.symlink(options['file'], filepath)
+                    os.symlink(options['files'][0], filepath)
                 else:
-                    with open(options['file'], 'rb') as stream:
+                    with open(options['files'][0], 'rb') as stream:
                         obj.add_bytestream(uid, stream, path)
                     dataset['data']['size'] = \
                         os.path.getsize(filepath)
