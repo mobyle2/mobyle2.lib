@@ -200,7 +200,7 @@ class TestObjectManager(unittest.TestCase):
         options['files'] = [sample_file1, sample_file2]
         new_datasets = ObjectManager.update(ObjectManager.DOWNLOADED, options)
 
-        my_dataset_from_manager = ObjectManager.get(new_datasets[0])
+        my_dataset_from_manager = ObjectManager.get(new_datasets[0]['_id'])
         self.assertTrue(my_dataset_from_manager['status'] == ObjectManager.DOWNLOADED)
         self.assertTrue(len(new_datasets) == 2)
         main_dataset_from_manager = ObjectManager.get(my_dataset['_id'])

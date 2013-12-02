@@ -268,11 +268,11 @@ class ObjectManager:
         :param status: Status of the  upload/download \
                     (QUEUED,DOWNLOADING,DOWNLOADED,ERROR)
         :type status: int
-        :return: list of updated datasets id
+        :return: list of updated datasets
         '''
 
         dataset = connection.ProjectData.find_one({"_id": ObjectId(options['id'])})
-        updated_datasets = [options['id']]
+        updated_datasets = [dataset]
 
         if status == ObjectManager.DOWNLOADED and\
         'uncompress' in options and options['uncompress'] and\
@@ -334,7 +334,7 @@ class ObjectManager:
                         newoptions['id'] = None
                         new_dataset = ObjectManager.store(os.path.basename(filepath),
                             filepath, newoptions)
-                        updated_datasets.append(str(new_dataset['_id']))
+                        updated_datasets.append(new_dataset)
                 if not options['group']:
                     # remove current obj, each sub file is a new independant
                     # object
