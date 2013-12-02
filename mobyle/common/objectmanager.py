@@ -402,10 +402,6 @@ class ObjectManager:
 
         dataset['status'] = status
         dataset.save()
-        if status == ObjectManager.UNCOMPRESS:
-            # delay decompression
-            from mobyle.data.manager.background import uncompress
-            uncompress.delay(options['file'], options)
 
         return updated_datasets
 
