@@ -306,6 +306,8 @@ class ObjectManager:
 
                 else:
                     updated_datasets = []
+                
+                dataset['data']['type'] = options['type']
 
                 for filepath in options['files']:
                     if options['group']:
