@@ -426,7 +426,7 @@ class ObjectManager:
         :type infile: str
         :param options: options related to file (project,...)
         :type options: dict
-        :return: data database id
+        :return: dataset
         '''
         dataset = None
         if options is None:
@@ -473,14 +473,6 @@ class ObjectManager:
         dataset['data']['type'] = options['type']
 
         dataset.save()
-
-        if dataset['status'] == ObjectManager.UNCOMPRESS:
-            # delay decompression
-            from mobyle.data.manager.background import uncompress
-            newoptions = deepcopy(options)
-            newoptions['id'] = str(dataset['_id'])
-            newoptions['format'] = options['original_format']
-            uncompress.delay(dataset.get_file_path(), newoptions)
 
         if ObjectManager.use_repo and not options['uncompress']:
             index = ObjectManager.get_repository_index(uid)
