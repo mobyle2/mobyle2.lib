@@ -118,6 +118,13 @@ class ObjectManager:
             "/" + ObjectManager._get_file_root(uid)
 
     @classmethod
+    def get_relative_file_path(cls,uid):
+        '''Get path for a file uid, relative to pairtree root'''
+        return pairtree.id2path(str(uid)) + "/" + \
+        ObjectManager._get_file_root(str(uid))
+
+
+    @classmethod
     def get(cls, uid):
         '''
         Gets a dataset from its uid
