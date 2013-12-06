@@ -7,7 +7,7 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 
-from mongokit import Document, ObjectId
+from mongokit import Document, ObjectId, IS
 from mf.annotation import mf_decorator
 from mf.views import MF_READ, MF_EDIT
 
@@ -30,7 +30,7 @@ class Project(Document):
 
     structure = { 'name' : basestring, 
                   'owner' : ObjectId, 
-                  'users' : [{'user': ObjectId, 'role': basestring}],
+                  'users' : [{'user': ObjectId, 'role': IS(u'manager', u'contributor', u'watcher')}],
                   'notebook' : basestring,
                   'public' : bool,
                   '_dir' : basestring
