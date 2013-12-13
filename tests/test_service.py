@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import pymongo
+
 from mongokit import ValidationError
 import os.path
 #a config object must be instantiated first for each entry point of the application
@@ -59,7 +59,7 @@ class TestService(unittest.TestCase):
         inputs.validate()
         service.validate()
         service.save()
-        
+
 
     def test_invalid_inputs_creation(self):
         """
@@ -76,11 +76,11 @@ class TestService(unittest.TestCase):
         inputs = InputParagraph()
         #service['inputs']=inputs
         output = OutputParameter()
-        output['name'] = 'test_output'     
+        output['name'] = 'test_output'
         inputs['children'].append(output)
         self.assertRaises(ValidationError, inputs.validate)
         #service.validate()
         #service.save()
 
 if __name__ == '__main__':
-    unittest.main() 
+    unittest.main()

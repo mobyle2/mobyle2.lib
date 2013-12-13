@@ -11,14 +11,30 @@ import os.path
 from mobyle.common.type import *
 from mobyle.common.data import *
 
-from mongokit import Document, SchemaDocument
+from mongokit import Document
 
 from mobyle.common.config import Config
-config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
+config = Config(os.path.join(os.path.dirname(__file__), 'test.conf'))
 
 from mobyle.common.connection import connection
 
-from mobyle.common.mk_struct import MKStruct, MKStructAdapter
+@connection.register
+class DummyType(Type):
+    pass
+
+@connection.register
+class TypeContainer(Document):
+    """
+    Class used in this unit test module to test "Type" class
+    """
+    __collection__ = 'type_container_tests'
+    __database__ = Config.config().get('app:main', 'db_name')
+
+    structure = {
+                 "_type": unicode,
+                 "type": Type
+                }
+
 
 class TestType(unittest.TestCase):
     """
@@ -26,21 +42,18 @@ class TestType(unittest.TestCase):
     """
 
     def setUp(self):
-        self.type = Type()
-        self.type_adapter = TypeAdapter()
+        connection.TypeContainer.collection.remove({})
+        self.container = connection.TypeContainer()
+        self.type = DummyType()
         self.data_terms = ['test', 'test2']
         self.type['data_terms'] = self.data_terms
-        self.encoded_type = self.type_adapter.to_bson(self.type)
-        self.decoded_type = self.type_adapter.to_python(self.encoded_type)
+        self.container['type'] = self.type
+        self.container.save()
+        self.loaded_type_container = connection.TypeContainer.fetch_one()
 
-    def test_encode(self):
-        self.assertEqual(self.encoded_type,
-                         {'_type':None,
-                          'data_terms':self.data_terms})                
+    def test_loaded_class_type(self):
+        self.assertIs(type(self.loaded_type_container['type']), DummyType)
 
-    def test_decode(self):
-        self.assertIs(type(self.decoded_type),Type)
-        self.assertIs(self.decoded_type['data_terms'],self.data_terms)
 
 class TestBooleanType(unittest.TestCase):
     """
@@ -48,13 +61,18 @@ class TestBooleanType(unittest.TestCase):
     """
 
     def setUp(self):
+        connection.TypeContainer.collection.remove({})
+        self.container = connection.TypeContainer()
         self.type = BooleanType()
-        self.type_adapter = TypeAdapter()
-        self.encoded_type = self.type_adapter.to_bson(self.type)
-        self.decoded_type = self.type_adapter.to_python(self.encoded_type)
+        self.data_terms = ['test', 'test2']
+        self.type['data_terms'] = self.data_terms
+        self.container['type'] = self.type
+        self.container.save()
+        self.loaded_type_container = connection.TypeContainer.fetch_one()
 
-    def test_decode(self):
-        self.assertIs(type(self.decoded_type),BooleanType)
+    def test_loaded_class_type(self):
+        self.assertIs(type(self.loaded_type_container['type']), BooleanType)
+
 
 class TestStructType(unittest.TestCase):
     """
@@ -62,54 +80,23 @@ class TestStructType(unittest.TestCase):
     """
 
     def setUp(self):
+        connection.TypeContainer.collection.remove({})
+        self.container = connection.TypeContainer()
         self.type = StructType()
-        self.type_adapter = TypeAdapter()
-        self.properties = {'a':BooleanType(), 'b': BooleanType()}
+        self.properties = {'a': BooleanType(),
+                           'b': BooleanType()}
         self.type['properties'] = self.properties
-        self.encoded_type = self.type_adapter.to_bson(self.type)
-        self.decoded_type = self.type_adapter.to_python(self.encoded_type)
+        self.container['type'] = self.type
+        self.container.save()
+        self.loaded_type_container = connection.TypeContainer.fetch_one()
 
-    def test_encode(self):
-        self.assertIsInstance(self.encoded_type,dict)
-        self.assertIsInstance(self.encoded_type['properties']['a'],dict)
-        self.assertIsInstance(self.encoded_type['properties']['b'],dict)
-
-    def test_decode(self):
-        self.assertIs(type(self.decoded_type),StructType)
-        self.assertIs(type(self.decoded_type['properties']['a']),BooleanType)
-        self.assertIs(type(self.decoded_type['properties']['b']),BooleanType)
-
-class TypeMKStruct(MKStruct):
-    structure = {'nested_type':MKStructAdapter(BooleanType)}
-
-@connection.register
-class TypeAdapterDoc(Document):
-    __collection__ = 'type_adapter_documents'
-    __database__ = Config.config().get('app:main','db_name')
-    structure = {'test_type':TypeAdapter(),
-                 'test_schemadoc_type':MKStructAdapter(TypeMKStruct)}
-
-class TestTypeAdapter(unittest.TestCase):
-    """
-    Test the "TypeAdapter" CustomType
-    to make sure it is serializable/unserializable
-    """
-
-    def setUp(self):
-        connection.TypeAdapterDoc.collection.remove({})
-
-    def test_create_document(self):
-        self.doc = connection.TypeAdapterDoc()
-        self.doc.save()
-        self.type = BooleanType()
-        self.doc['test_type'] = self.type
-        self.doc.save()
-        self.doc['test_schemadoc_type'] = TypeMKStruct()
-        self.doc.save()
-        self.doc['test_schemadoc_type']['nested_type'] = self.type
-        self.doc.save()
-        self.doc2 = connection.TypeAdapterDoc.find_one()
-        self.assertIs(type(self.doc2['test_type']),BooleanType)
-
+    def test_loaded_class_type(self):
+        self.assertIs(type(self.loaded_type_container['type']), StructType)
+        self.assertIs(
+            type(self.loaded_type_container['type']['properties']['a']),
+            BooleanType)
+        self.assertIs(
+            type(self.loaded_type_container['type']['properties']['b']),
+            BooleanType)
 if __name__=='__main__':
     unittest.main()

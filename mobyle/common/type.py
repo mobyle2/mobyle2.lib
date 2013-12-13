@@ -4,116 +4,98 @@ Created on Nov. 13, 2013
 
 @license: GPLv3
 '''
-from mongokit import CustomType
-
-from .mk_struct import MKStruct, MKStructAdapter
+from mongokit import SchemaDocument
+from .connection import connection
 
 # pylint: disable=W0201,R0904,R0913
 
-class Type(MKStruct):
+
+@connection.register
+class Type(SchemaDocument):
     """
     A superclass representing any of the types
     """
     structure = {
-                 '_type':None,
-                 'data_terms':[],
-                 'default':None
+                 'data_terms': [],
+                 'default': None
                 }
 
-    def __init__(self, values={}):
-        MKStruct.__init__(self, values=values)
-        self['_type'] = _CLASS_TO_TYPE[self.__class__]
-
     def __repr__(self):
-        return "[%s]%s" % (self.__class__.__name__,dict(self)) 
+        return "[%s]%s" % (self.__class__.__name__, dict(self))
 
     def check_value(self, value):
         raise NotImplementedError()
 
+
+@connection.register
 class BooleanType(Type):
     """
     A boolean
     """
     structure = {
-                 'default':bool
+                 'default': bool
                 }
 
     def check_value(self, value):
-        if not(type(value)==bool):
+        if not(type(value) == bool):
             raise TypeError("value %s is not an boolean" % value)
 
+
+@connection.register
 class IntegerType(Type):
     """
     An integer
     """
     def check_value(self, value):
-        if not(type(value)==int):
+        if not(type(value) == int):
             raise TypeError("value %s is not an integer" % value)
 
+
+@connection.register
 class FloatType(Type):
     """
     A float
     """
     pass
 
+
+@connection.register
 class StringType(Type):
     """
     A string
     """
     structure = {
-                 'options':[]
+                 'options': []
                 }
-    pass
 
+
+@connection.register
 class FormattedType(Type):
     """
     Type describing data formatted according to an EDAM reference
     """
     structure = {
-                 'format_terms':[]
+                 'format_terms': []
                 }
 
+
+@connection.register
 class ArrayType(Type):
     """
     Type describing data formed by a array of data items sharing
     the same type/format
     """
     structure = {
-                 'items_type':[]
+                 'items_type': Type
                 }
 
+
+@connection.register
 class StructType(Type):
     """
     Type describing data formed by a object containing properties
     referencing different data
     """
     structure = {
-                 'properties':{}
+                 'properties': {unicode: Type}
                 }
-
-_TYPE_TO_CLASS = {
-        None: Type,
-        'boolean': BooleanType,
-        'integer': IntegerType,
-        'float': FloatType,
-        'string': StringType,
-        'formatted': FormattedType,
-        'array': ArrayType,
-        'struct': StructType
-    }
-
-_CLASS_TO_TYPE = dict((v, k) for k, v in _TYPE_TO_CLASS.iteritems())
-
-class TypeAdapter(CustomType):
-
-    mongo_type = dict
-    python_type = Type
- 
-    def to_bson(self, value):
-        if value is not None:
-            return value.to_bson()
-    
-    @staticmethod
-    def to_python(value):
-        if value is not None:
-            return _TYPE_TO_CLASS[value["_type"]].to_python(value)

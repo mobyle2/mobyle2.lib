@@ -7,17 +7,16 @@ Created on Jan 22, 2013
 @organization: Institut Pasteur
 @license: GPLv3
 """
-from mongokit import Document, ObjectId, SchemaDocument, IS, ValidationError
+from mongokit import ObjectId, SchemaDocument, IS, ValidationError
 from mf.annotation import mf_decorator
 
 from .connection import connection
 from .config import Config
 from .project import ProjectDocument
-from .type import TypeAdapter
+from .type import Type
 
-from mobyle.common.mk_struct import MKStruct, MKStructAdapter
-
-class Code(MKStruct):
+@connection.register
+class Code(SchemaDocument):
     """
     python or perl code to be evaluated
     """
@@ -26,7 +25,9 @@ class Code(MKStruct):
                 'perl': basestring
                 }
 
-class LegacyType(MKStruct):
+
+@connection.register
+class LegacyType(SchemaDocument):
     """
     type information
     WARNING: this is Mobyle1 information
@@ -38,21 +39,23 @@ class LegacyType(MKStruct):
                 'biotypes': [basestring],
                 'formats': [basestring],
                 'card': [basestring],
-                'biomoby_datatypes': [{'datatype': basestring, 
+                'biomoby_datatypes': [{'datatype': basestring,
                                        'namespace': basestring}],
                 'edam_types': [basestring]
                 }
 
-class Para(MKStruct):
+
+class Para(SchemaDocument):
     """
     parent class for parameters and paragraphs
     """
     structure = {
                 'name': basestring,
                 'prompt': basestring,
-                'precond': MKStructAdapter(Code),
+                'precond': Code,
                 'comment': basestring
                 }
+
 
 class Parameter(Para):
     """
@@ -61,18 +64,21 @@ class Parameter(Para):
     structure = {
                 'main': bool,
                 'hidden': bool,
-                'simple':bool,
-                'type': TypeAdapter()
+                'simple': bool,
+                'type': Type
                 }
+
 
 class Paragraph(Para):
     """
     a service paragraph
     """
     structure = {
-                'children': [MKStructAdapter(Para)]
+                'children': [Para]
                 }
 
+
+@connection.register
 class OutputProgramParagraph(Paragraph):
     """
     a program output paragraph
@@ -81,17 +87,19 @@ class OutputProgramParagraph(Paragraph):
                 'argpos': int
                 }
 
+
 class InputParameter(Parameter):
     """
     input parameter
     """
     structure = {
-                'mandatory':bool,
-                'ctrl':MKStructAdapter(Code)
+                'mandatory': bool,
+                'ctrl': Code
                 }
 
+
 class OutputParameter(Parameter):
-    """ 
+    """
     output parameter
     """
     structure = {
@@ -100,97 +108,111 @@ class OutputParameter(Parameter):
                 # stderr: standard error
                 # file: a specific file
                 # progress: a progress report file
-                'output_type':IS(u'stdout',u'stderr',u'file',u'progress')
+                'output_type': IS(u'stdout',
+                                  u'stderr',
+                                  u'file',
+                                  u'progress')
                 }
     default_values = {'output_type': u'file'}
 
+
+@connection.register
 class OutputProgramParameter(OutputParameter):
     """
     output parameter for a program
     """
     structure = {
-                'filenames': MKStructAdapter(Code)
+                'filenames': Code
                 }
 
+
+@connection.register
 class InputProgramParameter(InputParameter):
     """
     input parameter for a program
-    """    
+    """
     structure = {
                 'command': bool,
                 'argpos': int,
-                'format': MKStructAdapter(Code),
+                'format': Code,
                 'paramfile': basestring
                 }
+
 
 def inputs_validator(paras_list):
     """
     checks that all parameters and paragraphs in the list are inputs
     """
     for para in paras_list:
-        if not(isinstance(para, InputParameter) or \
+        if not(isinstance(para, InputParameter) or
          isinstance(para, InputParagraph)):
-            raise ValueError(\
-             '%%s should contain only input parameters and paragraphs, '\
+            raise ValueError(
+             '%%s should contain only input parameters and paragraphs, '
              'but %s is not an input' % para['name'])
     return True
+
 
 def outputs_validator(paras_list):
     """
     checks that all parameters and paragraphs in the list are outputs
     """
     for para in paras_list:
-        if not(isinstance(para, OutputParameter) or \
+        if not(isinstance(para, OutputParameter) or
          isinstance(para, OutputParagraph)):
-            raise ValueError(\
-             '%%s should contain only output parameters and paragraphs, '\
+            raise ValueError(
+             '%%s should contain only output parameters and paragraphs, '
              'but %s is not an output' % para['name'])
     return True
 
+
+@connection.register
 class InputParagraph(Paragraph):
     """
     inputs container paragraph
     """
-    structure = {} 
+    structure = {}
     validators = {
-                  'children':inputs_validator
+                  'children': inputs_validator
                  }
 
+
+@connection.register
 class OutputParagraph(Paragraph):
     """
     outputs container paragraph
     """
     structure = {}
     validators = {
-                  'children':outputs_validator
+                  'children': outputs_validator
                  }
+
 
 @mf_decorator
 @connection.register
 class Software(ProjectDocument):
     """
     top-level abstract element for different services and packages
-    describes the common properties of these levels.     
+    describes the common properties of these levels.
     """
     __database__ = Config.config().get('app:main', 'db_name')
 
-    structure = { 
+    structure = {
                   '_type': unicode,
                   # software name
-                  'name' : basestring,
+                  'name': basestring,
                   # version of the software
-                  'version' : basestring,
+                  'version': basestring,
                   # public name, that allows permalinks
-                  'public_name' : basestring,
+                  'public_name': basestring,
                   # title
-                  'title' : basestring,
+                  'title': basestring,
                   # description
-                  'description' : basestring,
+                  'description': basestring,
                   # authors of the software
-                  'authors' : basestring,
+                  'authors': basestring,
                   # bibliographic references to be cited when using
                   # this software
-                  'references' : [{
+                  'references': [{
                                    # citation text
                                    'label':basestring,
                                    # citation DOI
@@ -199,11 +221,11 @@ class Software(ProjectDocument):
                                    'url':basestring
                                  }],
                   # software documentation links
-                  'documentation_links' : [basestring],
+                  'documentation_links': [basestring],
                   # software sources links
-                  'source_links' : [basestring],
+                  'source_links': [basestring],
                   # software homepage links
-                  'homepage_links' : [basestring],
+                  'homepage_links': [basestring],
                   # miscelaneous comments
                   'comment': basestring,
                   # software classifications
@@ -221,20 +243,21 @@ class Software(ProjectDocument):
 
     default_values = {}
 
-    required_fields = [ 'name' ]
+    required_fields = ['name']
 
     def validate(self, *args, **kwargs):
         """
         validate the public name of the service if it has one.
-        
-        :raise: :class:`ValidationError` if the public name is already used. 
+
+        :raise: :class:`ValidationError` if the public name is already used.
         """
-        if (self['public_name']!=None):
-            if (self.collection.find({'public_name':self['public_name'], \
+        if (self['public_name'] is not None):
+            if (self.collection.find({'public_name': self['public_name'],
                 'version': self['version'],
-                '_id':{'$ne':self.get('_id',None)}}).count()>0):
+                '_id': {'$ne': self.get('_id', None)}}).count() > 0):
                 raise ValidationError('Public name / version already used.')
         super(Software, self).validate(*args, **kwargs)
+
 
 @mf_decorator
 @connection.register
@@ -254,14 +277,15 @@ class Service(Software, ProjectDocument):
     __collection__ = 'services'
     structure = {
                   # package reference
-                  'package' : MKStructAdapter(Package),
+                  'package': Package,
                   # inputs
-                  'inputs': MKStructAdapter(InputParagraph),
+                  'inputs': InputParagraph,
                   # outputs
-                  'outputs': MKStructAdapter(OutputParagraph),
+                  'outputs': OutputParagraph,
                   # project which the service belongs to
                   'project': ObjectId
                 }
+
 
 @mf_decorator
 @connection.register
@@ -271,14 +295,15 @@ class Program(Service):
     """
     structure = {
                   'command': {
-                              'path':basestring,
-                              'value':basestring
+                              'path': basestring,
+                              'value': basestring
                              },
                   'env': [{
-                           'name':basestring,
-                           'value':basestring
+                           'name': basestring,
+                           'value': basestring
                           }]
                 }
+
 
 @mf_decorator
 @connection.register
@@ -290,6 +315,7 @@ class Workflow(Service):
     structure = {
                 }
 
+
 @mf_decorator
 @connection.register
 class Widget(Service):
@@ -299,4 +325,3 @@ class Widget(Service):
     """
     structure = {
                 }
-
