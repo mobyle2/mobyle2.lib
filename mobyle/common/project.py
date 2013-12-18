@@ -161,11 +161,12 @@ class ProjectData(ProjectDocument):
                   'data': AbstractData,
                   'status' : int,
                   'persistent' : bool,
-                  'path' : basestring
+                  'path' : basestring,
+                  'public' : bool
                   #TODO: add data provenance information
                 }
 
-    default_values = {'persistent' : False}
+    default_values = {'persistent' : False, 'public' : False}
 
     def get_file_path(self):
         '''Get root path for files of the dataset'''
