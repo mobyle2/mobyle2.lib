@@ -13,6 +13,7 @@ import xml.etree.ElementInclude as EI
 from xml2json import elem_to_internal, internal_to_elem
 import logging
 import argparse
+from importlib import import_module
 
 from mobyle.common.config import Config
 
@@ -344,7 +345,7 @@ def parse_parameter(p_dict, service_type):
     m1_biotype = m1_biotypes[0] if len(m1_biotypes)==1 else None
     type_ds = types_map.get_type(m1_class, m1_biotype)
     if type_ds:
-        m2_type = TypeAdapter.to_python(type_ds)
+        m2_type = getattr(type_module, type_ds['_type'])()
         for data_format in t_dict.list('dataFormat'):
             df = formats_map.get_format(data_format.text())
             if df:
@@ -557,7 +558,7 @@ if __name__ == '__main__':
 	                              InputProgramParameter, \
 	                              OutputProgramParameter, \
 	                              LegacyType
-    from mobyle.common.type import *
+    type_module = import_module('mobyle.common.type')
     if args.loglevel:
         try:
             logger.setLevel(args.loglevel)
