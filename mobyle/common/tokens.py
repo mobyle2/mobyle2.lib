@@ -24,7 +24,7 @@ class Token(Document):
     structure = { 'token' : basestring, 
                   'timestamp' : datetime,
                   'user' : basestring,
-                  'data' : basestring
+                  'data' : dict
                 }
 
     required_fields = ['token', 'timestamp']

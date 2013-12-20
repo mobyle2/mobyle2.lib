@@ -15,6 +15,7 @@ from .connection import connection
 from .config import Config
 from .data import AbstractData
 from .mobyleError import MobyleError
+from .objectmanager import ObjectManager
 
 
 @mf_decorator
@@ -164,10 +165,45 @@ class ProjectData(ProjectDocument):
                   'data': AbstractData,
                   'status' : int,
                   'persistent' : bool,
-                  'path' : basestring
+                  'path' : basestring,
+                  'public' : bool
                   #TODO: add data provenance information
                 }
 
-    default_values = {'persistent' : False}
+    default_values = {'persistent' : False, 'public' : False}
+
+    def get_file_path(self):
+        '''Get root path for files of the dataset'''
+        return ObjectManager.get_file_path(str(self['_id']))
 
 
+    def schema(self, schema=None):
+        '''Update schema if parameter is not None, return schema'''
+        if schema is not None:
+            self['data'] = schema
+            self.save()
+        return self['data']
+
+    def status(self, status=None):
+        '''Update schema if parameter is not None, return schema'''
+        if status is not None:
+            self['status'] = status
+            self.save()
+        return self['status']
+
+    def save_with_history(self, files=None, msg=None):
+        '''
+        Save object and update git repo if available
+
+        :param files: List of relative path of new or updated files in dataset
+        :type files: list
+        :param msg: optional msg for the update
+        :type msg: str
+        '''
+        if files is not None and files and ObjectManager.use_repo:
+            index = ObjectManager.get_repository_index(str(self['_id']))
+            index.add(files)
+            if msg is None:
+                msg = "Update data"
+            index.commit(msg)
+        self.save()

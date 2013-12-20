@@ -3,8 +3,10 @@ pastedeploy
 pastescript
 py-bcrypt
 mongokit>=0.9.0
-mf>=0.1.25
+mf>=0.1.28
 pygeoip
 uuid
 git+https://github.com/mobyle2/xml2json.git#egg=xml2json
 python-ldap
+gitpython==0.3.2.RC1
+pairtree
