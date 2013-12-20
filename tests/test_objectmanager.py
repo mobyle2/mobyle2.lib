@@ -62,9 +62,9 @@ class TestObjectManager(unittest.TestCase):
         my_dataset.status(ObjectManager.READY)
         my_dataset.save_with_history(['test.fake'],'new file')
         self.assertEqual(my_dataset['status'], ObjectManager.READY)
-        self.assertTrue(os.path.exists(os.path.join(my_path, 'test.fake')))
+        self.assertTrue(os.path.isfile(os.path.join(my_path, 'test.fake')))
         ObjectManager.delete(my_dataset['_id'])
-        self.assertFalse(os.path.exists(os.path.join(my_path, 'test.fake')))
+        self.assertFalse(os.path.isfile(os.path.join(my_path, 'test.fake')))
         self.assertTrue(ObjectManager.get(my_dataset['_id']) is None)
 
     def test_add_existing_data_and_delete(self):
@@ -88,10 +88,10 @@ class TestObjectManager(unittest.TestCase):
         my_dataset = ObjectManager.add("sample", options, False)
         my_dataset.status(ObjectManager.READY)
         my_dataset.save()
-        self.assertTrue(os.path.exists(os.path.join(options['path'],
+        self.assertTrue(os.path.isfile(os.path.join(options['path'],
                                                     'test.fake')))
         ObjectManager.delete(my_dataset['_id'])
-        self.assertTrue(os.path.exists(os.path.join(options['path'],
+        self.assertTrue(os.path.isfile(os.path.join(options['path'],
                                                     'test.fake')))
         self.assertTrue(ObjectManager.get(my_dataset['_id']) is None)
 
@@ -120,7 +120,7 @@ class TestObjectManager(unittest.TestCase):
         my_dataset.status(ObjectManager.READY)
         my_dataset.save()
         self.assertEqual(my_dataset['status'], ObjectManager.READY)
-        self.assertTrue(os.path.exists(os.path.join(my_path, 'test.fake')))
+        self.assertTrue(os.path.isfile(os.path.join(my_path, 'test.fake')))
 
         # Now extract my object from manager
         my_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
@@ -140,7 +140,7 @@ class TestObjectManager(unittest.TestCase):
         self.assertTrue(my_dataset_from_manager['data']['path'] == 'new.fake')
         # Now clean up
         ObjectManager.delete(my_dataset['_id'])
-        self.assertFalse(os.path.exists(os.path.join(my_path, 'new.fake')))
+        self.assertFalse(os.path.isfile(os.path.join(my_path, 'new.fake')))
         self.assertTrue(ObjectManager.get(my_dataset['_id']) is None)
 
     def test_get_token(self):
@@ -177,8 +177,38 @@ class TestObjectManager(unittest.TestCase):
         ObjectManager.update(ObjectManager.DOWNLOADED, options)
         my_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
         file_name = my_dataset_from_manager['data']['path']
-        self.assertTrue(os.path.exists(os.path.join(my_path, file_name)))
+        self.assertTrue(os.path.isfile(os.path.join(my_path, file_name)))
         self.assertEqual(my_dataset_from_manager['status'], ObjectManager.DOWNLOADED)
+
+    def test_store_and_udpate_file_projectdata(self):
+        options = {}
+        options['project'] = str(self.my_project['_id'])
+
+        # Write a file to the dataset directory
+        sample_file = os.path.join(os.path.dirname(__file__), 'test.fake')
+
+        options['format'] = 'text'
+        options['type'] = 'text/plain'
+        options['uncompress'] = False
+        options['group'] = False
+        options['name'] = 'test.fake'
+
+        my_dataset_from_manager = ObjectManager.store('test.fake',sample_file, options)
+        my_path = my_dataset_from_manager.get_file_path()
+        self.assertTrue(os.path.isfile(os.path.join(my_path, 'test.fake')))
+        self.assertEqual(my_dataset_from_manager['status'], ObjectManager.DOWNLOADED)
+
+        sample_file2 = os.path.join(os.path.dirname(__file__), 'test.conf')
+        options['id'] = str(my_dataset_from_manager['_id'])
+        options['name'] = 'test.conf'
+        my_updated_dataset_from_manager = ObjectManager.store('test.conf',
+                                                                sample_file2,
+                                                                options)
+
+        my_path2 = my_dataset_from_manager.get_file_path()
+        self.assertTrue(my_path == my_path2)
+        self.assertTrue(os.path.isfile(os.path.join(my_path2, 'test.conf')))
+        self.assertFalse(os.path.isfile(os.path.join(my_path, 'test.fake')))
 
     def test_update_projectdata_after_uncompress_not_grouped(self):
         options = {}
@@ -232,10 +262,10 @@ class TestObjectManager(unittest.TestCase):
         self.assertTrue(main_dataset_from_manager is not None)
         self.assertTrue(len(main_dataset_from_manager['data']['value']) == 2)
         file_name = main_dataset_from_manager['data']['value'][0]['path']
-        self.assertTrue(os.path.exists(os.path.join(my_path, file_name)))
+        self.assertTrue(os.path.isfile(os.path.join(my_path, file_name)))
         self.assertEqual(file_name, 'test.fake')
         file_name = main_dataset_from_manager['data']['value'][1]['path']
-        self.assertTrue(os.path.exists(os.path.join(my_path, file_name)))
+        self.assertTrue(os.path.isfile(os.path.join(my_path, file_name)))
         self.assertEqual(file_name, 'test.conf')
 
     def test_history(self):
