@@ -3,6 +3,8 @@ This module manages object storage
 '''
 from pairtree import PairtreeStorageFactory
 
+import traceback
+import sys
 import re
 import pairtree
 import logging
@@ -227,7 +229,7 @@ class ObjectManager:
                 ObjectManager._delete_file(uid, options)
         except Exception:
             logging.error("Error while trying to delete ")
-            #traceback.print_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stdout)
         if dataset is not None:
             dataset.delete()
 
@@ -345,8 +347,8 @@ class ObjectManager:
                         subdata['path'] = os.path.basename(filepath)
                         subdata['name'] = os.path.basename(filepath)
                         subdata['size'] = \
-                                os.path.getsize(ObjectManager.get_storage_path() +
-                                filespath)
+                            os.path.getsize(ObjectManager.get_storage_path() +\
+                                            filespath)
                         fullsize += subdata['size']
                         subdata['type'] = options['type']
                         dataset['data']['value'].append(subdata)
@@ -385,17 +387,35 @@ class ObjectManager:
                 if 'name' in options and options['name'] is not None:
                     file_name = options['name']
 
-                dataset['data']['path'] = file_name
                 filepath = os.path.join(dataset.get_file_path(), file_name)
                 if status == ObjectManager.SYMLINK:
                     # Not taken into account for quota
                     dataset['data']['size'] = 0
-                    storage_path = os.path.join(ObjectManager.get_storage_path())
-                    dirname = os.path.dirname(filepath)
-                    if not os.path.exists(dirname):
-                        os.mkdir(dirname)
+                    if os.path.isdir(options['files'][0]):
+                        # Create schema for files in directory
+                        symdirfiles = os.listdir(options['files'][0])
+                        dataset['data']['value'] = []
+                        st_path = ObjectManager.get_storage_path()
+                        for symdirfile in symdirfiles:
+                            relative_file = os.path.join(file_name, symdirfile)
+                            subdata = RefData()
+                            subdata['path'] = relative_file
+                            subdata['name'] = relative_file
+                            subdata['size'] = \
+                            os.path.getsize(os.path.join(options['files'][0],
+                                            symdirfile))
+                            #fullsize += subdata['size']
+                            subdata['type'] = dataset['data']['type']
+                            dataset['data']['value'].append(subdata)
+                    else:
+                        dataset['data']['path'] = file_name
+                    dir_name = os.path.dirname(filepath)
+                    if not os.path.exists(dir_name):
+                        os.mkdir(dir_name)
                     os.symlink(options['files'][0], filepath)
+                    status = ObjectManager.READY
                 else:
+                    dataset['data']['path'] = file_name
                     with open(options['files'][0], 'rb') as stream:
                         obj.add_bytestream(file_name, stream, path)
                     dataset['data']['size'] = \
