@@ -3,6 +3,8 @@ This module manages object storage
 '''
 from pairtree import PairtreeStorageFactory
 
+import traceback
+import sys
 import re
 import pairtree
 import logging
@@ -162,6 +164,29 @@ class ObjectManager:
         temptoken.save()
         return temptoken['token']
 
+
+    @classmethod
+    def _delete_file_only(cls, uid, path):
+        '''
+        Delete a file from a dataset, but does not delete dataset entry nor directory.
+        Typical use case is a file replacement
+
+        :param uid: id of the dataset
+        :type uid: str
+        :param path: relative path of the file
+        :type path: str
+        '''
+        full_path = os.path.join(ObjectManager.get_file_path(uid),path)
+        if os.path.exists(full_path):
+            os.remove(os.path.join(ObjectManager.get_file_path(uid),path))
+            if ObjectManager.use_repo:
+                index = ObjectManager.get_repository_index(uid)
+                index.remove([path])
+                msg = "File removed: "+path
+                index.commit(msg)
+
+
+
     @classmethod
     def _delete_file(cls, uid, options=None):
         '''
@@ -204,7 +229,7 @@ class ObjectManager:
                 ObjectManager._delete_file(uid, options)
         except Exception:
             logging.error("Error while trying to delete ")
-            #traceback.print_exc(file=sys.stdout)
+            traceback.print_exc(file=sys.stdout)
         if dataset is not None:
             dataset.delete()
 
@@ -322,8 +347,8 @@ class ObjectManager:
                         subdata['path'] = os.path.basename(filepath)
                         subdata['name'] = os.path.basename(filepath)
                         subdata['size'] = \
-                                os.path.getsize(ObjectManager.get_storage_path() +
-                                filespath)
+                            os.path.getsize(ObjectManager.get_storage_path() +\
+                                            filespath)
                         fullsize += subdata['size']
                         subdata['type'] = options['type']
                         dataset['data']['value'].append(subdata)
@@ -358,19 +383,41 @@ class ObjectManager:
                         index.commit(msg)
 
             else:
-                dataset['data']['path'] = uid
-                filepath = os.path.join(dataset.get_file_path(), uid)
+                file_name = uid
+                if 'name' in options and options['name'] is not None:
+                    file_name = options['name']
+
+                filepath = os.path.join(dataset.get_file_path(), file_name)
                 if status == ObjectManager.SYMLINK:
                     # Not taken into account for quota
                     dataset['data']['size'] = 0
-                    storage_path = os.path.join(ObjectManager.get_storage_path())
-                    dirname = os.path.dirname(filepath)
-                    if not os.path.exists(dirname):
-                        os.mkdir(dirname)
+                    if os.path.isdir(options['files'][0]):
+                        # Create schema for files in directory
+                        symdirfiles = os.listdir(options['files'][0])
+                        dataset['data']['value'] = []
+                        st_path = ObjectManager.get_storage_path()
+                        for symdirfile in symdirfiles:
+                            relative_file = os.path.join(file_name, symdirfile)
+                            subdata = RefData()
+                            subdata['path'] = relative_file
+                            subdata['name'] = relative_file
+                            subdata['size'] = \
+                            os.path.getsize(os.path.join(options['files'][0],
+                                            symdirfile))
+                            #fullsize += subdata['size']
+                            subdata['type'] = dataset['data']['type']
+                            dataset['data']['value'].append(subdata)
+                    else:
+                        dataset['data']['path'] = file_name
+                    dir_name = os.path.dirname(filepath)
+                    if not os.path.exists(dir_name):
+                        os.mkdir(dir_name)
                     os.symlink(options['files'][0], filepath)
+                    status = ObjectManager.READY
                 else:
+                    dataset['data']['path'] = file_name
                     with open(options['files'][0], 'rb') as stream:
-                        obj.add_bytestream(uid, stream, path)
+                        obj.add_bytestream(file_name, stream, path)
                     dataset['data']['size'] = \
                         os.path.getsize(filepath)
 
@@ -378,7 +425,7 @@ class ObjectManager:
 
                 if ObjectManager.use_repo:
                     index = ObjectManager.get_repository_index(uid)
-                    index.add([uid])
+                    index.add([file_name])
                     if 'msg' in options:
                         msg = options['msg']
                     else:
@@ -438,7 +485,10 @@ class ObjectManager:
             dataset = connection.ProjectData.find_one({'_id': ObjectId(options['id'])})
             if not 'data' in dataset:
                 dataset['data'] = RefData()
-            #uid = dataset['_id']
+            else:
+                if 'path' in dataset:
+                    # Remove existing file
+                    ObjectManager._delete_file_only(options['id'], dataset['data']['path'])
         else:
             dataset = connection.ProjectData()
             dataset['data'] = RefData()
@@ -446,12 +496,15 @@ class ObjectManager:
             #uid = uuid.uuid4().hex
         uid = str(dataset['_id'])
         obj = ObjectManager.storage.get_object(uid)
+        file_name = uid
+        if 'name' in options and options['name'] is not None:
+            file_name = options['name']
         with open(infile, 'rb') as stream:
-            obj.add_bytestream(uid, stream, ObjectManager._get_file_root(uid))
-
+            obj.add_bytestream(file_name, stream, ObjectManager._get_file_root(uid))
         dataset['name'] = name
-        dataset['data']['path'] = uid
-        filepath = os.path.join(dataset.get_file_path(), uid)
+        dataset['data']['path'] = file_name
+
+        filepath = os.path.join(dataset.get_file_path(), dataset['data']['path'])
         dataset['status'] = ObjectManager.DOWNLOADED
         if options['uncompress'] and ObjectManager.isarchive(name) is not None:
             dataset['status'] = ObjectManager.UNCOMPRESS
@@ -478,7 +531,7 @@ class ObjectManager:
 
         if ObjectManager.use_repo and not options['uncompress']:
             index = ObjectManager.get_repository_index(uid)
-            index.add([uid])
+            index.add([dataset['data']['path']])
             if 'msg' in options:
                 msg = options['msg']
             else:
