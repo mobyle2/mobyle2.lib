@@ -22,15 +22,7 @@ class RequestMock(object):
 class TestUser(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.User.find({})
-        for object in objects:
-            object.delete()
-       
-    def tearDown(self):
-       objects = connection.User.find({})
-       for object in objects:
-           object.delete()
-
+        connection.User.collection.remove({})
 
     def test_insert(self):
         user = connection.User()

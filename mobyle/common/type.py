@@ -1,53 +1,101 @@
 # -*- coding: utf-8 -*-
-"""
-Created on Mar 7, 2013
+'''
+Created on Nov. 13, 2013
 
-@author: Olivia Doppelt-Azeroual
-@contact: odoppelt@pasteur.fr
-@organization: Institut Pasteur, CIB
 @license: GPLv3
-"""
+'''
+from mongokit import SchemaDocument
+from .connection import connection
 
-from mf.annotation import mf_decorator
+# pylint: disable=W0201,R0904,R0913
 
-from mobyle.common.connection import connection
-from mobyle.common.term import Term
 
-@mf_decorator
 @connection.register
-class Type(Term):
+class Type(SchemaDocument):
     """
-    type information for data based on EDAM ontology
+    A superclass representing any of the types
     """
-    __collection__ = 'types'
     structure = {
-        'has_topic': [basestring],
-        'is_identifier_of': [basestring]
-        }
+                 'data_terms': [],
+                 'default': None
+                }
 
-Type.search_by('id')
+    def __repr__(self):
+        return "[%s]%s" % (self.__class__.__name__, dict(self))
 
-@mf_decorator
+    def check_value(self, value):
+        raise NotImplementedError()
+
+
 @connection.register
-class Format(Term):
+class BooleanType(Type):
     """
-    format information based on EDAM ontology
+    A boolean
     """
-    __collection__ = 'formats'
-
     structure = {
-        'is_format_of': [basestring]
-        }
+                 'default': bool
+                }
 
-Format.search_by('id')
-    
-#    Voir si nécéssaire plus tard
-    # default_values = {}
-    # required_fields = [ 'id']
-    
-    # indexes = [
-    #     {
-    #         'fields':[id],
-    #         'unique':True
-    #         }
-    #     ]
+    def check_value(self, value):
+        if not(type(value) == bool):
+            raise TypeError("value %s is not an boolean" % value)
+
+
+@connection.register
+class IntegerType(Type):
+    """
+    An integer
+    """
+    def check_value(self, value):
+        if not(type(value) == int):
+            raise TypeError("value %s is not an integer" % value)
+
+
+@connection.register
+class FloatType(Type):
+    """
+    A float
+    """
+    pass
+
+
+@connection.register
+class StringType(Type):
+    """
+    A string
+    """
+    structure = {
+                 'options': []
+                }
+
+
+@connection.register
+class FormattedType(Type):
+    """
+    Type describing data formatted according to an EDAM reference
+    """
+    structure = {
+                 'format_terms': []
+                }
+
+
+@connection.register
+class ArrayType(Type):
+    """
+    Type describing data formed by a array of data items sharing
+    the same type/format
+    """
+    structure = {
+                 'items_type': Type
+                }
+
+
+@connection.register
+class StructType(Type):
+    """
+    Type describing data formed by a object containing properties
+    referencing different data
+    """
+    structure = {
+                 'properties': {unicode: Type}
+                }

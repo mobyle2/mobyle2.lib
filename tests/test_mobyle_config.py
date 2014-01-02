@@ -17,14 +17,7 @@ from mobyle.common.mobyleConfig import MobyleConfig
 class TestMobyleConfig(unittest.TestCase):
 
     def setUp(self):
-       objects = connection.MobyleConfig.find({})
-       for object in objects:
-           object.delete()
-       
-    def tearDown(self):
-       objects = connection.MobyleConfig.find({})
-       for object in objects:
-           object.delete()
+       objects = connection.MobyleConfig.collection.remove({})
 
     def test_insert(self):
         import logging

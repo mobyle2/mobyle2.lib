@@ -1,46 +1,102 @@
 # -*- coding: utf-8 -*-
+'''
+Created on Nov. 13, 2013
 
-import pymongo
+@license: GPLv3
+'''
+
 import unittest
 import os.path
 
-from mobyle.common.config import Config
-
-config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
-
-from mongokit import ValidationError
-
-from mobyle.common.connection  import connection
 from mobyle.common.type import *
+from mobyle.common.data import *
 
+from mongokit import Document
 
+from mobyle.common.config import Config
+config = Config(os.path.join(os.path.dirname(__file__), 'test.conf'))
+
+from mobyle.common.connection import connection
+
+@connection.register
+class DummyType(Type):
+    pass
+
+@connection.register
+class TypeContainer(Document):
+    """
+    Class used in this unit test module to test "Type" class
+    """
+    __collection__ = 'type_container_tests'
+    __database__ = Config.config().get('app:main', 'db_name')
+
+    structure = {
+                 "_type": unicode,
+                 "type": Type
+                }
 
 
 class TestType(unittest.TestCase):
-    """ Tests for the Type class
+    """
+    Test the Type class
     """
 
     def setUp(self):
-        objects = connection.Type.find({})
-        for object in objects:
-            object.delete()
-            
-    def tearDown(self):
-        objects = connection.Type.find({})
-        for object in objects:
-            object.delete()
+        connection.TypeContainer.collection.remove({})
+        self.container = connection.TypeContainer()
+        self.type = DummyType()
+        self.data_terms = ['test', 'test2']
+        self.type['data_terms'] = self.data_terms
+        self.container['type'] = self.type
+        self.container.save()
+        self.loaded_type_container = connection.TypeContainer.fetch_one()
+
+    def test_loaded_class_type(self):
+        self.assertIs(type(self.loaded_type_container['type']), DummyType)
 
 
-    def test_insert(self):
-         """
-        test basic creation of a fake EDAM type
-        """
-         typetest = connection.Type()
-         typetest['id'] = "test_type"
-         typetest.save()
-         types_list = connection.Type.find({'id':'test_type'})
-         count = 0
-         for typetest in types_list:
-             count+=1
-         self.assertEqual(count,1)
-    
+class TestBooleanType(unittest.TestCase):
+    """
+    Test the BooleanType class
+    """
+
+    def setUp(self):
+        connection.TypeContainer.collection.remove({})
+        self.container = connection.TypeContainer()
+        self.type = BooleanType()
+        self.data_terms = ['test', 'test2']
+        self.type['data_terms'] = self.data_terms
+        self.container['type'] = self.type
+        self.container.save()
+        self.loaded_type_container = connection.TypeContainer.fetch_one()
+
+    def test_loaded_class_type(self):
+        self.assertIs(type(self.loaded_type_container['type']), BooleanType)
+
+
+class TestStructType(unittest.TestCase):
+    """
+    Test the StructType class
+    """
+
+    def setUp(self):
+        connection.TypeContainer.collection.remove({})
+        self.container = connection.TypeContainer()
+        self.type = StructType()
+        self.properties = {'a': BooleanType(),
+                           'b': BooleanType()}
+        self.type['properties'] = self.properties
+        self.container['type'] = self.type
+        self.container.save()
+        self.loaded_type_container = connection.TypeContainer.fetch_one()
+
+    def test_loaded_class_type(self):
+        self.assertIs(type(self.loaded_type_container['type']), StructType)
+        self.assertIs(
+            type(self.loaded_type_container['type']['properties']['a']),
+            BooleanType)
+        self.assertIs(
+            type(self.loaded_type_container['type']['properties']['b']),
+            BooleanType)
+if __name__=='__main__':
+    unittest.main()

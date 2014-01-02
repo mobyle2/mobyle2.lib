@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from mongokit import Document
+from mongokit import Document, ObjectId
 import bcrypt
 from mf.annotation import mf_decorator
 from mf.views import MF_READ, MF_EDIT
@@ -26,7 +26,8 @@ class User(Document):
                  'admin': bool,
                  'groups' : [ basestring ],
                  'apikey' : basestring,
-                 'home_dir': basestring
+                 'home_dir': basestring,
+                 'default_project': ObjectId
                  }
 
     default_values = { 'hashed_password' : '', 'admin': False, 'apikey' : uuid.uuid4().hex }

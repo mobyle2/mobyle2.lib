@@ -15,6 +15,7 @@ from mobyle.common.config import Config
 
 parser = argparse.ArgumentParser(description='Initialize database content.')
 parser.add_argument('--config')
+parser.add_argument('--rootpwd')
 
 args = parser.parse_args()
 
@@ -29,10 +30,13 @@ config = Config(args.config).config()
 from mobyle.common.connection import connection
 from mobyle.common import users
 from mobyle.common import project
-from mobyle.common import topic, operation
+from mobyle.common import term
 # Create root user
 if connection.User.find({ 'first_name' : 'root' }).count() == 0:
-    pwd = sha1("%s"%randint(1,1e99)).hexdigest()
+    if args.rootpwd:
+        pwd = args.rootpwd
+    else:
+        pwd = sha1("%s"%randint(1,1e99)).hexdigest()
     Config.logger().warn('root user created with password: '+ pwd )
     user = connection.User()
     user['first_name'] = 'root'
@@ -50,11 +54,15 @@ if connection.User.find({ 'first_name' : 'root' }).count() == 0:
     project = connection.Project()
     project['name'] = 'admin_project'
     project['owner'] = user['_id']
-    project['users'].append({ 'user' : user['_id'], 'role' : 'admin'})
+    project['users'].append({ 'user' : user['_id'], 'role' : u'manager'})
     project['public'] = True
     project.save()
+
+    user['default_project']=project['_id']
+    user.save()
 # create indexes
-for klass in [connection.Topic, connection.Operation]:
+for klass in [connection.TopicTerm, connection.OperationTerm,\
+              connection.DataTerm, connection.FormatTerm]:
     klass.generate_index(klass.collection)
 
 from mobyle.common.mobyleConfig import MobyleConfig

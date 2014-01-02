@@ -13,6 +13,8 @@ from mobyle.common.project import Project, ProjectData
 from mobyle.common.users import User
 from mobyle.common.mobyleError import MobyleError
 
+from mongokit import SchemaTypeError
+
 from mf.views import MF_READ, MF_EDIT
 
 class RequestMock(object):
@@ -25,13 +27,8 @@ class RequestMock(object):
 class TestProject(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.User.find({})
-        for object in objects:
-            object.delete()
-        objects = connection.Project.find({})
-        for object in objects:
-            object.delete()
-
+        connection.User.collection.remove({})
+        connection.Project.collection.remove({})
         self.example_user = connection.User()
         self.example_user['email'] = 'Emeline@example.com'
         self.example_user.save()
@@ -74,7 +71,20 @@ class TestProject(unittest.TestCase):
         project_rcv = connection.Project.find_one({})
         p_id = project_rcv['_id']
         self.assertEqual(my_project.id, p_id)
-        
+
+    def test_invalid_user_role(self):
+        user1 = connection.User()
+        user1['first_name'] = "Walter"
+        user1['last_name'] = "Bishop"
+        user1['email'] = "Bishop@nomail"
+        user1['admin'] = True
+        user1.save()
+        project1 = connection.Project()
+        project1['owner'] = user1['_id']
+        project1['name'] = 'Project 1'
+        project1['users'] = [{'user': user1['_id'], 'role': u'invalid_role'}]
+        with self.assertRaises(SchemaTypeError):
+            project1.save()
         
     def test_my(self):
         """
@@ -90,7 +100,7 @@ class TestProject(unittest.TestCase):
         project1 = connection.Project()
         project1['owner'] = user1['_id']
         project1['name'] = 'Project 1'
-        project1['users'] = [{'user': user1['_id'], 'role': 'manager'}]
+        project1['users'] = [{'user': user1['_id'], 'role': u'manager'}]
         project1.save()
         msg1 = "edit should be forbidden to unauthenticated users" 
         filter1 = project1.my(MF_EDIT, None, None)
@@ -120,31 +130,17 @@ class TestProject(unittest.TestCase):
 class TestProjectData(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.User.find({})
-        for o in objects:
-            o.delete()
-        objects = connection.Project.find({})
-        for o in objects:
-            o.delete()
-        objects = connection.ProjectData.find({})
-        for o in objects:
-            o.delete()
+        connection.User.collection.remove({})
+        connection.Project.collection.remove({})
+        connection.ProjectData.collection.remove({})
         self.example_user = connection.User()
         self.example_user['email'] = 'Emeline@example.com'
         self.example_user.save()
         self.example_project = connection.Project()
         self.example_project['owner'] = self.example_user['_id']
         self.example_project['name'] = 'MyProject'
-        self.example_project['users'] = [{'user': self.example_user['_id'], 'role': 'developper'}]
+        self.example_project['users'] = [{'user': self.example_user['_id'], 'role': u'contributor'}]
         self.example_project.save()
-
-    def tearDown(self):
-        objects = connection.User.find({})
-        for object in objects:
-            object.delete()
-        objects = connection.Project.find({})
-        for object in objects:
-            object.delete()
     
     def test_projectdata(self):
         v = ValueData()
@@ -196,27 +192,21 @@ class TestProjectDocument(unittest.TestCase):
         User 3         x | x | x False
         M=Manager, C=Contributor, W=Watcher
         """
-        objects = connection.User.find({})
-        for o in objects:
-            o.delete()
-        objects = connection.Project.find({})
-        for o in objects:
-            o.delete()
-        objects = connection.ProjectData.find({})
-        for o in objects:
-            o.delete()
+        connection.User.collection.remove({})
+        connection.Project.collection.remove({})
+        connection.ProjectData.collection.remove({})
         self.user1 = self._setUpTestUser(1,True)
         self.user2 = self._setUpTestUser(2)
         self.user3 = self._setUpTestUser(3)
         self.project1 = self._setUpTestProject(1,self.user1,\
-                [{'user': self.user1['_id'], 'role': 'manager'},\
-                 {'user': self.user2['_id'], 'role': 'contributor'}])
+                [{'user': self.user1['_id'], 'role': u'manager'},\
+                 {'user': self.user2['_id'], 'role': u'contributor'}])
         self.project2 = self._setUpTestProject(2,self.user1,\
-                [{'user': self.user1['_id'], 'role': 'contributor'},\
-                 {'user': self.user2['_id'], 'role': 'contributor'}])
+                [{'user': self.user1['_id'], 'role': u'contributor'},\
+                 {'user': self.user2['_id'], 'role': u'contributor'}])
         self.project3 = self._setUpTestProject(3,self.user1,\
-                [{'user': self.user1['_id'], 'role': 'watcher'},\
-                 {'user': self.user2['_id'], 'role': 'watcher'}])
+                [{'user': self.user1['_id'], 'role': u'watcher'},\
+                 {'user': self.user2['_id'], 'role': u'watcher'}])
         self.admin_request = RequestMock(adminmode=True)
 
     def test_my(self):

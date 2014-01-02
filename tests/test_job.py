@@ -22,15 +22,9 @@ from mobyle.common.mobyleError import MobyleError
 class TestJob(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.ClJob.find({})
-        for object in objects:
-            object.delete()
-        objects = connection.User.find({})
-        for object in objects:
-            object.delete()
-        objects = connection.Project.find({})
-        for object in objects:
-            object.delete()
+        objects = connection.ClJob.collection.remove({})
+        objects = connection.User.collection.remove({})
+        objects = connection.Project.collection.remove({})
         
         self.user = connection.User()
         self.user['email'] = 'foo@bar.fr'

@@ -7,7 +7,7 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 
-from mongokit import Document, ObjectId
+from mongokit import Document, ObjectId, IS
 from mf.annotation import mf_decorator
 from mf.views import MF_READ, MF_EDIT
 
@@ -17,30 +17,35 @@ from .data import AbstractData
 from .mobyleError import MobyleError
 from .objectmanager import ObjectManager
 
+
 @mf_decorator
 @connection.register
 class Project(Document):
     """
-    Project is a class that stores all information about a project (owner username, inputs, outputs, job id). 
-    It's initialized by two parameters: the name of the owner of the project and the project name itself.
+    Project is a class that stores all information about a project
+    (owner username, inputs, outputs, job id).
+    It's initialized by two parameters: the name of the owner of
+    the project and the project name itself.
     """
 
     __collection__ = 'projects'
-    __database__ = Config.config().get('app:main','db_name')
+    __database__ = Config.config().get('app:main', 'db_name')
 
-    structure = { 'name' : basestring, 
-                  'owner' : ObjectId, 
-                  'users' : [{'user': ObjectId, 'role': basestring}],
-                  'notebook' : basestring,
-                  'public' : bool,
-                  '_dir' : basestring
+    structure = {'name': basestring,
+                 'owner': ObjectId,
+                 'users': [{'user': ObjectId, 'role': IS(u'manager',
+                                                         u'contributor',
+                                                         u'watcher')}],
+                 'notebook': basestring,
+                 'public': bool,
+                 '_dir': basestring
                 }
 
     required_fields = ['name', 'owner']
-    
-    default_values = {'_dir' : None}
-    
-    @property	
+
+    default_values = {'_dir': None}
+
+    @property
     def creation_date(self):
         """
         Get project creation date
@@ -51,14 +56,14 @@ class Project(Document):
 
     def add_user(self, user, role):
         """
-        add_user is a method defined to attach a new user and its role into the project.
+        add_user is a method defined to attach a new user
+        and its role into the project.
         :param user: user to be associated to the project.
         :type user: :class:`User` object.
         :param role: user's role in the project.
         :type role: string.
         """
         self['users'].append({'user': user['_id'], 'role': role})
-        
 
     @property
     def dir(self):
@@ -67,46 +72,45 @@ class Project(Document):
         :rtype: string
         """
         return self['_dir']
-    
-    
+
     @dir.setter
     def dir(self, dir):
         """
         set the path to the project directory. it can be set only one time.
-        
+
         :param dir: the path to a directory
         :type dir: string
-        :raise: :class:`MobyleError` if the dir is try to be set a second time. 
+        :raise: :class:`MobyleError` if the dir is try to be set a second time.
         """
         if self['_dir'] is None:
             self['_dir'] = dir
         else:
-            raise MobyleError("the project dir is already set and cannot be changed")
-        
-        
-    @property    
+            raise MobyleError("the project dir is already" +
+                              " set and cannot be changed")
+
+    @property
     def id(self):
         """
-        :return: the unique identifier of this project 
+        :return: the unique identifier of this project
         :rtype:
         """
         return self['_id']
 
-    
     @staticmethod
     def my_project_acl_filter(control, request, authenticated_userid=None):
         # find the user corresponding to the provided email
-        user = connection.User.find_one({'email' : authenticated_userid})
+        user = connection.User.find_one({'email': authenticated_userid})
         # id is set if user exists, otherwise set to None so that the filter
         # works even for unauthenticated users.
         user_id = user['_id'] if user else None
-        # admin_mode tells wether the admin user is in admin mode and should access everything
-        admin_mode = hasattr(request,'session') and 'adminmode' in request.session
+        # admin_mode tells wether the admin user
+        # is in admin mode and should access everything
+        admin_mode = hasattr(request, 'session') and 'adminmode' in request.session
         if user and user['admin'] and admin_mode:
             # admin_mode = provide everything
             project_filter = {}
         elif control == MF_READ:
-            # read: elements for projects where the user is active or where he 
+            # read: elements for projects where the user is active or where he
             if user is None:
                 project_filter = {'public':True}
             else:
@@ -121,8 +125,8 @@ class Project(Document):
 
     def my(self, control, request, authenticated_userid=None):
         return self.my_project_acl_filter(control, request, authenticated_userid)
-    
-            
+
+
 class ProjectDocument(Document):
     """
     ProjectDocument is an abstract class which defines the ACLs of project-contained elements.
@@ -154,8 +158,8 @@ class ProjectData(ProjectDocument):
     __collection__ = 'projects_data'
     __database__ = Config.config().get('app:main','db_name')
 
-    structure = { 'name' : basestring, 
-                  'description' : basestring, 
+    structure = { 'name' : basestring,
+                  'description' : basestring,
                   'tags' : [basestring],
                   'project': ObjectId,
                   'data': AbstractData,

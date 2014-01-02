@@ -66,28 +66,24 @@ if __name__ == '__main__':
         config = Config(args.config).config()
         # init db connection
         from mobyle.common.connection import connection
-        from mobyle.common.type import Type, Format
-        from mobyle.common.operation import Operation
-        from mobyle.common.topic import Topic
-        Type=connection.Type
-        Format=connection.Format
-        Topic=connection.Topic
-        Operation=connection.Operation
+        from mobyle.common.term import DataTerm, FormatTerm, OperationTerm, TopicTerm
+        DataTerm=connection.DataTerm
+        FormatTerm=connection.FormatTerm
+        TopicTerm=connection.TopicTerm
+        OperationTerm=connection.OperationTerm
         # action definition
         if args.action == 'init':
             # empty collections
-            Type.collection.drop()
-            Format.collection.drop()
-            Topic.collection.drop()
-            Operation.collection.drop()
+            DataTerm.collection.drop()
+            FormatTerm.collection.drop()
+            TopicTerm.collection.drop()
+            OperationTerm.collection.drop()
         else:
             pass
                 
 
     else:
-        from mobyle.common.type import Type, Format
-        from mobyle.common.operation import Operation
-        from mobyle.common.topic import Topic
+        from mobyle.common.term import DataTerm, FormatTerm, OperationTerm, TopicTerm
     # opens the edam obo file
     edam=open(args.edamfile,'r')
 
@@ -109,20 +105,19 @@ if __name__ == '__main__':
         if len(element)>1:
             field=element[1].split(': ')
             if field[1][0:9]=="EDAM_data":
-                o=Type()
+                o=DataTerm()
                 parse_term(o,element)
                 nbtype=nbtype+1
-
             elif field[1][0:11]=="EDAM_format":
-                o=Format()
+                o=FormatTerm()
                 parse_term(o,element)
                 nbformat=nbformat+1
             elif field[1][0:10]=="EDAM_topic":
-                o=Topic()
+                o=TopicTerm()
                 parse_term(o,element)
                 nbtopic+=1 
             elif field[1][0:14]=="EDAM_operation":
-                o=Operation()
+                o=OperationTerm()
                 parse_term(o,element)
                 nboperation+=1
         if o is not None:            

@@ -13,13 +13,13 @@ import xml.etree.ElementInclude as EI
 from xml2json import elem_to_internal, internal_to_elem
 import logging
 import argparse
+from importlib import import_module
 
 from mobyle.common.config import Config
 
 # pylint: disable=C0103
 #        Invalid name "logger" for type constant
 logger = logging.getLogger('mobyle.service_migration')
-logger.setLevel(logging.INFO)
 
 class JSONProxy:
     """
@@ -143,6 +143,104 @@ class JSONProxy:
                 s += ET.tostring(internal_to_elem(d))
         return s
 
+class TypeConversionMap(object):
+
+    def __init__(self):
+        self.mapping = {}
+        mapping_file = open(os.path.join(os.path.dirname(__file__), 'types_mapping.txt'),'r')
+        self.missing = set()
+        for line in iter(mapping_file):
+            if not(line.startswith('#')):
+                key, value = line.strip().split('/')
+                self.mapping[key]=value
+        mapping_file.close()
+
+    def get_type(self, datatype_class, biotype):
+        key = datatype_class
+        if biotype is not None:
+            key += '-%s' % str(biotype)
+        value = self.mapping.get(key)
+        if not(value):
+            self.missing.add('%s/%s' % (datatype_class, biotype))
+            logger.error("[not implemented] parameter class %s / biotype %s not found in mapping (key %s)" % (datatype_class, biotype, key))
+            return None
+        if len(value.split('-'))==1:
+            return {'_type':value}
+        else:
+            typ, data = value.split('-')
+            return {'_type':typ,
+                    'data_terms':data}
+
+
+types_map = TypeConversionMap()
+
+class FormatConversionMap(object):
+
+    def __init__(self):
+        self.mapping = {}
+        mapping_file = open(os.path.join(os.path.dirname(__file__), 'formats_mapping.txt'),'r')
+        self.missing = set()
+        for line in iter(mapping_file):
+            if not(line.startswith('#')):
+                key, value = line.strip().split('/')
+                self.mapping[key]=value
+        mapping_file.close()
+
+    def get_format(self, mobyle1_format):
+        try:
+            value = self.mapping.get(mobyle1_format)
+            if not(value):
+                self.missing.add(mobyle1_format)
+                logger.error("[not implemented] format %s not found in mapping" % (mobyle1_format))
+            return value
+        except:
+            logger.error("error retrieving format %s in mapping" % (mobyle1_format))
+            return None
+
+formats_map = FormatConversionMap()
+
+class TopicConversionMap(object):
+
+    def __init__(self):
+        self.mapping = {}
+        mapping_file = open(os.path.join(os.path.dirname(__file__), 'topic_mapping.txt'),'r')
+        self.missing = set()
+        for line in iter(mapping_file):
+            if not(line.startswith('#')):
+                key, value = line.strip().split('/')
+                self.mapping[key]=value.split(',')
+        mapping_file.close()
+
+    def get_topic(self, service_name):
+        values = self.mapping.get(service_name)
+        if not(values):
+            self.missing.add(service_name)
+            logger.error("[not implemented] topic for service %s not found in mapping" % (service_name))
+        return values
+
+topics_map = TopicConversionMap()
+
+class OperationConversionMap(object):
+
+    def __init__(self):
+        self.mapping = {}
+        mapping_file = open(os.path.join(os.path.dirname(__file__), 'operation_mapping.txt'),'r')
+        self.missing = set()
+        for line in iter(mapping_file):
+            if not(line.startswith('#')):
+                key, value = line.strip().split('/')
+                self.mapping[key]=value.split(',')
+        mapping_file.close()
+
+    def get_operation(self, service_name):
+        values = self.mapping.get(service_name)
+        if not(values):
+            self.missing.add(service_name)
+            logger.error("[not implemented] operation for service %s not found in mapping" % (service_name))
+        return values
+
+operations_map = OperationConversionMap()
+
 def parse_software(d, s):
     """
     parse top-level elements of the software
@@ -175,9 +273,11 @@ def parse_software(d, s):
     for cat in d.list('category'):
         s['classifications'].append({'type':'mobyle1', \
                                      'classification':cat.text()})
-    for cat in d.list('edam_cat'):
-        s['classifications'].append({'type':'EDAM', \
-                                     'classification':cat.att('ref')})
+    #for cat in d.list('edam_cat'):
+    #    s['classifications'].append({'type':'EDAM', \
+    #                                 'classification':cat.att('ref')})
+    s['operations'] = operations_map.get_operation(s['name']) or []
+    s['topics'] = topics_map.get_topic(s['name']) or []
     if d.get('package'):
         package_name = d.get('package').text('name')
         logger.info('software %s belongs to package %s, linking...' %\
@@ -238,24 +338,32 @@ def parse_parameter(p_dict, service_type):
     parameter['main'] = p_dict.att('ismain') in ['1', 'true', 'True']
     parameter['hidden'] = p_dict.att('ishidden') in ['1', 'true', 'True']
     parameter['simple'] = p_dict.att('issimple') in ['1', 'true', 'True']
-    m_type = Type()
+    # Mobyle2 type
     t_dict = p_dict.get('type')
-    m_type['datatype']['class'] = t_dict.get('datatype').text('class')
-    m_type['datatype']['superclass'] = t_dict.get('datatype').text('superclass')
-    for biotype in t_dict.list('biotype'):
-        m_type['biotypes'].append(biotype.text())
-    for data_format in t_dict.list('dataFormat'):
-        m_type['formats'].append(data_format.text())
-    m_type['card'] = t_dict.text('card')
-    for biomoby in t_dict.list('biomoby'):
-        m_type['biomoby_datatypes'].append(
-                                           {'datatype':biomoby.text('datatype'),
-                                           'namespace':biomoby.text('namespace')
-                                           }
-                                          )
-    for edam_type in p_dict.list('edam_type'):
-        m_type['edam_types'].append(edam_type.att('ref'))
-    parameter['type'] = m_type
+    m1_class = t_dict.get('datatype').text('class')
+    m1_biotypes = [biotype.text() for biotype in t_dict.list('biotype')]
+    m1_biotype = m1_biotypes[0] if len(m1_biotypes)==1 else None
+    type_ds = types_map.get_type(m1_class, m1_biotype)
+    if type_ds:
+        m2_type = getattr(type_module, type_ds['_type'])()
+        for data_format in t_dict.list('dataFormat'):
+            df = formats_map.get_format(data_format.text())
+            if df:
+                m2_type['format_terms'].append(df)
+        vlist = p_dict.get('vlist')
+        if vlist:
+            for velem in vlist.list('velem'):
+                m2_type['options'].append({'label':velem.get('label').text(), 'value':velem.get('value').text()})
+        elif p_dict.get('flist'):
+            logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
+        vdef = p_dict.get('vdef')
+        if vdef:
+	    values = [v.text() for v in vdef.list('value')]
+            m2_type['default'] = values[0] if len(values)==1 else values
+            if m2_type.get('_type')=='boolean':
+	        # standardize default value for boolean types to true or false
+	        m2_type['default'] = True if m2_type['default'] in ['true',1,True] else False
+        parameter['type'] = m2_type
     return parameter
 
 def parse_input_parameter(p_dict, parameter, service_type):
@@ -426,9 +534,12 @@ def get_loader(path):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Migrate Mobyle1 XML files to Mobyle2')
     parser.add_argument('--config', help="path to the Mobyle2 config file for DB injection")
+    parser.add_argument('--loglevel', help=\
+           "logging level for the import script, use this to override the configuration")
     parser.add_argument('--storeto', help="output the generated objects as JSON files")
     parser.add_argument('filenames', help="files you want to convert", nargs='+')
     parser.add_argument('-public', action="store_true", default=False)
+    parser.add_argument('-init', action="store_true", default=False)
     args = parser.parse_args()
     if args.config:
         # Init config
@@ -436,25 +547,29 @@ if __name__ == '__main__':
         # init db connection
         from mobyle.common.connection import connection
         from mobyle.common.service import Service, Program, Package
-        from mobyle.common.service import InputParagraph, OutputParagraph, \
-                                          InputParameter, OutputParameter, \
-                                          InputProgramParameter, \
-                                          OutputProgramParameter, \
-                                          Type
         from mobyle.common import users
         from mobyle.common import project
         Program = connection.Program
         Package = connection.Package
     else:
         from mobyle.common.service import Service, Program, Package
-        from mobyle.common.service import InputParagraph, OutputParagraph, \
-                                          InputParameter, OutputParameter, \
-                                          InputProgramParameter, \
-                                          OutputProgramParameter, \
-                                          Type
+    from mobyle.common.service import InputParagraph, OutputParagraph, \
+	                              InputParameter, OutputParameter, \
+	                              InputProgramParameter, \
+	                              OutputProgramParameter, \
+	                              LegacyType
+    type_module = import_module('mobyle.common.type')
+    if args.loglevel:
+        try:
+            logger.setLevel(args.loglevel)
+        except ValueError, ve:
+            logger.error("invalid logging level specified %s, loglevel is ignored" % args.loglevel)
     if args.config:
         user = connection.User.find_one({'email': config.get("app:main",'root_email')})
         project = connection.Project.find_one({ 'owner' : user['_id'] })
+        if args.init:
+            connection.Program.collection.remove()
+            connection.Package.collection.remove()
     if args.storeto:
         import json
     filenames = args.filenames
@@ -476,7 +591,6 @@ if __name__ == '__main__':
             elif service.get('#tag')=='package':
                 s = parse_package(JSONProxy(service))
             if s:
-                print args.public
                 if args.public:
                     s['public_name']=s['name']
                 if args.config:
@@ -492,3 +606,10 @@ if __name__ == '__main__':
         except Exception, exc:
             logger.error("Error processing file %s: %s" % 
                          (filename, exc.message), exc_info=True)
+    for variable, file_name in [(types_map, 'missing_mapped_types'),
+                                  (formats_map, 'missing_mapped_formats'),
+                                  (topics_map, 'missing_mapped_topics'),
+                                  (operations_map, 'missing_mapped_operations')]:
+        report_file = open(file_name,'w')
+        report_file.writelines([item+'\n' for item in variable.missing])
+        report_file.close()

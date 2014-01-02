@@ -13,10 +13,7 @@ from mobyle.common.tokens import Token
 class TestToken(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.Token.find({})
-        for object in objects:
-            object.delete()
-       
+        connection.Token.collection.remove({})
     
     def test_valid_token(self):
         my_token = connection.Token()
@@ -37,5 +34,4 @@ class TestToken(unittest.TestCase):
         self.assertFalse(my_token.check_validity())
         is_token = connection.Token.find_one({'token': token})
         self.assertEqual(is_token, None)
-
 

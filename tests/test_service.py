@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest
-import pymongo
+
 from mongokit import ValidationError
 import os.path
 #a config object must be instantiated first for each entry point of the application
@@ -14,14 +14,7 @@ from mobyle.common.service import *
 class TestService(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.Service.find({})
-        for object in objects:
-            object.delete()
-       
-    def tearDown(self):
-        objects = connection.Service.find({})
-        for object in objects:
-            object.delete()
+        connection.Service.collection.remove({})
 
     def test_insert(self):
         """
@@ -47,9 +40,9 @@ class TestService(unittest.TestCase):
         workflow = connection.Workflow()
         workflow['name'] = "test_workflow_service"
         workflow.save()
-        service = connection.Service.find_one({'name': 'test_program_service'})
+        service = connection.Service.fetch_one({'name': 'test_program_service'})
         self.assertTrue(isinstance(service,Program))
-        service = connection.Service.find_one({'name': 'test_program_service'})
+        service = connection.Service.fetch_one({'name': 'test_program_service'})
         self.assertTrue(isinstance(workflow,Workflow))
 
     def test_inputs_creation(self):
@@ -66,7 +59,7 @@ class TestService(unittest.TestCase):
         inputs.validate()
         service.validate()
         service.save()
-        
+
 
     def test_invalid_inputs_creation(self):
         """
@@ -83,11 +76,11 @@ class TestService(unittest.TestCase):
         inputs = InputParagraph()
         #service['inputs']=inputs
         output = OutputParameter()
-        output['name'] = 'test_output'     
+        output['name'] = 'test_output'
         inputs['children'].append(output)
         self.assertRaises(ValidationError, inputs.validate)
         #service.validate()
         #service.save()
 
 if __name__ == '__main__':
-    unittest.main() 
+    unittest.main()
