@@ -182,7 +182,7 @@ class ObjectManager:
             if ObjectManager.use_repo:
                 index = ObjectManager.get_repository_index(uid)
                 index.remove([path])
-                msg = "File removed: "+path
+                msg = "File removed: " + path.encode('utf8','replace')
                 index.commit(msg)
 
 
@@ -430,7 +430,7 @@ class ObjectManager:
                         msg = options['msg']
                     else:
                         msg = "Update file content"
-                    index.commit(msg + " " + dataset['name'])
+                    index.commit(msg + " " + dataset['name'].encode('utf8','replace'))
 
             if 'project' in options:
                 dataset['project'] = ObjectId(options['project'])
