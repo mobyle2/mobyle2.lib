@@ -262,6 +262,10 @@ class ObjectManager:
         else:
             dataset['data'] = RefData()
         dataset['name'] = name
+        if 'description' in options:
+            dataset['description'] = options['description']
+        if 'public' in options:
+            dataset['public'] = options['public']
         dataset['status'] = ObjectManager.QUEUED
         if 'path' in options:
             dataset['path'] = options['path']
@@ -437,6 +441,13 @@ class ObjectManager:
             fformat = None
             mime = None
 
+            if 'name' in options:
+                dataset['name'] = options['name']
+            if 'description' in options:
+                dataset['description'] = options['description']
+            if 'public' in options:
+                dataset['public'] = options['public']
+
             if options['format'] == 'auto':
                 # Try auto-detect
                 detector = BioFormat()
@@ -502,6 +513,13 @@ class ObjectManager:
         with open(infile, 'rb') as stream:
             obj.add_bytestream(file_name, stream, ObjectManager._get_file_root(uid))
         dataset['name'] = name
+
+        if 'description' in options:
+            dataset['description'] = options['description']
+
+        if 'public' in options:
+            dataset['public'] = options['public']
+
         dataset['data']['path'] = file_name
 
         filepath = os.path.join(dataset.get_file_path(), dataset['data']['path'])
