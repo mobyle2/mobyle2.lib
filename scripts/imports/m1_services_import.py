@@ -37,7 +37,7 @@ class JSONProxy:
         Get the name of the element corresponding to the current structure
         :returns: the name of the element
         :rtype: string
-        """ 
+        """
         return self.json_dict.get('#tag')
 
     def get(self, key, default=None):
@@ -51,7 +51,7 @@ class JSONProxy:
         :rtype: JSONProxy
         """
         try:
-            el = [n for n in self.json_dict['#children'] 
+            el = [n for n in self.json_dict['#children']
                   if isinstance(n, dict) and n['#tag'] == key]
             return JSONProxy(el[0])
         except IndexError:
@@ -129,8 +129,8 @@ class JSONProxy:
         """
         Returns the children of the current element as
         1) concatenated text strings or
-        2) concatenated XHTML equivalent of the child elements 
-        :returns: the string value of the current element 
+        2) concatenated XHTML equivalent of the child elements
+        :returns: the string value of the current element
         :rtype: string
         """
         s = ''
@@ -294,8 +294,8 @@ def parse_para(p_dict, para, service_type):
     """
     parse Mobyle1 common "parameter" or "paragraph" element properties
     :param p_dict: the dictionary representing the Mobyle1 "parameter" element
-    :type p_dict: dict 
-    :param para: the Parameter or Paragraph object 
+    :type p_dict: dict
+    :param para: the Parameter or Paragraph object
     :type para: Para
     :param service_type: 'program', 'workflow' or 'widget'
     :type service_type: string
@@ -308,7 +308,7 @@ def parse_para(p_dict, para, service_type):
         para['precond'] = {}
         for code in p_dict.get('precond').list('code'):
             para['precond'][code.att('proglang')] = code.text()
-        #for 
+        #for
         #para['precond'] = p_dict.get('precond').list('code')
 
 def parse_parameter(p_dict, service_type):
@@ -317,8 +317,8 @@ def parse_parameter(p_dict, service_type):
     :param p_dict: the dictionary representing the Mobyle1 "parameter" element
     :type p_dict: dict
     :param service_type: 'program', 'workflow' or 'widget'
-    :type service_type: string 
-    :returns: the InputParameter or OutputParameter object 
+    :type service_type: string
+    :returns: the InputParameter or OutputParameter object
     :rtype: Parameter
     """
     logger.debug("processing parameter %s" % p_dict.text('name'))
@@ -346,6 +346,8 @@ def parse_parameter(p_dict, service_type):
     type_ds = types_map.get_type(m1_class, m1_biotype)
     if type_ds:
         m2_type = getattr(type_module, type_ds['_type'])()
+        if 'data_terms' in type_ds:
+            m2_type['data_terms'] = type_ds['data_terms']
         for data_format in t_dict.list('dataFormat'):
             df = formats_map.get_format(data_format.text())
             if df:
@@ -370,13 +372,13 @@ def parse_input_parameter(p_dict, parameter, service_type):
     """
     parse Mobyle1 parameter element properties for inputs
     :param p_dict: the dictionary representing the Mobyle1 "parameter" element
-    :type p_dict: dict 
-    :param para: the InputParameter  
+    :type p_dict: dict
+    :param para: the InputParameter
     :type para: InputParameter
     :param service_type: 'program', 'workflow' or 'widget'
     :type service_type: string
     """
-    parameter['mandatory'] = p_dict.att('ismandatory') in ['1', 'true', 'True'] 
+    parameter['mandatory'] = p_dict.att('ismandatory') in ['1', 'true', 'True']
     if p_dict.has('ctrl'):
         parameter['ctrl'] = {}
         for code in p_dict.get('ctrl').list('code'):
@@ -394,8 +396,8 @@ def parse_output_parameter(p_dict, parameter, service_type):
     """
     parse Mobyle1 parameter element properties for outputs
     :param p_dict: the dictionary representing the Mobyle1 "parameter" element
-    :type p_dict: dict 
-    :param para: the OutputParameter  
+    :type p_dict: dict
+    :param para: the OutputParameter
     :type para: OutputParameter
     :param service_type: 'program', 'workflow' or 'widget'
     :type service_type: string
@@ -420,7 +422,7 @@ def parse_paragraph(p_dict, service_type):
     :param service_type: 'program', 'workflow' or 'widget'
     :type service_type: string
     :returns: tuple containing an InputParagraph and an OutputParagraph object
-              corresponding to the Mobyle1 paragraph 
+              corresponding to the Mobyle1 paragraph
     :rtype: tuple
     """
     logger.debug("processing paragraph %s" % p_dict.text('name'))
@@ -438,7 +440,7 @@ def parse_parameters(s_dict, containers, service_type):
     to the relevant containers
     :param s_dict: the dictionary representing the Mobyle1 "parameters" element
     :type s_dict: dict
-    :param containers: a tuple containing the corresponding InputParagraph and 
+    :param containers: a tuple containing the corresponding InputParagraph and
                        OutputParagraph containers
     :type containers: tuple
     :param service_type: 'program', 'workflow' or 'widget'
@@ -573,7 +575,7 @@ if __name__ == '__main__':
     if args.storeto:
         import json
     filenames = args.filenames
-    for filename in filenames: 
+    for filename in filenames:
         logger.info('processing %s...' % filename)
         try:
             # s stores the result of the parsing
@@ -600,11 +602,11 @@ if __name__ == '__main__':
                     fh = open(os.path.join(args.storeto, s['name']+'.json'),'w')
                     fh.write(json.dumps(s, sort_keys=True, indent=4, separators=(',', ': ')))
                     fh.close()
-                 
+
         # pylint: disable=W0703
-        #        Invalid name "logger" for type constant 
+        #        Invalid name "logger" for type constant
         except Exception, exc:
-            logger.error("Error processing file %s: %s" % 
+            logger.error("Error processing file %s: %s" %
                          (filename, exc.message), exc_info=True)
     for variable, file_name in [(types_map, 'missing_mapped_types'),
                                   (formats_map, 'missing_mapped_formats'),
