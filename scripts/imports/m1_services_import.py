@@ -241,6 +241,7 @@ class OperationConversionMap(object):
 
 operations_map = OperationConversionMap()
 
+
 def parse_software(d, s):
     """
     parse top-level elements of the software
@@ -271,8 +272,8 @@ def parse_software(d, s):
     if d.get('doc').has('comment'):
         s['comment'] = d.get('doc').get('comment').text_or_html()
     for cat in d.list('category'):
-        s['classifications'].append({'type':'mobyle1', \
-                                     'classification':cat.text()})
+        s['classifications'].append({'type':'mobyle1',
+                                     'classification': cat.text()})
     #for cat in d.list('edam_cat'):
     #    s['classifications'].append({'type':'EDAM', \
     #                                 'classification':cat.att('ref')})
@@ -280,15 +281,16 @@ def parse_software(d, s):
     s['topics'] = topics_map.get_topic(s['name']) or []
     if d.get('package'):
         package_name = d.get('package').text('name')
-        logger.info('software %s belongs to package %s, linking...' %\
+        logger.info('software %s belongs to package %s, linking...' %
                    (s['name'], package_name))
-        package = Package.fetch_one({'name':package_name})
+        package = Package.fetch_one({'name': package_name})
         if package:
-           s['package']=package
+            s['package'] = package
         else:
-           logger.warning('missing package %s in software %s' %\
+            logger.warning('missing package %s in software %s' %
                           (s['name'], package_name))
     return s
+
 
 def parse_para(p_dict, para, service_type):
     """
@@ -310,6 +312,7 @@ def parse_para(p_dict, para, service_type):
             para['precond'][code.att('proglang')] = code.text()
         #for
         #para['precond'] = p_dict.get('precond').list('code')
+
 
 def parse_parameter(p_dict, service_type):
     """
@@ -342,7 +345,7 @@ def parse_parameter(p_dict, service_type):
     t_dict = p_dict.get('type')
     m1_class = t_dict.get('datatype').text('class')
     m1_biotypes = [biotype.text() for biotype in t_dict.list('biotype')]
-    m1_biotype = m1_biotypes[0] if len(m1_biotypes)==1 else None
+    m1_biotype = m1_biotypes[0] if len(m1_biotypes) == 1 else None
     type_ds = types_map.get_type(m1_class, m1_biotype)
     if type_ds:
         m2_type = getattr(type_module, type_ds['_type'])()
@@ -355,18 +358,22 @@ def parse_parameter(p_dict, service_type):
         vlist = p_dict.get('vlist')
         if vlist:
             for velem in vlist.list('velem'):
-                m2_type['options'].append({'label':velem.get('label').text(), 'value':velem.get('value').text()})
+                m2_type['options'].append({'label': velem.get('label').text(),
+                                           'value': velem.get('value').text()})
         elif p_dict.get('flist'):
-            logger.error("[not implemented] flist not translated for parameter %s" % p_dict.text('name'))
+            logger.error("[not implemented] flist skipped for parameter %s" %
+                         p_dict.text('name'))
         vdef = p_dict.get('vdef')
         if vdef:
-	    values = [v.text() for v in vdef.list('value')]
-            m2_type['default'] = values[0] if len(values)==1 else values
-            if m2_type.get('_type')=='boolean':
-	        # standardize default value for boolean types to true or false
-	        m2_type['default'] = True if m2_type['default'] in ['true',1,True] else False
+            values = [v.text() for v in vdef.list('value')]
+            m2_type['default'] = values[0] if len(values) == 1 else values
+            if m2_type.get('_type') == 'boolean':
+                # standardize default value for boolean types to true or false
+                m2_type['default'] = True if m2_type['default']\
+                                          in ['true', 1, True] else False
         parameter['type'] = m2_type
     return parameter
+
 
 def parse_input_parameter(p_dict, parameter, service_type):
     """
@@ -392,6 +399,7 @@ def parse_input_parameter(p_dict, parameter, service_type):
                 parameter['format'][code.att('proglang')] = code.text()
         parameter['paramfile'] = p_dict.text('paramfile')
 
+
 def parse_output_parameter(p_dict, parameter, service_type):
     """
     parse Mobyle1 parameter element properties for outputs
@@ -414,6 +422,7 @@ def parse_output_parameter(p_dict, parameter, service_type):
             for code in p_dict.get('filenames').list('code'):
                 parameter['filenames'][code.att('proglang')] = code.text()
 
+
 def parse_paragraph(p_dict, service_type):
     """
     parse Mobyle1 "paragraph" element
@@ -434,10 +443,11 @@ def parse_paragraph(p_dict, service_type):
                      (input_paragraph, output_paragraph), service_type)
     return (input_paragraph, output_paragraph)
 
+
 def parse_parameters(s_dict, containers, service_type):
     """
-    parse Mobyle1 "parameters" element and add the resulting paragraphs/parameters
-    to the relevant containers
+    parse Mobyle1 "parameters" element and add the resulting
+    paragraphs/parameters to the relevant containers
     :param s_dict: the dictionary representing the Mobyle1 "parameters" element
     :type s_dict: dict
     :param containers: a tuple containing the corresponding InputParagraph and
@@ -460,6 +470,7 @@ def parse_parameters(s_dict, containers, service_type):
             else:
                 containers[1]['children'].append(parameter)
 
+
 def parse_program(s_dict):
     """
     create a program object from a dictionary
@@ -474,14 +485,16 @@ def parse_program(s_dict):
     parse_software(s_dict.get('head'), p)
     p['inputs'] = InputParagraph()
     p['outputs'] = OutputParagraph()
-    parse_parameters(s_dict.get('parameters'), (p['inputs'], p['outputs']), 'program')
+    parse_parameters(s_dict.get('parameters'), (p['inputs'], p['outputs']),
+                     'program')
     if s_dict.get('head').has('command'):
-        p['command'] = {'path': s_dict.get('head').get('command').att('path'),\
+        p['command'] = {'path': s_dict.get('head').get('command').att('path'),
                         'value': s_dict.get('head').text('command')
                        }
     for env in s_dict.get('head').list('env'):
-        p['env'].append({'name':env.att('name'), 'value':env.text()})
+        p['env'].append({'name': env.att('name'), 'value': env.text()})
     return p
+
 
 def parse_package(s_dict):
     """
@@ -496,6 +509,7 @@ def parse_package(s_dict):
     p = Package()
     parse_software(s_dict, p)
     return p
+
 
 def get_loader(path):
     """
@@ -522,16 +536,17 @@ def get_loader(path):
         :rtype: ElementTree or unicode
         :throws IOError: If the loader fails to load the resource.
         """
-        file = open(os.path.join(path,href))
+        href_file = open(os.path.join(path, href))
         if parse == "xml":
-            data = ET.parse(file).getroot()
+            data = ET.parse(href_file).getroot()
         else:
-            data = file.read()
+            data = href_file.read()
             if encoding:
                 data = data.decode(encoding)
-        file.close()
+        href_file.close()
         return data
     return correct_loader
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Migrate Mobyle1 XML files to Mobyle2')
