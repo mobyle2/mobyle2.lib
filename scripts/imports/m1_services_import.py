@@ -367,10 +367,12 @@ def parse_parameter(p_dict, service_type):
         if vdef:
             values = [v.text() for v in vdef.list('value')]
             m2_type['default'] = values[0] if len(values) == 1 else values
-            if m2_type.get('_type') == 'boolean':
+            #print m2_type
+            if m2_type.get('_type') == 'BooleanType':
                 # standardize default value for boolean types to true or false
                 m2_type['default'] = True if m2_type['default']\
                                           in ['true', 1, True] else False
+                print m2_type
         parameter['type'] = m2_type
     return parameter
 
