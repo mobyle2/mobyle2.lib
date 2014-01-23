@@ -65,7 +65,8 @@ class ObjectManager:
             ", set to " + config.get("app:main", "store"))
 
         if config.has_option("app:main", "use_history"):
-            ObjectManager.use_repo = config.getboolean("app:main", "use_history")
+            ObjectManager.use_repo = config.getboolean("app:main",
+                                                       "use_history")
         else:
             ObjectManager.use_repo = False
 
@@ -77,7 +78,6 @@ class ObjectManager:
             logging.debug("store = " + str(config.get("app:main", "store")))
             #if ObjectManager.use_repo:
             #    ObjectManager.repo = Repo.init(self.get_storage_path())
-
 
     @classmethod
     def _get_file_root(cls, uid):
@@ -120,11 +120,10 @@ class ObjectManager:
             "/" + ObjectManager._get_file_root(uid)
 
     @classmethod
-    def get_relative_file_path(cls,uid):
+    def get_relative_file_path(cls, uid):
         '''Get path for a file uid, relative to pairtree root'''
         return pairtree.id2path(str(uid)) + "/" + \
         ObjectManager._get_file_root(str(uid))
-
 
     @classmethod
     def get(cls, uid):
@@ -139,7 +138,8 @@ class ObjectManager:
         return connection.ProjectData.find_one({"_id": ObjectId(uid)})
 
     @classmethod
-    def get_token(cls, uid, files_path, mode=AccessMode.READONLY, lifetime=3600):
+    def get_token(cls, uid, files_path,
+                  mode=AccessMode.READONLY, lifetime=3600):
         '''
         Return a temporary token to serve a dataset file
 
@@ -164,28 +164,25 @@ class ObjectManager:
         temptoken.save()
         return temptoken['token']
 
-
     @classmethod
     def _delete_file_only(cls, uid, path):
         '''
-        Delete a file from a dataset, but does not delete dataset entry nor directory.
-        Typical use case is a file replacement
+        Delete a file from a dataset, but does not delete dataset entry nor
+        directory. Typical use case is a file replacement
 
         :param uid: id of the dataset
         :type uid: str
         :param path: relative path of the file
         :type path: str
         '''
-        full_path = os.path.join(ObjectManager.get_file_path(uid),path)
+        full_path = os.path.join(ObjectManager.get_file_path(uid), path)
         if os.path.exists(full_path):
-            os.remove(os.path.join(ObjectManager.get_file_path(uid),path))
+            os.remove(os.path.join(ObjectManager.get_file_path(uid), path))
             if ObjectManager.use_repo:
                 index = ObjectManager.get_repository_index(uid)
                 index.remove([path])
-                msg = "File removed: " + path.encode('utf8','replace')
+                msg = "File removed: " + path.encode('utf8', 'replace')
                 index.commit(msg)
-
-
 
     @classmethod
     def _delete_file(cls, uid, options=None):
@@ -193,8 +190,6 @@ class ObjectManager:
         Delete file from storage directly or via repo
         '''
         obj = ObjectManager.storage.get_object(uid)
-
-
         #if ObjectManager.use_repo and not options['uncompress']:
         #    index = ObjectManager.get_repository_index(uid)
         #    index.remove([uid])
@@ -307,7 +302,8 @@ class ObjectManager:
         :return: list of updated datasets
         '''
 
-        dataset = connection.ProjectData.find_one({"_id": ObjectId(options['id'])})
+        dataset = connection.ProjectData.find_one({"_id":
+                                                   ObjectId(options['id'])})
         updated_datasets = [dataset]
 
         if status == ObjectManager.DOWNLOADED and\
@@ -326,7 +322,7 @@ class ObjectManager:
             uid = str(dataset['_id'])
             path = ObjectManager._get_file_root(uid)
             obj = ObjectManager.storage.get_object(uid)
-            if options['uncompress'] or len(options['files'])>1:
+            if options['uncompress'] or len(options['files']) > 1:
                 msg = 'Add: '
                 if 'msg' in options:
                     msg = options['msg']
@@ -335,7 +331,7 @@ class ObjectManager:
 
                 else:
                     updated_datasets = []
-                
+
                 dataset['data']['type'] = options['type']
 
                 for filepath in options['files']:
@@ -351,7 +347,7 @@ class ObjectManager:
                         subdata['path'] = os.path.basename(filepath)
                         subdata['name'] = os.path.basename(filepath)
                         subdata['size'] = \
-                            os.path.getsize(ObjectManager.get_storage_path() +\
+                            os.path.getsize(ObjectManager.get_storage_path() +
                                             filespath)
                         fullsize += subdata['size']
                         subdata['type'] = options['type']
@@ -370,8 +366,9 @@ class ObjectManager:
                         newoptions['uncompress'] = False
                         newoptions['group'] = False
                         newoptions['id'] = None
-                        new_dataset = ObjectManager.store(os.path.basename(filepath),
-                            filepath, newoptions)
+                        new_dataset = ObjectManager.store(
+                                          os.path.basename(filepath),
+                                          filepath, newoptions)
                         updated_datasets.append(new_dataset)
                 if not options['group']:
                     # remove current obj, each sub file is a new independant
@@ -434,7 +431,8 @@ class ObjectManager:
                         msg = options['msg']
                     else:
                         msg = "Update file content"
-                    index.commit(msg + " " + dataset['name'].encode('utf8','replace'))
+                    index.commit(msg + " " + dataset['name'].encode('utf8',
+                                 'replace'))
 
             if 'project' in options:
                 dataset['project'] = ObjectId(options['project'])
@@ -464,7 +462,9 @@ class ObjectManager:
                     datapath = os.path.join(dataset.get_file_path(),
                                             dataset['data']['path'])
                 if fformat is None:
-                    (fformat, mime) = detector.detect(ObjectManager.get_storage_path() + datapath)
+                    (fformat, mime) = detector.detect(
+                                          ObjectManager.get_storage_path() +
+                                          datapath)
             else:
                 fformat = options['format']
 
@@ -493,13 +493,15 @@ class ObjectManager:
             options = {}
         Config.config()
         if 'id' in options and options['id']:
-            dataset = connection.ProjectData.find_one({'_id': ObjectId(options['id'])})
+            dataset = connection.ProjectData.find_one({'_id': ObjectId(
+                                                       options['id'])})
             if not 'data' in dataset:
                 dataset['data'] = RefData()
             else:
                 if 'path' in dataset:
                     # Remove existing file
-                    ObjectManager._delete_file_only(options['id'], dataset['data']['path'])
+                    ObjectManager._delete_file_only(options['id'],
+                        dataset['data']['path'])
         else:
             dataset = connection.ProjectData()
             dataset['data'] = RefData()
@@ -511,7 +513,8 @@ class ObjectManager:
         if 'name' in options and options['name'] is not None:
             file_name = options['name']
         with open(infile, 'rb') as stream:
-            obj.add_bytestream(file_name, stream, ObjectManager._get_file_root(uid))
+            obj.add_bytestream(file_name, stream,
+                               ObjectManager._get_file_root(uid))
         dataset['name'] = name
 
         if 'description' in options:
@@ -522,7 +525,8 @@ class ObjectManager:
 
         dataset['data']['path'] = file_name
 
-        filepath = os.path.join(dataset.get_file_path(), dataset['data']['path'])
+        filepath = os.path.join(dataset.get_file_path(),
+                                dataset['data']['path'])
         dataset['status'] = ObjectManager.DOWNLOADED
         if options['uncompress'] and ObjectManager.isarchive(name) is not None:
             dataset['status'] = ObjectManager.UNCOMPRESS
