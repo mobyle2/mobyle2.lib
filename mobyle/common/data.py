@@ -13,6 +13,7 @@ Created on Nov. 12, 2012
 from mongokit import SchemaDocument
 from .type import *
 
+
 class AbstractData(SchemaDocument):
     """
     Abstract super class for all kinds of data
@@ -26,6 +27,7 @@ class AbstractData(SchemaDocument):
     def check_value(self):
         raise NotImplementedError()
 
+
 @connection.register
 class RefData(AbstractData):
     """
@@ -35,6 +37,7 @@ class RefData(AbstractData):
     structure = {'path': basestring,
                  'size': int
                 }
+
 
 @connection.register
 class ValueData(AbstractData):
@@ -49,6 +52,7 @@ class ValueData(AbstractData):
     def check_value(self):
         self['type'].check_value(self['value'])
 
+
 @connection.register
 class ListData(AbstractData):
     """
@@ -58,6 +62,7 @@ class ListData(AbstractData):
     structure = {
                  'value': [AbstractData]
                 }
+
 
 @connection.register
 class StructData(AbstractData):
