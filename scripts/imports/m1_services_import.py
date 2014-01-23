@@ -169,13 +169,16 @@ class TypeConversionMap(object):
                 ("[not implemented] parameter class %s / biotype %s not " +
                 "mapped (key %s)") % (datatype_class, biotype, key))
             return None
-        if len(value.split('-')) == 1:
-            return {'_type': value}
+        mapped = value.split('-')
+        if len(mapped) == 1:
+            return {'_type': mapped[0]}
+        elif len(mapped) == 2:
+            return {'_type': mapped[0],
+                    'data_terms': mapped[1]}
         else:
-            typ, data = value.split('-')
-            return {'_type': typ,
-                    'data_terms': data}
-
+            return {'_type': mapped[0],
+                    'data_terms': mapped[1],
+                    'format_terms': mapped[2]}
 
 types_map = TypeConversionMap()
 
