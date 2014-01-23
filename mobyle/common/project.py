@@ -105,46 +105,55 @@ class Project(Document):
         user_id = user['_id'] if user else None
         # admin_mode tells wether the admin user
         # is in admin mode and should access everything
-        admin_mode = hasattr(request, 'session') and 'adminmode' in request.session
+        admin_mode = hasattr(request, 'session') \
+                     and 'adminmode' in request.session
         if user and user['admin'] and admin_mode:
             # admin_mode = provide everything
             project_filter = {}
         elif control == MF_READ:
             # read: elements for projects where the user is active or where he
             if user is None:
-                project_filter = {'public':True}
+                project_filter = {'public': True}
             else:
-                project_filter = {"$or": [{"users": {"$elemMatch": {'user': user_id}}},{'public':True}]}
+                project_filter = {"$or": [{"users": {"$elemMatch":
+                                  {'user': user_id}}}, {'public':True}]}
         elif control == MF_EDIT:
             # User must be one of project contributors or managers
             if user is None:
                 project_filter = None
             else:
-                project_filter = {"users": {"$elemMatch": {'user': user_id, "$or": [ {'role': 'contributor'},{ 'role': 'manager'}]}}}
+                project_filter = {"users": {"$elemMatch": {'user': user_id,
+                                  "$or": [{'role': 'contributor'},
+                                          {'role': 'manager'}]}}}
         return project_filter
 
     def my(self, control, request, authenticated_userid=None):
-        return self.my_project_acl_filter(control, request, authenticated_userid)
+        return self.my_project_acl_filter(control,
+                                          request, authenticated_userid)
 
 
 class ProjectDocument(Document):
     """
-    ProjectDocument is an abstract class which defines the ACLs of project-contained elements.
-    The ACLs of such documents are completely defined by the users of the containing project
+    ProjectDocument is an abstract class which defines the ACLs of
+    project-contained elements. The ACLs of such documents are completely
+    defined by the users of the containing project
     """
 
     def my(self, control, request, authenticated_userid=None):
-        project_filter = Project.my_project_acl_filter(control, request, authenticated_userid)
+        project_filter = Project.my_project_acl_filter(control, request,
+                                                       authenticated_userid)
         # return directly project filter if it allows everything or nothing
-        if project_filter == {} or project_filter == None:
+        if project_filter == {} or project_filter is None:
             return project_filter
         # otherwise select the ids of the allowed projects
         else:
-            project_ids_curs = connection.Project.find(project_filter,{'_id':1})
+            project_ids_curs = connection.Project.find(project_filter,
+                                                       {'_id': 1})
             project_ids = []
             for project_id in project_ids_curs:
                 project_ids.append(project_id['_id'])
             return {"project": {"$in": project_ids}}
+
 
 @mf_decorator
 @connection.register
@@ -156,26 +165,25 @@ class ProjectData(ProjectDocument):
     """
 
     __collection__ = 'projects_data'
-    __database__ = Config.config().get('app:main','db_name')
+    __database__ = Config.config().get('app:main', 'db_name')
 
-    structure = { 'name' : basestring,
-                  'description' : basestring,
-                  'tags' : [basestring],
-                  'project': ObjectId,
-                  'data': AbstractData,
-                  'status' : int,
-                  'persistent' : bool,
-                  'path' : basestring,
-                  'public' : bool
-                  #TODO: add data provenance information
+    structure = {'name': basestring,
+                 'description': basestring,
+                 'tags': [basestring],
+                 'project': ObjectId,
+                 'data': AbstractData,
+                 'status': int,
+                 'persistent': bool,
+                 'path': basestring,
+                 'public': bool
+                 #TODO: add data provenance information
                 }
 
-    default_values = {'persistent' : False, 'public' : False}
+    default_values = {'persistent': False, 'public': False}
 
     def get_file_path(self):
         '''Get root path for files of the dataset'''
         return ObjectManager.get_file_path(str(self['_id']))
-
 
     def schema(self, schema=None):
         '''Update schema if parameter is not None, return schema'''
