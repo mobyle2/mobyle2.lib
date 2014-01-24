@@ -108,6 +108,23 @@ class FormatTerm(Term):
         'is_format_of': [basestring]
         }
 
+    def represents_dataterms(self):
+        """
+        Retrieve a flattened list of the data terms
+        it can represent (using terms hierarchy)
+        """
+        data_terms = []
+        format_terms_hierarchy = self.self_and_ancestors_list()
+        for format_term in format_terms_hierarchy:
+            for format_id in format_term['is_format_of']:
+                data_term = connection.DataTerm.fetch_one(
+                                {'id': format_id})
+                for data_term_item in data_term.self_and_ancestors_list():
+                    if data_term_item not in data_terms:
+                        data_terms.append(data_term_item)
+        return data_terms
+
+
 FormatTerm.search_by('id')
 
 

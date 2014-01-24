@@ -65,3 +65,69 @@ class TestDataTerm(unittest.TestCase):
         for data_term_test in data_terms_list:
             count += 1
         self.assertEqual(count, 1)
+
+
+class TestDataTerm(unittest.TestCase):
+    """ Tests for the DataTerm class
+    """
+
+    def setUp(self):
+        connection.DataTerm.collection.remove({})
+
+    def test_insert(self):
+        """
+        test basic creation of a fake EDAM data term
+        """
+        data_term_test = connection.DataTerm()
+        data_term_test['id'] = "test_data_term"
+        data_term_test.save()
+        data_terms_list = connection.DataTerm.find({'id': 'test_data_term'})
+        count = 0
+        for data_term_test in data_terms_list:
+            count += 1
+        self.assertEqual(count, 1)
+
+
+class TestFormatTerm(unittest.TestCase):
+    """ Tests for the FormatTerm class
+    """
+
+    def setUp(self):
+        connection.DataTerm.collection.remove({})
+        connection.FormatTerm.collection.remove({})
+
+    def test_represents_dataterms(self):
+        """
+        test retrieving the list of data terms
+        associated to the data it can represent
+        """
+        data_term_test = connection.DataTerm()
+        data_term_test['id'] = "test_data_term"
+        data_term_test['subclassOf'] = ["test_data_ancestor"]
+        data_term_test.save()
+
+        data_term_test_ancestor = connection.DataTerm()
+        data_term_test_ancestor['id'] = "test_data_ancestor"
+        data_term_test_ancestor.save()
+
+        data_term_test_other = connection.DataTerm()
+        data_term_test_other['id'] = "test_data_other"
+        data_term_test_other.save()
+
+        format_term_test = connection.FormatTerm()
+        format_term_test['id'] = "test_format_term"
+        format_term_test['subclassOf'] = ["test_format_ancestor"]
+        format_term_test['is_format_of'] = ["test_data_term"]
+        format_term_test.save()
+
+        format_term_ancestor_test = connection.FormatTerm()
+        format_term_ancestor_test['id'] = "test_format_ancestor"
+        format_term_ancestor_test['is_format_of'] = ["test_data_ancestor",
+                                           "test_data_other"]
+        format_term_ancestor_test.save()
+
+        data_terms_list = set([data_term_test,
+                               data_term_test_ancestor,
+                               data_term_test_other])
+        self.assertEqual(data_terms_list,
+                         set(format_term_test.represents_dataterms()))
