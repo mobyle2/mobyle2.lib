@@ -11,6 +11,7 @@ Created on Mar 7, 2013
 """
 
 from mongokit import Document
+from itertools import chain
 
 from mf.annotation import mf_decorator
 
@@ -65,6 +66,19 @@ class Term(AbstractTerm):
              'unique':False,
          },
      ]
+
+    def self_and_ancestors_list(self):
+        """
+        Retrieve a flattened list of the term and all its ancestors
+        """
+        terms = [self]
+        for superclass_id in self['subclassOf']:
+            superclass_terms = connection.Term.fetch_one(
+                {'id': superclass_id}).self_and_ancestors_list()
+            for term in superclass_terms:
+                if term not in terms:
+                    terms.append(term)
+        return terms
 
 
 @mf_decorator
