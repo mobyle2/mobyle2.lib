@@ -17,7 +17,8 @@ from mf.annotation import mf_decorator
 from mobyle.common.connection import connection
 from mobyle.common.config import Config
 
-from mf.views import MF_READ, MF_EDIT
+from mf.views import MF_READ
+
 
 class AbstractTerm(Document):
     """
@@ -26,7 +27,7 @@ class AbstractTerm(Document):
     please inherit from Term class instead
     """
 
-    __database__ = Config.config().get('app:main','db_name')
+    __database__ = Config.config().get('app:main', 'db_name')
 
     structure = {
         'id': basestring,
@@ -38,12 +39,13 @@ class AbstractTerm(Document):
         }
 
     def my(self, control, request, authenticated_userid=None):
-        user = connection.User.find_one({'email' : authenticated_userid})
+        user = connection.User.find_one({'email': authenticated_userid})
         admin_mode = 'adminmode' in request.session
         if control == MF_READ or (user and user['admin'] and admin_mode):
             return {}
         else:
             return None
+
 
 @mf_decorator
 @connection.register
@@ -64,6 +66,7 @@ class Term(AbstractTerm):
          },
      ]
 
+
 @mf_decorator
 @connection.register
 class DataTerm(Term):
@@ -77,6 +80,7 @@ class DataTerm(Term):
         }
 
 DataTerm.search_by('id')
+
 
 @mf_decorator
 @connection.register
@@ -92,6 +96,7 @@ class FormatTerm(Term):
 
 FormatTerm.search_by('id')
 
+
 @mf_decorator
 @connection.register
 class TopicTerm(Term):
@@ -104,12 +109,14 @@ class TopicTerm(Term):
 
 TopicTerm.search_by('id')
 
+
 @mf_decorator
 @connection.register
 class OperationTerm(Term):
     """
     Operation term
-    in EDAM: "A function or process performed by a tool; what is done, but not (typically) how or in what context"
+    in EDAM: "A function or process performed by a tool; what is done,
+    but not (typically) how or in what context"
     """
     #__collection__ = 'operations'
 
