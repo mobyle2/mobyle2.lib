@@ -294,8 +294,6 @@ class ObjectManager:
         '''
         Update the status of the object
 
-        :param id: Database id of the data
-        :type id: str
         :param status: Status of the  upload/download \
                     (QUEUED,DOWNLOADING,DOWNLOADED,ERROR)
         :type status: int
