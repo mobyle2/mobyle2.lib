@@ -58,8 +58,6 @@ If the project data must refer to a data located i a specific place, but should
 not be copied::
 
     options = {}
-    options['type'] = "EDAM:.."
-    options['format'] = "EDAM:..."
     options['project'] = project_id
 
     options["path"] = path_to_my_job_result_dir # for example
