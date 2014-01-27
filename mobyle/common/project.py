@@ -183,6 +183,8 @@ class ProjectData(ProjectDocument):
 
     def get_file_path(self):
         '''Get root path for files of the dataset'''
+        if self['path']:
+            return self['path']
         return ObjectManager.get_file_path(str(self['_id']))
 
     def schema(self, schema=None):
