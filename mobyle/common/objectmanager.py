@@ -250,7 +250,6 @@ class ObjectManager:
         if 'uncompress' not in options:
             options['uncompress'] = False
         Config.config()
-        #uid = uuid.uuid4().hex
         dataset = connection.ProjectData()
         if 'schema' in options:
             dataset['data'] = options['schema']
@@ -504,7 +503,6 @@ class ObjectManager:
             dataset = connection.ProjectData()
             dataset['data'] = RefData()
             dataset.save()
-            #uid = uuid.uuid4().hex
         uid = str(dataset['_id'])
         obj = ObjectManager.storage.get_object(uid)
         file_name = uid
