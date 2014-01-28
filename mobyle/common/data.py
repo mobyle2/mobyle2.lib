@@ -32,6 +32,7 @@ class AbstractData(SchemaDocument):
 class RefData(AbstractData):
     """
     A data whose value is stored on the file system
+    on one or more files
     """
 
     structure = {'path': [basestring],
