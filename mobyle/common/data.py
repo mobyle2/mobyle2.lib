@@ -34,7 +34,7 @@ class RefData(AbstractData):
     A data whose value is stored on the file system
     """
 
-    structure = {'path': basestring,
+    structure = {'path': [basestring],
                  'size': int
                 }
 
