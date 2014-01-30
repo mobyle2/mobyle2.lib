@@ -53,7 +53,7 @@ class TestObjectManager(unittest.TestCase):
 
         # Update the schema according to the files, example:
         my_schema = RefData()
-        my_schema['path'] = 'test.fake'
+        my_schema['path'] = [ 'test.fake' ]
         my_schema['size'] = os.path.getsize(data_file)
         my_schema['format'] = "EDAM:123"
         my_schema['type'] = "EDAM:456"
@@ -80,7 +80,7 @@ class TestObjectManager(unittest.TestCase):
         # Update the schema according to the files, example:
         my_schema = RefData()
         sample_file = os.path.join(os.path.dirname(__file__), 'test.conf')
-        my_schema['path'] = 'test.conf'
+        my_schema['path'] = [ 'test.conf' ]
         my_schema['size'] = os.path.getsize(sample_file)
         my_schema['format'] = "EDAM:123"
         my_schema['type'] = "EDAM:456"
@@ -111,7 +111,7 @@ class TestObjectManager(unittest.TestCase):
 
         # Update the schema according to the files, example:
         my_schema = RefData()
-        my_schema['path'] = 'test.fake'
+        my_schema['path'] = [ 'test.fake' ]
         my_schema['size'] = os.path.getsize(data_file)
         my_schema['format'] = "EDAM:123"
         my_schema['type'] = "EDAM:456"
@@ -131,13 +131,13 @@ class TestObjectManager(unittest.TestCase):
         f.write('hi there\n')
         f.close()
         my_dataset_schema_from_manager = my_dataset_from_manager.schema()
-        my_dataset_schema_from_manager['path'] = 'new.fake'
+        my_dataset_schema_from_manager['path'] = [ 'new.fake' ]
         my_dataset_schema_from_manager['size'] = os.path.getsize(my_new_file)
         my_dataset_from_manager.save()
         # Get it from db again, to be sure everything is fine in db
         my_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
         # Check schema has been updated
-        self.assertTrue(my_dataset_from_manager['data']['path'] == 'new.fake')
+        self.assertTrue(my_dataset_from_manager['data']['path'][0] == 'new.fake')
         # Now clean up
         ObjectManager.delete(my_dataset['_id'])
         self.assertFalse(os.path.isfile(os.path.join(my_path, 'new.fake')))
@@ -176,7 +176,7 @@ class TestObjectManager(unittest.TestCase):
         options['files'] = [sample_file]
         ObjectManager.update(ObjectManager.DOWNLOADED, options)
         my_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
-        file_name = my_dataset_from_manager['data']['path']
+        file_name = my_dataset_from_manager['data']['path'][0]
         self.assertTrue(os.path.isfile(os.path.join(my_path, file_name)))
         self.assertEqual(my_dataset_from_manager['status'], ObjectManager.DOWNLOADED)
 
@@ -260,11 +260,11 @@ class TestObjectManager(unittest.TestCase):
 
         main_dataset_from_manager = ObjectManager.get(my_dataset['_id'])
         self.assertTrue(main_dataset_from_manager is not None)
-        self.assertTrue(len(main_dataset_from_manager['data']['value']) == 2)
-        file_name = main_dataset_from_manager['data']['value'][0]['path']
+        self.assertTrue(len(main_dataset_from_manager['data']['path']) == 2)
+        file_name = main_dataset_from_manager['data']['path'][0]
         self.assertTrue(os.path.isfile(os.path.join(my_path, file_name)))
         self.assertEqual(file_name, 'test.fake')
-        file_name = main_dataset_from_manager['data']['value'][1]['path']
+        file_name = main_dataset_from_manager['data']['path'][1]
         self.assertTrue(os.path.isfile(os.path.join(my_path, file_name)))
         self.assertEqual(file_name, 'test.conf')
 

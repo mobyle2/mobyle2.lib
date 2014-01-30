@@ -264,7 +264,7 @@ class ObjectManager:
             dataset['public'] = options['public']
         dataset['status'] = ObjectManager.QUEUED
         if 'path' in options:
-            dataset['path'] = [ options['path'] ]
+            dataset['path'] = options['path']
         dataset['persistent'] = persistent
         if 'project' in options:
             dataset['project'] = ObjectId(options['project'])
