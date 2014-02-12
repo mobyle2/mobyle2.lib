@@ -30,6 +30,35 @@ class Classification(Document):
     structure = {'root_term': basestring,
                  'tree': None}
 
+    def get_classification(self, node_input=None, filter=None):
+        if not(node_input):
+            node_input = self['tree']
+        node_output = {'id': node_input['id'],
+                       'name': node_input['name'],
+                       'services': [], 'sublevels': []}
+        for sublevel in node_input['sublevels']:
+            n = self.get_classification(node_input=sublevel, filter=filter)
+            if n:
+                node_output['sublevels'].append(n)
+        if filter is not None:
+            node_output['services'] = [service for service in
+                node_input['services'] if filter in service['name']]
+        else:
+            node_output['services'] = list(node_input['services'])
+        node_output = self.prune(node_output)
+        return node_output
+
+    def prune(self, node):
+        """
+        prune classification tree to simplify it
+        """
+        if len(node['services']) == 0 and len(node['sublevels']) == 0:
+            # do not load empty tree nodes
+            return None
+        if len(node['services']) == 0 and len(node['sublevels']) == 1:
+            # replace current node with child node if there is only one
+            return node['sublevels'][0]
+        return node
 
 class ClassificationLoader(object):
 
@@ -52,7 +81,7 @@ class ClassificationLoader(object):
         load all services in a dictionary sorted per classification key
         """
         self.services_by_key = {}
-        for s in Service.find({}):
+        for s in connection.Service.find({}):
             if self.classification['root_term'] == 'EDAM_topic:0003':
                 classification_field = 'topics'
             else:
@@ -89,7 +118,7 @@ class ClassificationLoader(object):
             node_output['name'] = 'nowhere'
             node_filter = {'subclassOf': []}
         node_output['sublevels'] = []
-        for t in Term.find(node_filter):
+        for t in connection.Term.find(node_filter):
             if not ':' in t['id']:
                 continue
             if t['is_obsolete'] is True:
@@ -101,33 +130,4 @@ class ClassificationLoader(object):
             node_output['services'] = self.services_by_key.get('EDAM:0000', [])
         return node_output
 
-    def get_classification(self, node_input=None, filter=None):
-        if not(node_input):
-            node_input = self.root_node
-        node_output = {'id': node_input['id'],
-                       'name': node_input['name'],
-                       'services': [], 'sublevels': []}
-        for sublevel in node_input['sublevels']:
-            n = self.get_classification(node_input=sublevel, filter=filter)
-            if n:
-                node_output['sublevels'].append(n)
-        if filter is not None:
-            node_output['services'] = [service for service in
-                node_input['services'] if filter in service['name']]
-        else:
-            node_output['services'] = list(node_input['services'])
-        node_output = self.prune(node_output)
-        return node_output
-
-    def prune(self, node):
-        """
-        prune classification tree to simplify it
-        """
-        if len(node['services']) == 0 and len(node['sublevels']) == 0:
-            # do not load empty tree nodes
-            return None
-        if len(node['services']) == 0 and len(node['sublevels']) == 1:
-            # replace current node with child node if there is only one
-            return node['sublevels'][0]
-        return node
 
