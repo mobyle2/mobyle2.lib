@@ -188,7 +188,6 @@ class OutputParagraph(Paragraph):
 
 
 @mf_decorator
-@connection.register
 class Software(ProjectDocument):
     """
     top-level abstract element for different services and packages
