@@ -39,7 +39,7 @@ if conn.User.find({'first_name': 'root'}).count() == 0:
     user = conn.User()
     user['first_name'] = 'root'
     user['last_name'] = 'root'
-    user['email'] = config.get("app:main", 'root_email')
+    user['email'] = my_config.get("app:main", 'root_email')
     user['hashed_password'] = pwd
     user['admin'] = True
     user['type'] = 'registered'
