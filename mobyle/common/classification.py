@@ -30,6 +30,13 @@ class Classification(Document):
     structure = {'root_term': basestring,
                  'tree': None}
 
+    indexes = [
+         {
+             'fields':'root_term',
+             'unique':True,
+         },
+     ]
+
     def get_classification(self, node_input=None, filter=None):
         if not(node_input):
             node_input = self['tree']
@@ -73,6 +80,10 @@ class ClassificationLoader(object):
         log.debug('started classification loading on %s' % key)
         self.load_all_services()
         self.classification['tree'] = self.load_level()
+        previous_classification = \
+            connection.Classification.fetch_one({'root_term': key})
+        if previous_classification:
+            previous_classification.delete()
         self.classification.save()
         log.debug('ended classification loading on %s' % key)
 
