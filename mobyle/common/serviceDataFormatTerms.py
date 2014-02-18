@@ -27,7 +27,7 @@ from mf.views import MF_READ
 
 @mf_decorator
 @connection.register
-class ServiceDataFormatTerms(Document):
+class ServiceDataFormatTerm(Document):
     """
     Class for data and format terms contained in Mobyle Services.
     """
@@ -43,6 +43,7 @@ class ServiceDataFormatTerms(Document):
     def remove(self, query):
         self.collection.remove(query)
 
+ServiceDataFormatTerm.search_by('data_term_id')
 
 class ServiceDataFormatTermsLoader(object):
 
