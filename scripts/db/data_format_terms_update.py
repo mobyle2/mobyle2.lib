@@ -28,7 +28,7 @@ if __name__ == '__main__':
     # Init config
     config = Config(args.config).config()
     # init db connection
-    from mobyle.common.serviceDataFormatTerms import ServiceDataFormatTermsLoader
+    from mobyle.common.service_terms import ServiceTypeTermLoader
 
     if args.loglevel:
         try:
@@ -36,4 +36,4 @@ if __name__ == '__main__':
         except ValueError, ve:
             logger.error(("invalid logging level specified %s," +
                          "loglevel is ignored") % args.loglevel)
-    print ServiceDataFormatTermsLoader()
+    print ServiceTypeTermLoader()
