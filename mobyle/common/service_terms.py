@@ -81,20 +81,28 @@ class ServiceTypeTermLoader(object):
             # Checks if the children is a Class Parameter
             if isinstance(i, Parameter):
                 if i['type'] is not None and isinstance(i['type'], FormattedType):
-                    data_term_id = i['type']['data_terms']
-
-                    format_term_ids = i['type']['format_terms']
-
-                    service_type_term = connection.ServiceTypeTerm.fetch_one({'data_term_id':data_term_id})
-                    if service_type_term is None:
-                        service_type_term = connection.ServiceTypeTerm()
-                        service_type_term['data_term_id'] = data_term_id
-                        service_type_term['data_term_name'] =\
-                            connection.Term.fetch_one({'id': data_term_id})['name']
-                        service_type_term['format_term_ids'] =\
-                            format_term_ids
-                    service_type_term['format_term_ids'] = list(set(service_type_term['format_term_ids'] + format_term_ids))
-                    service_type_term.save()
+                    try:
+                        data_term_id = i['type']['data_terms']
+                        format_term_ids = i['type']['format_terms']
+                        service_type_term = connection.ServiceTypeTerm.fetch_one({'data_term_id':data_term_id})
+                        if service_type_term is None:
+                            service_type_term = connection.ServiceTypeTerm()
+                            service_type_term['data_term_id'] = data_term_id
+                            data_term =\
+                                connection.Term.fetch_one({'id': data_term_id})
+                            if data_term:
+                                service_type_term['data_term_name'] = data_term['name'] 
+                            else: 
+                                log.error('data term cannot be found for id %s' % 
+                                          data_term_id) 
+                                continue
+                            service_type_term['format_term_ids'] =\
+                                format_term_ids
+                        service_type_term['format_term_ids'] = list(set(service_type_term['format_term_ids'] + format_term_ids))
+                        service_type_term.save()
+                    except Exception, e:
+                        log.error("error while processing type for parameter %s"
+                                   % i['name'], exc_info=True) 
             # If not Parameter, calls the fonction on it's children'"
             else:
                 self.fill_terms_list(i, children_list)
