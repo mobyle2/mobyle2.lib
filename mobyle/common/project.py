@@ -32,6 +32,7 @@ class Project(Document):
     __database__ = Config.config().get('app:main', 'db_name')
 
     structure = {'name': basestring,
+                 'description': basestring,
                  'owner': ObjectId,
                  'users': [{'user': ObjectId, 'role': IS(u'manager',
                                                          u'contributor',
