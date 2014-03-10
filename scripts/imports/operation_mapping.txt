@@ -206,3 +206,9 @@ drawgram/EDAM_operation:0567
 squizz_checker/EDAM_operation:0336
 squizz_convert/EDAM_operation:0335
 consense/EDAM_operation:0555
+signalp/EDAM_operation:0418
+mview_alignment/EDAM_operation:0562
+mview_alignment/EDAM_operation:0565
+mview_blast/EDAM_operation:0562
+mview_blast/EDAM_operation:0565
+msa/EDAM_operation:0492

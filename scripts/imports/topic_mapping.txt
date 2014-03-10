@@ -183,3 +183,9 @@ drawgram/EDAM_topics:0092,EDAM_topics:0084
 squizz_checker/EDAM_topic:0220
 squizz_convert/EDAM_topic:0220
 consense/EDAM_topic:0084
+signalp/EDAM_topic:0748
+mview_alignment/EDAM_topic:0220
+mview_alignment/EDAM_topic:0092
+mview_blast/EDAM_topic:0220
+mview_blast/EDAM_topic:0092
+msa/EDAM_topic:0182
