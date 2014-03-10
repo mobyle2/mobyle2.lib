@@ -42,8 +42,10 @@ if __name__ == '__main__':
         # init db connection
         from mobyle.common.connection import connection
         from mobyle.common.term import DataTerm, FormatTerm,\
-                                       OperationTerm, TopicTerm
+                                       OperationTerm, TopicTerm,\
+                                       IdentifierTerm
         DataTerm = connection.DataTerm
+        IdentifierTerm = connection.IdentifierTerm
         FormatTerm = connection.FormatTerm
         TopicTerm = connection.TopicTerm
         OperationTerm = connection.OperationTerm
@@ -58,7 +60,8 @@ if __name__ == '__main__':
             pass
     else:
         from mobyle.common.term import DataTerm, FormatTerm,\
-                                       OperationTerm, TopicTerm
+                                       OperationTerm, TopicTerm,\
+                                       IdentifierTerm
 
     def get_edam_short_id(long_id):
         if long_id is None:
@@ -69,13 +72,18 @@ if __name__ == '__main__':
     g = Graph().parse(source=args.edamfile)
 
     for row in g.query("""
-    SELECT ?class ?namespace ?name ?definition
-           ?is_format_of ?has_topic ?is_identifier_of
+    SELECT ?class ?namespace ?name ?definition ?comment ?obsolete
     WHERE {
            ?class oboOther:namespace ?namespace .
            ?class rdfs:label ?name .
            OPTIONAL {
                       ?class oboInOwl:hasDefinition ?definition .
+           }
+           OPTIONAL {
+                      ?class rdfs:comment ?comment .
+           }
+           OPTIONAL {
+                      ?class owl:deprecated ?obsolete
            }
     }
     """):
@@ -83,6 +91,8 @@ if __name__ == '__main__':
         namespace = str(row[1])
         if namespace == 'data':
             term = DataTerm()
+        elif namespace == 'identifier':
+            term = IdentifierTerm()
         elif namespace == 'format':
             term = FormatTerm()
         elif namespace == 'topic':
@@ -95,10 +105,14 @@ if __name__ == '__main__':
         long_id = row[0]
         name = row[2]
         definition = row[3]
+        comment = row[4]
+        obsolete = row[5]
 
         term['id'] = get_edam_short_id(long_id)
         term['name'] = name
         term['definition'] = definition
+        term['comment'] = comment
+        term['is_obsolete'] = str(obsolete) == 'true'
 
         synonyms = []
         for inner_row in g.query("""
@@ -144,11 +158,33 @@ if __name__ == '__main__':
             has_topic.append(get_edam_short_id(inner_row[0]))
         if has_topic:
             term['has_topic'] = has_topic
-        term['is_obsolete'] = False
 
-        # FIXME: exploring the ontology from top classes does not retrieve
-        # obsolete classes which are not subclasses
-        # of EDAM data, format, etc.
+        has_input = []
+        for inner_row in g.query("""
+            SELECT ?has_input WHERE {
+                      ?class rdfs:subClassOf ?format_sc .
+                      ?format_sc owl:onProperty
+                          <http://edamontology.org/has_input> .
+                      ?format_sc owl:someValuesFrom ?has_input .
+                      }
+            """, initBindings={'class': long_id}):
+            has_input.append(get_edam_short_id(inner_row[0]))
+        if has_input:
+            term['has_input'] = has_input
+
+        has_output = []
+        for inner_row in g.query("""
+            SELECT ?has_output WHERE {
+                      ?class rdfs:subClassOf ?format_sc .
+                      ?format_sc owl:onProperty
+                          <http://edamontology.org/has_output> .
+                      ?format_sc owl:someValuesFrom ?has_output .
+                      }
+            """, initBindings={'class': long_id}):
+            has_output.append(get_edam_short_id(inner_row[0]))
+        if has_output:
+            term['has_output'] = has_output
+
         if args.config:
             term.save()
         if args.logfile:
