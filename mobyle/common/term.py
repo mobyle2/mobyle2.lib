@@ -90,10 +90,23 @@ class DataTerm(Term):
     #__collection__ = 'types'
     structure = {
         'has_topic': [basestring],
-        'is_identifier_of': [basestring]
         }
 
 DataTerm.search_by('id')
+
+
+@mf_decorator
+@connection.register
+class IdentifierTerm(DataTerm):
+    """
+    type identifier information for data based on EDAM ontology
+    """
+    #__collection__ = 'types'
+    structure = {
+        'is_identifier_of': [basestring]
+        }
+
+IdentifierTerm.search_by('id')
 
 
 @mf_decorator
@@ -152,9 +165,9 @@ class OperationTerm(Term):
     #__collection__ = 'operations'
 
     structure = {
-        'has_input': [DataTerm],
-        'has_output': [DataTerm],
-        'has_topic': [TopicTerm]
+        'has_input': [basestring],
+        'has_output': [basestring],
+        'has_topic': [basestring]
     }
 
 OperationTerm.search_by('id')
