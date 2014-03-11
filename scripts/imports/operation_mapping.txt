@@ -212,3 +212,11 @@ mview_alignment/EDAM_operation:0565
 mview_blast/EDAM_operation:0562
 mview_blast/EDAM_operation:0565
 msa/EDAM_operation:0492
+dca/EDAM_operation:0492
+dialign/EDAM_operation:0492
+comalign/EDAM_operation:0498
+fitch/EDAM_operation:3293
+dnadist/EDAM_operation:0289
+dnapars/EDAM_operation:0545
+protdist/EDAM_operation:0289
+protpars/EDAM_operation:0545

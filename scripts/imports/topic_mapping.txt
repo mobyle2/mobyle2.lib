@@ -188,4 +188,12 @@ mview_alignment/EDAM_topic:0220
 mview_alignment/EDAM_topic:0092
 mview_blast/EDAM_topic:0220
 mview_blast/EDAM_topic:0092
+dca/EDAM_topic:0182
 msa/EDAM_topic:0182
+dialign/EDAM_topic:0182
+comalign/EDAM_topic:0182
+fitch/EDAM_topic:0084
+dnadist/EDAM_topic:0084
+dnapars/EDAM_topic:0084
+protdist/EDAM_topic:0084
+protpars/EDAM_topic:0084
