@@ -290,6 +290,6 @@ cuffdiff/EDAM_operation:2495
 cif/EDAM_operation:0431
 AbPrimerFinder/EDAM_operation:0308
 sig/EDAM_operation:0342
-scan/EDAM_operation:0414
+scan_for_matches/EDAM_operation:0414
 treealign/EDAM_operation:0492,EDAM_operation:0323
 cadbiom-api/EDAM_operation:2438
