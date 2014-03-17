@@ -388,7 +388,6 @@ def parse_parameter(p_dict, service_type):
                 # standardize default value for boolean types to true or false
                 m2_type['default'] = True if m2_type['default']\
                                           in ['true', 1, True] else False
-                print m2_type
         parameter['type'] = m2_type
     return parameter
 

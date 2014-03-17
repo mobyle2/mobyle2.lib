@@ -36,4 +36,4 @@ if __name__ == '__main__':
         except ValueError, ve:
             logger.error(("invalid logging level specified %s," +
                          "loglevel is ignored") % args.loglevel)
-    print ServiceTypeTermLoader()
+    ServiceTypeTermLoader()
