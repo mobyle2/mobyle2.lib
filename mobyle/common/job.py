@@ -290,6 +290,7 @@ class Job(ProjectDocument):
                  'end_time': datetime.datetime,
                  'has_been_notified': bool,
                  'project': ObjectId,
+                 'service': None,
                  'inputs': None,
                  'outputs': None,
                  '_dir': basestring
