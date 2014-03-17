@@ -290,8 +290,8 @@ class Job(ProjectDocument):
                  'end_time': datetime.datetime,
                  'has_been_notified': bool,
                  'project': ObjectId,
-                 'inputs': {basestring: AbstractData},
-                 'outputs': {basestring: AbstractData},
+                 'inputs': None,
+                 'outputs': None,
                  '_dir': basestring
                 }
 
