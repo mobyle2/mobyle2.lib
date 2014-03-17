@@ -267,6 +267,7 @@ class CustomStatus(CustomType):
         return isinstance(value, Status)
 
 
+@mf_decorator
 @connection.register
 class Job(ProjectDocument):
     """
