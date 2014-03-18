@@ -15,6 +15,7 @@ from .config import Config
 from .project import ProjectDocument
 from .type import Type
 
+
 @connection.register
 class Code(SchemaDocument):
     """
@@ -45,6 +46,7 @@ class LegacyType(SchemaDocument):
                 }
 
 
+@connection.register
 class Para(SchemaDocument):
     """
     parent class for parameters and paragraphs
@@ -57,6 +59,7 @@ class Para(SchemaDocument):
                 }
 
 
+@connection.register
 class Parameter(Para):
     """
     a service parameter
@@ -69,6 +72,7 @@ class Parameter(Para):
                 }
 
 
+@connection.register
 class Paragraph(Para):
     """
     a service paragraph
@@ -76,6 +80,15 @@ class Paragraph(Para):
     structure = {
                 'children': [Para]
                 }
+
+    def parameters_list(self):
+        paras_list = []
+        for child_para in self['children']:
+            if isinstance(child_para, Parameter):
+                paras_list.append(child_para)
+            else:
+                paras_list.extend(child_para.parameters_list())
+        return paras_list
 
 
 @connection.register
@@ -88,6 +101,7 @@ class OutputProgramParagraph(Paragraph):
                 }
 
 
+@connection.register
 class InputParameter(Parameter):
     """
     input parameter
@@ -98,6 +112,7 @@ class InputParameter(Parameter):
                 }
 
 
+@connection.register
 class OutputParameter(Parameter):
     """
     output parameter
