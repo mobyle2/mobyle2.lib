@@ -291,8 +291,8 @@ class Job(ProjectDocument):
                  'has_been_notified': bool,
                  'project': ObjectId,
                  'service': None,
-                 'inputs': None,
-                 'outputs': None,
+                 'inputs': {basestring: AbstractData},
+                 'outputs': {basestring: AbstractData},
                  '_dir': basestring
                 }
 
