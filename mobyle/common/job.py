@@ -9,7 +9,7 @@
 # @license: GPLv3
 #===============================================================================
 
-from mongokit import Document, ObjectId, CustomType
+from mongokit import ObjectId, CustomType
 from mongokit.database import Database
 from mongokit.collection import Collection
 
@@ -17,14 +17,17 @@ import datetime
 from mf.annotation import mf_decorator
 import inspect
 import types
+import os
 import logging
 _log = logging.getLogger(__name__)
 
 from .config import Config
 from .connection import connection
-from .data import AbstractData
-from .project import ProjectDocument, Project
+from .data import AbstractData, RefData, new_data
+from .service import Service
+from .project import ProjectDocument
 from .mobyleError import MobyleError
+from mobyle.common.objectmanager import ObjectManager
 
 
 class MetatStatus(type):
@@ -290,7 +293,7 @@ class Job(ProjectDocument):
                  'end_time': datetime.datetime,
                  'has_been_notified': bool,
                  'project': ObjectId,
-                 'service': None,
+                 'service': Service,
                  'inputs': None,
                  'outputs': None,
                  '_dir': basestring
@@ -388,6 +391,37 @@ class Job(ProjectDocument):
         project = connection.Project.find_one({"_id": self.project})
         return project
 
+    def process_inputs(self, inputs_dict):
+        for parameter in self['service']['inputs'].parameters_list():
+            req_param_name = "input:%s" % parameter['name']
+            if req_param_name in inputs_dict:
+                value = inputs_dict[req_param_name]
+                self.set_input_value(parameter, value)
+
+    def set_input_value(self, parameter, value):
+        data = new_data(parameter['type'])
+        if isinstance(data, RefData):
+            objectManager = ObjectManager()
+            data_name = "input for parameter %s" % (parameter['name'])
+            options = {'project': self['project']}
+            my_dataset = objectManager.add(data_name, options, False)
+            my_path = my_dataset.get_file_path()
+            # Write a file to the dataset directory
+            data_file = os.path.join(my_path, data_name)
+            handle = open(data_file, 'w')
+            handle.write(value)
+            handle.close()
+            my_data = RefData()
+            my_data['path'] = [data_name]
+            my_data['size'] = os.path.getsize(data_file)
+            my_data['type'] = parameter['type']
+            my_dataset.schema(my_data)
+            my_dataset.status(ObjectManager.READY)
+            #save data
+            my_dataset.save([data_name], 'new file')
+        else:
+            data['value'] = value
+        self['inputs'][parameter['name']] = data
 
 @mf_decorator
 @connection.register
