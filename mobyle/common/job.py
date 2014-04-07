@@ -23,9 +23,9 @@ _log = logging.getLogger(__name__)
 
 from .config import Config
 from .connection import connection
-from .data import AbstractData, RefData, new_data
+from .data import RefData, new_data
 from .service import Service
-from .project import ProjectDocument
+from .project import ProjectDocument, ProjectData
 from .mobyleError import MobyleError
 from mobyle.common.objectmanager import ObjectManager
 
@@ -419,9 +419,16 @@ class Job(ProjectDocument):
             my_dataset.status(ObjectManager.READY)
             #save data
             my_dataset.save([data_name], 'new file')
+            self['inputs'][parameter['name']] = my_dataset['_id']
         else:
             data['value'] = value
-        self['inputs'][parameter['name']] = data
+            self['inputs'][parameter['name']] = data
+
+    def get_input_value(self, parameter_name):
+        data = self['inputs'][parameter_name]
+        if isinstance(data, ObjectId):
+            data = connection.ProjectData.fetch_one({'_id': data})
+        return data
 
 @mf_decorator
 @connection.register
