@@ -56,6 +56,7 @@ class ObjectManager:
     ERROR = 5
     UNCOMPRESSED = 6
     SYMLINK = 7
+    NEEDFORMAT = 8
 
     FILEROOT = 'data'
 
