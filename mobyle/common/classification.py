@@ -6,8 +6,10 @@ Created on Nov. 23, 2012
 @contact: hmenager@pasteur.fr
 @license: GPLv3
 '''
+from itertools import groupby
 import logging
 log = logging.getLogger(__name__)
+
 from mongokit import Document
 from mf.annotation import mf_decorator
 
@@ -15,6 +17,7 @@ from .connection import connection
 from .config import Config
 from mobyle.common.term import Term
 from mobyle.common.service import Service
+
 
 @mf_decorator
 @connection.register
@@ -65,7 +68,11 @@ class Classification(Document):
         if len(node['services']) == 0 and len(node['sublevels']) == 1:
             # replace current node with child node if there is only one
             return node['sublevels'][0]
+        if len(node['sublevels']) > 1:
+            node['sublevels'] = [k for k, v in groupby(
+                                 sorted(node['sublevels']))]
         return node
+
 
 class ClassificationLoader(object):
 

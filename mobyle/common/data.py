@@ -75,3 +75,15 @@ class StructData(AbstractData):
                  'properties': {basestring: AbstractData}
                 }
 
+
+def new_data(new_data_type):
+    if isinstance(new_data_type, FormattedType):
+        data = RefData()
+    elif isinstance(new_data_type, StructType):
+        data = StructData()
+    elif isinstance(new_data_type, ArrayType):
+        data = ListData()
+    else:
+        data = ValueData()
+    data['type'] = new_data_type
+    return data
