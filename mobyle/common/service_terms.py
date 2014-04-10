@@ -99,55 +99,57 @@ class ServiceTypeTermLoader(object):
 
     def fill_terms_list(self, children, children_list):
          #print time.asctime( time.localtime(time.time()) )
-         for i in children['children']:
+        try:
+            for i in children['children']:
 
-            # Checks if the children is a Class Parameter
-            if isinstance(i, Parameter):
-                if i['type'] is not None and isinstance(i['type'], FormattedType):
-                    try:
-                        term_id = i['type']['data_terms']
-                        formatted_type = connection.FormattedTypeTerm.fetch_one({'term_id':term_id})
-                        if formatted_type is None:
-                            formatted_type = connection.FormattedTypeTerm()
-                            fill_formatted_type_term(i['type'], formatted_type)
+                # Checks if the children is a Class Parameter
+                if isinstance(i, Parameter):
+                    if i['type'] is not None and isinstance(i['type'], FormattedType):
+                        try:
+                            term_id = i['type']['data_terms']
+                            formatted_type = connection.FormattedTypeTerm.fetch_one({'term_id':term_id})
+                            if formatted_type is None:
+                                formatted_type = connection.FormattedTypeTerm()
+                                fill_formatted_type_term(i['type'], formatted_type)
 
-                        formatted_type.save()
+                            formatted_type.save()
 
-                    except Exception:
-                        log.debug("error while processing type for parameter %s"
-                                   % i['name'], exc_info=True)
+                        except Exception:
+                            log.debug("error while processing type for parameter %s"
+                                       % i['name'], exc_info=True)
 
-                elif isinstance(i['type'], StructType):
+                    elif isinstance(i['type'], StructType):
 
-                    struct_type_term = connection.StructTypeTerm()
-                    name = ""
+                        struct_type_term = connection.StructTypeTerm()
+                        name = ""
 
-                    for k, v in i['type']['properties'].items():
-                        if name == "":
-                            name = k
-                        else:
-                            name = k + "+" + name
+                        for k, v in i['type']['properties'].items():
+                            if name == "":
+                                name = k
+                            else:
+                                name = k + "+" + name
 
-                        term_id = v['data_terms']
+                            term_id = v['data_terms']
 
-                        formatted_type = connection.FormattedTypeTerm.fetch_one({'term_id':term_id})
-                        if formatted_type is None:
-                            formatted_type = connection.FormattedTypeTerm()
-                            fill_formatted_type_term(v, formatted_type)
+                            formatted_type = connection.FormattedTypeTerm.fetch_one({'term_id':term_id})
+                            if formatted_type is None:
+                                formatted_type = connection.FormattedTypeTerm()
+                                fill_formatted_type_term(v, formatted_type)
 
-                        formatted_type.save()
+                            formatted_type.save()
 
-                        struct_type_term['properties'][k] = {}
-                        fill_formatted_type_term(v,struct_type_term['properties'] [k])
+                            struct_type_term['properties'][k] = {}
+                            fill_formatted_type_term(v,struct_type_term['properties'] [k])
 
-                    struct_type_term['name'] = name
+                        struct_type_term['name'] = name
 
-                    struct_type_term.save()
+                        struct_type_term.save()
 
-            # If not Parameter, calls the fonction on it's children'"
-            else:
-                self.fill_terms_list(i, children_list)
-
+                # If not Parameter, calls the fonction on it's children'"
+                else:
+                    self.fill_terms_list(i, children_list)
+        except Exception:
+            log.debug("missing children key")
 
 def append_format_terms(existing_list, new_list):
     for i in new_list:
