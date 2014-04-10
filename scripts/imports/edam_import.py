@@ -8,57 +8,32 @@ Created on May 28, 2013
 @license: GPLv3
 """
 
-import os, sys,string
+import re
 import logging
 
 import argparse
+from rdflib import Graph
+from rdflib.term import URIRef
+from rdflib.resource import Resource
+from rdflib.namespace import RDFS
+
 
 from mobyle.common.config import Config
 
 logger = logging.getLogger('mobyle.edam_integration')
 logger.setLevel(logging.INFO)
 
-def parse_term(o,edamElement):
-    """
-    parse EDAM term from edam information extracted from a .obo file
-    :param o: term object to be filled
-    :type o: Term
-    :param edamElement: dictionary containing the EDAM information
-    :type edamElement: dict
-    """
-    for attribute in edamElement:
-        at = attribute.split(': ')
-        try:
-            if at[0]=="id":
-                o['id']=at[1]
-            if at[0]=="name":
-                o['name']=at[1]
-            if at[0]=="def":
-                # removes the edam ontology url from definition
-                o['definition']=at[1].replace("[http://edamontology.org]","").replace("\"","")
-            if at[0]=="synonym":
-                o['synonyms'].append(at[1])
-            if at[0]=="is_a":
-                o['subclassOf'].append(at[1].split(' ')[0])
-            if at[0]=="is_obsolete":
-                o['is_obsolete']= True
-            if at[0]=="relationship":
-                relation = at[1].split(' ')
-                o[relation[0]].append(relation[1])
-        except Exception, e:
-            logger.error("Error while parsing term information %s" % str(attribute), exc_info=True)
-            logger.error(o['id'])
-            pass
-    if not o['is_obsolete']:
-        o['is_obsolete'] = False
-    return o
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Integration of EDAM ontology in Mobyle2 DB")
-    parser.add_argument('--config', help="path to the Mobyle2 config file for DB injection")
-    parser.add_argument('--edamfile', help="path to EDAM ontology file (obo format) to process")
-    parser.add_argument('--logfile', help="outputs each edam element in a file")
-    parser.add_argument('action', choices=['init','update'], help="select which action to launch")
+    parser = argparse.ArgumentParser(description=
+                        "Integration of EDAM ontology in Mobyle2 DB")
+    parser.add_argument('--config', help=
+                        "path to the Mobyle2 config file for DB injection")
+    parser.add_argument('--edamfile', help=
+                        "path to EDAM ontology file (owl format) to process")
+    parser.add_argument('--logfile', help=
+                        "outputs each edam element in a file")
+    parser.add_argument('action', choices=['init', 'update'], help=
+                        "select which action to launch")
     args = parser.parse_args()
 
     if args.config:
@@ -66,11 +41,14 @@ if __name__ == '__main__':
         config = Config(args.config).config()
         # init db connection
         from mobyle.common.connection import connection
-        from mobyle.common.term import DataTerm, FormatTerm, OperationTerm, TopicTerm
-        DataTerm=connection.DataTerm
-        FormatTerm=connection.FormatTerm
-        TopicTerm=connection.TopicTerm
-        OperationTerm=connection.OperationTerm
+        from mobyle.common.term import DataTerm, FormatTerm,\
+                                       OperationTerm, TopicTerm,\
+                                       IdentifierTerm
+        DataTerm = connection.DataTerm
+        IdentifierTerm = connection.IdentifierTerm
+        FormatTerm = connection.FormatTerm
+        TopicTerm = connection.TopicTerm
+        OperationTerm = connection.OperationTerm
         # action definition
         if args.action == 'init':
             # empty collections
@@ -80,58 +58,136 @@ if __name__ == '__main__':
             OperationTerm.collection.drop()
         else:
             pass
-                
-
     else:
-        from mobyle.common.term import DataTerm, FormatTerm, OperationTerm, TopicTerm
-    # opens the edam obo file
-    edam=open(args.edamfile,'r')
+        from mobyle.common.term import DataTerm, FormatTerm,\
+                                       OperationTerm, TopicTerm,\
+                                       IdentifierTerm
 
-    # parses the edam file
-    edam_lines=edam.read()
+    def get_edam_short_id(long_id):
+        if long_id is None:
+            return None
+        return re.sub('http://edamontology.org/([a-zA-Z][a-zA-Z0-9]*)_([0-9]*)',
+               'EDAM_\g<1>:\g<2>', long_id)
 
-    # separated the edam element from each other
-    edam_elements=edam_lines.split('[Term]')
-    
-    nbtype=0
-    nbformat=0
-    nbtopic=0
-    nboperation=0
-    o = None
-    for edam_element in edam_elements:
-        # One element is a list of different edam field
-        element=edam_element.split('\n')
-        
-        if len(element)>1:
-            field=element[1].split(': ')
-            if field[1][0:9]=="EDAM_data":
-                o=DataTerm()
-                parse_term(o,element)
-                nbtype=nbtype+1
-            elif field[1][0:11]=="EDAM_format":
-                o=FormatTerm()
-                parse_term(o,element)
-                nbformat=nbformat+1
-            elif field[1][0:10]=="EDAM_topic":
-                o=TopicTerm()
-                parse_term(o,element)
-                nbtopic+=1 
-            elif field[1][0:14]=="EDAM_operation":
-                o=OperationTerm()
-                parse_term(o,element)
-                nboperation+=1
-        if o is not None:            
-            if args.config:
-		try:
-                    o.save()
-                except Exception, e:
-                    print o #TODO add real logging
-                    raise e
-            if args.logfile:
-                log=open(args.logfile,'a')
-                log.write(o['id'])
-                log.close()
-            o=None
-                    
-        
+    g = Graph().parse(source=args.edamfile)
 
+    for row in g.query("""
+    SELECT ?class ?namespace ?name ?definition ?comment ?obsolete
+    WHERE {
+           ?class oboOther:namespace ?namespace .
+           ?class rdfs:label ?name .
+           OPTIONAL {
+                      ?class oboInOwl:hasDefinition ?definition .
+           }
+           OPTIONAL {
+                      ?class rdfs:comment ?comment .
+           }
+           OPTIONAL {
+                      ?class owl:deprecated ?obsolete
+           }
+    }
+    """):
+
+        namespace = str(row[1])
+        if namespace == 'data':
+            term = DataTerm()
+        elif namespace == 'identifier':
+            term = IdentifierTerm()
+        elif namespace == 'format':
+            term = FormatTerm()
+        elif namespace == 'topic':
+            term = TopicTerm()
+        elif namespace == 'operation':
+            term = OperationTerm()
+        else:
+            continue
+
+        long_id = row[0]
+        name = row[2]
+        definition = row[3]
+        comment = row[4]
+        obsolete = row[5]
+
+        term['id'] = get_edam_short_id(long_id)
+        term['name'] = name
+        term['definition'] = definition
+        term['comment'] = comment
+        term['is_obsolete'] = str(obsolete) == 'true'
+
+        synonyms = []
+        for inner_row in g.query("""
+            SELECT ?synonym WHERE {?class oboInOwl:hasExactSynonym ?synonym}
+            """, initBindings={'class': long_id}):
+            synonyms.append(get_edam_short_id(inner_row[0]))
+        term['synonyms'] = synonyms
+
+        superclasses = []
+        for inner_row in g.query("""
+            SELECT ?superclass WHERE {?class rdfs:subClassOf ?superclass.
+                MINUS {
+                ?class rdfs:subClassOf
+                <http://www.geneontology.org/formats/oboInOwl#ObsoleteClass> .
+                }
+            }
+            """, initBindings={'class': long_id}):
+            superclasses.append(get_edam_short_id(inner_row[0]))
+        term['subclassOf'] = superclasses
+
+        is_format_of = []
+        for inner_row in g.query("""
+            SELECT ?is_format_of WHERE {
+                      ?class rdfs:subClassOf ?format_sc .
+                      ?format_sc owl:onProperty
+                          <http://edamontology.org/is_format_of> .
+                      ?format_sc owl:someValuesFrom ?is_format_of .
+                      }
+            """, initBindings={'class': long_id}):
+            is_format_of.append(get_edam_short_id(inner_row[0]))
+        if is_format_of:
+            term['is_format_of'] = is_format_of
+
+        has_topic = []
+        for inner_row in g.query("""
+            SELECT ?has_topic WHERE {
+                      ?class rdfs:subClassOf ?format_sc .
+                      ?format_sc owl:onProperty
+                          <http://edamontology.org/has_topic> .
+                      ?format_sc owl:someValuesFrom ?has_topic .
+                      }
+            """, initBindings={'class': long_id}):
+            has_topic.append(get_edam_short_id(inner_row[0]))
+        if has_topic:
+            term['has_topic'] = has_topic
+
+        has_input = []
+        for inner_row in g.query("""
+            SELECT ?has_input WHERE {
+                      ?class rdfs:subClassOf ?format_sc .
+                      ?format_sc owl:onProperty
+                          <http://edamontology.org/has_input> .
+                      ?format_sc owl:someValuesFrom ?has_input .
+                      }
+            """, initBindings={'class': long_id}):
+            has_input.append(get_edam_short_id(inner_row[0]))
+        if has_input:
+            term['has_input'] = has_input
+
+        has_output = []
+        for inner_row in g.query("""
+            SELECT ?has_output WHERE {
+                      ?class rdfs:subClassOf ?format_sc .
+                      ?format_sc owl:onProperty
+                          <http://edamontology.org/has_output> .
+                      ?format_sc owl:someValuesFrom ?has_output .
+                      }
+            """, initBindings={'class': long_id}):
+            has_output.append(get_edam_short_id(inner_row[0]))
+        if has_output:
+            term['has_output'] = has_output
+
+        if args.config:
+            term.save()
+        if args.logfile:
+            log = open(args.logfile, 'a')
+            log.write(term['id'])
+            log.close()

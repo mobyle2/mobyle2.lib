@@ -32,6 +32,7 @@ class Project(Document):
     __database__ = Config.config().get('app:main', 'db_name')
 
     structure = {'name': basestring,
+                 'description': basestring,
                  'owner': ObjectId,
                  'users': [{'user': ObjectId, 'role': IS(u'manager',
                                                          u'contributor',
@@ -172,9 +173,15 @@ class ProjectData(ProjectDocument):
                  'tags': [basestring],
                  'project': ObjectId,
                  'data': AbstractData,
+                 # see ObjectManager. Only READY data can be used
                  'status': int,
+                 # set to True to avoid automatic deletion
+                 # by cleanup tasks
                  'persistent': bool,
+                 # path to the container directory for the data
+                 # if it is not stored in the datamanager pairtree
                  'path': basestring,
+                 # set to True to override project visibility
                  'public': bool
                  #TODO: add data provenance information
                 }
@@ -195,7 +202,7 @@ class ProjectData(ProjectDocument):
         return self['data']
 
     def status(self, status=None):
-        '''Update schema if parameter is not None, return schema'''
+        '''Update status if parameter is not None, return status'''
         if status is not None:
             self['status'] = status
             self.save()
