@@ -13,6 +13,8 @@ import logging
 import argparse
 
 from mobyle.common.config import Config
+#from mobyle.common.connection import connection
+#from mobyle.common.service import Service
 
 logger = logging.getLogger('mobyle.data_format_terms_list')
 
@@ -36,4 +38,5 @@ if __name__ == '__main__':
         except ValueError, ve:
             logger.error(("invalid logging level specified %s," +
                          "loglevel is ignored") % args.loglevel)
+
     ServiceTypeTermLoader()
