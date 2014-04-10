@@ -35,10 +35,11 @@ class MobyleConfig(Document):
 
     structure = { 'active' : bool,
                   'auth_mod' : basestring ,
-                  'mail' : { 'gateway' : basestring,
-                             'user' : basestring,
+                  'mail' : { 'gateway' : basestring, # smtp gateway
+                             'list' : basestring, # mailing list
+                             'user' : basestring, # if auth required
                              'password' : basestring,
-                             'origin' : basestring },
+                             'origin' : basestring }, # From in the email
                   'url' : basestring,
                   'datadir' : basestring,
                   'rootdir' : basestring,
