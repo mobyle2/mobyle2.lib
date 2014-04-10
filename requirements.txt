@@ -2,6 +2,7 @@ paste
 pastedeploy
 pastescript
 py-bcrypt
+pymongo==2.6
 #mongokit>=0.9.0
 git+https://github.com/mobyle2/mongokit.git#egg=mongokit
 mf>=0.1.28
