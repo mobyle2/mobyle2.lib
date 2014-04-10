@@ -23,7 +23,7 @@ _log = logging.getLogger(__name__)
 
 from .config import Config
 from .connection import connection
-from .data import RefData, new_data
+from .data import AbstractData, RefData, new_data
 from .service import Service
 from .project import ProjectDocument, ProjectData
 from .mobyleError import MobyleError
