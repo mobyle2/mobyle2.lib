@@ -45,18 +45,18 @@ class FormattedTypeTerm(ServiceTypeTerm):
     """
 
     structure = {
-        'data_term_id': basestring,
+        'term_id': basestring,
         'format_terms': [{'edam': basestring, 'name': basestring}]
         }
 
     indexes = [
         {
-        'fields': 'data_term_id',
+        'fields': 'term_id',
         'unique': True
             }
         ]
 
-ServiceTypeTerm.search_by('data_term_id')
+ServiceTypeTerm.search_by('term_id')
 
 
 @mf_decorator
@@ -68,7 +68,7 @@ class StructTypeTerm(ServiceTypeTerm):
     structure = {
         'properties': {
             unicode: {
-                'data_term_id': basestring,
+                'term_id': basestring,
                 'name': basestring,
                 'format_terms': [{'edam': basestring, 'name': basestring}]
         }}
@@ -105,8 +105,8 @@ class ServiceTypeTermLoader(object):
             if isinstance(i, Parameter):
                 if i['type'] is not None and isinstance(i['type'], FormattedType):
                     try:
-                        data_term_id = i['type']['data_terms']
-                        formatted_type = connection.FormattedTypeTerm.fetch_one({'data_term_id':data_term_id})
+                        term_id = i['type']['data_terms']
+                        formatted_type = connection.FormattedTypeTerm.fetch_one({'term_id':term_id})
                         if formatted_type is None:
                             formatted_type = connection.FormattedTypeTerm()
                             fill_formatted_type_term(i['type'], formatted_type)
@@ -118,7 +118,7 @@ class ServiceTypeTermLoader(object):
                                    % i['name'], exc_info=True)
 
                 elif isinstance(i['type'], StructType):
-                    print i['type']
+
                     struct_type_term = connection.StructTypeTerm()
                     name = ""
 
@@ -128,9 +128,9 @@ class ServiceTypeTermLoader(object):
                         else:
                             name = k + "+" + name
 
-                        data_term_id = v['data_terms']
+                        term_id = v['data_terms']
 
-                        formatted_type = connection.FormattedTypeTerm.fetch_one({'data_term_id':data_term_id})
+                        formatted_type = connection.FormattedTypeTerm.fetch_one({'term_id':term_id})
                         if formatted_type is None:
                             formatted_type = connection.FormattedTypeTerm()
                             fill_formatted_type_term(v, formatted_type)
@@ -154,7 +154,7 @@ def append_format_terms(existing_list, new_list):
         length = len(existing_list)
         cpt = 0
         for j in existing_list:
-            if i['edam_term'] != j['edam_term']:
+            if i['term_id'] != j['term_id']:
                 cpt = cpt + 1
         if cpt == length:
             existing_list.append(i)
@@ -162,26 +162,26 @@ def append_format_terms(existing_list, new_list):
 
 
 def fill_formatted_type_term(formatted_type, formatted_type_term):
-    data_term_id = formatted_type['data_terms']
+    term_id = formatted_type['data_terms']
     format_terms = []
 
     if type(formatted_type['format_terms']) == list:
         for format_term in formatted_type['format_terms']:
             try:
                 term = connection.Term.fetch_one({'id': str(format_term)})
-                format_terms.append({"edam_term": format_term, "name": term['name']})
+                format_terms.append({"term_id": format_term, "name": term['name']})
             except TypeError:
 
                 log.debug('format_terms: %s is not found in the term collections' % str(format_term))
                 continue
 
-        formatted_type_term['data_term_id'] = data_term_id
+        formatted_type_term['term_id'] = term_id
         data_term =\
-            connection.Term.fetch_one({'id': data_term_id})
+            connection.Term.fetch_one({'id': term_id})
         if data_term:
             formatted_type_term['name'] = data_term['name']
         else:
-            log.error('data term cannot be found for id %s' % data_term_id)
+            log.error('data term cannot be found for id %s' % term_id)
 
         formatted_type_term['format_terms'] = format_terms
         formatted_type_term['format_terms'] = append_format_terms(formatted_type_term['format_terms'], format_terms)
