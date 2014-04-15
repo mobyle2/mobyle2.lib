@@ -56,7 +56,7 @@ class ObjectManager:
     ERROR = 5
     UNCOMPRESSED = 6
     SYMLINK = 7
-    NEEDFORMAT = 8
+    NEED_EDIT = 8
 
     FILEROOT = 'data'
 
@@ -299,7 +299,7 @@ class ObjectManager:
         :param id: Database id of the data
         :type id: str
         :param status: Status of the  upload/download \
-                    (QUEUED,DOWNLOADING,DOWNLOADED,ERROR)
+                    (QUEUED,DOWNLOADING,DOWNLOADED,ERROR,...)
         :type status: int
         :return: list of updated datasets
         '''
@@ -335,32 +335,61 @@ class ObjectManager:
                     updated_datasets = []
 
                 if options['group']:
-                    dataset['data']['type'] = options['type']
-                    subdata = RefData()
-                    subdata['path'] = []
-                    subdata['type'] = options['type']
-                    fullsize = 0
-
-                    for filepath in options['files']:
-                        # Copy files
-                        with open(filepath, 'rb') as stream:
-                            obj.add_bytestream(os.path.basename(filepath),
+                    dataset['type'] = options['type']
+                    types = options['type'].split('+')
+                    if len(types) > 1:
+                        status = ObjectManager.NEED_EDIT
+                        # Complex type ie StructData
+                        subdata = StructData()
+                        subdata['properties'] = {}
+                        i = 0
+                        for struct_type in types:
+                            subdata['properties'][struct_type] = RefData()
+                            subdata['properties'][struct_type]['type'] = None
+                            subdata['properties'][struct_type]['format'] = None
+                            subdata['properties'][struct_type]['path'] = []
+                            filepath = options['files'][i]
+                            #for filepath in options['files']:
+                            # Copy files
+                            with open(filepath, 'rb') as stream:
+                                obj.add_bytestream(os.path.basename(filepath),
                                                 stream, path)
-                        filespath = pairtree.id2path(uid) + '/' + path +\
+                            filespath = pairtree.id2path(uid) + '/' + path +\
                                      '/' + os.path.basename(filepath)
-                        fullsize = \
-                            os.path.getsize(ObjectManager.get_storage_path() +
+                            fullsize = \
+                                    os.path.getsize(ObjectManager.get_storage_path() +
                                             filespath)
-                        subdata['path'].append(os.path.basename(filepath))
-                        # Update history
-                        if ObjectManager.use_repo:
-                            index = ObjectManager.get_repository_index(uid)
-                            index.add([os.path.basename(filepath)])
-                            if 'msg' not in options:
-                                msg += os.path.basename(filepath) + ","
-                        status = ObjectManager.DOWNLOADED
-                    subdata['size'] = fullsize
-                    dataset['data'] = subdata
+                            subdata['properties'][struct_type]['path'].append(os.path.basename(filepath))
+                            subdata['properties'][struct_type]['size'] = fullsize
+                            i = i + 1
+                        dataset['data'] = subdata
+                    else:
+                        # RefData
+                        subdata = RefData()
+                        subdata['path'] = []
+                        subdata['type'] = options['type']
+                        fullsize = 0
+
+                        for filepath in options['files']:
+                            # Copy files
+                            with open(filepath, 'rb') as stream:
+                                obj.add_bytestream(os.path.basename(filepath),
+                                                stream, path)
+                            filespath = pairtree.id2path(uid) + '/' + path +\
+                                     '/' + os.path.basename(filepath)
+                            fullsize = \
+                                os.path.getsize(ObjectManager.get_storage_path() +
+                                            filespath)
+                            subdata['path'].append(os.path.basename(filepath))
+                            # Update history
+                            if ObjectManager.use_repo:
+                                index = ObjectManager.get_repository_index(uid)
+                                index.add([os.path.basename(filepath)])
+                                if 'msg' not in options:
+                                    msg += os.path.basename(filepath) + ","
+                            status = ObjectManager.DOWNLOADED
+                        subdata['size'] = fullsize
+                        dataset['data'] = subdata
                 else:
                     for filepath in options['files']:
                         # Create a new data for this file
