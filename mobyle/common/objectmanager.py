@@ -325,7 +325,7 @@ class ObjectManager:
             path = ObjectManager._get_file_root(uid)
             obj = ObjectManager.storage.get_object(uid)
             if options['uncompress'] or len(options['files']) > 1:
-                msg = 'Add: '
+                msg = 'Import data '
                 if 'msg' in options:
                     msg = options['msg']
                 if options['group']:
@@ -335,14 +335,15 @@ class ObjectManager:
                     updated_datasets = []
 
                 if options['group']:
-                    dataset['type'] = options['type']
                     types = options['type'].split('+')
                     if len(types) > 1:
-                        status = ObjectManager.NEED_EDIT
                         # Complex type ie StructData
                         subdata = StructData()
+                        subdata['type'] = options['type']
                         subdata['properties'] = {}
+                        status = ObjectManager.NEED_EDIT
                         i = 0
+                        subdata['files'] = []
                         for struct_type in types:
                             subdata['properties'][struct_type] = RefData()
                             subdata['properties'][struct_type]['type'] = None
@@ -359,8 +360,10 @@ class ObjectManager:
                             fullsize = \
                                     os.path.getsize(ObjectManager.get_storage_path() +
                                             filespath)
-                            subdata['properties'][struct_type]['path'].append(os.path.basename(filepath))
-                            subdata['properties'][struct_type]['size'] = fullsize
+                            subdata['files'].append({'path': os.path.basename(filepath), 'size': fullsize })
+
+                            #subdata['properties'][struct_type]['path'].append(os.path.basename(filepath))
+                            #subdata['properties'][struct_type]['size'] = fullsize
                             i = i + 1
                         dataset['data'] = subdata
                     else:
@@ -427,11 +430,11 @@ class ObjectManager:
                         # Create schema for files in directory
                         symdirfiles = os.listdir(options['files'][0])
                         dataset['data']['value'] = []
-                        st_path = ObjectManager.get_storage_path()
+                        ObjectManager.get_storage_path()
                         for symdirfile in symdirfiles:
                             relative_file = os.path.join(file_name, symdirfile)
                             subdata = RefData()
-                            subdata['path'] = [ relative_file ]
+                            subdata['path'] = [relative_file]
                             subdata['name'] = relative_file
                             subdata['size'] = \
                             os.path.getsize(os.path.join(options['files'][0],
