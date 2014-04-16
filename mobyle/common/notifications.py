@@ -18,8 +18,9 @@ class Notification(Document):
     """
 
     MOBYLE_NOTIFICATION = 0
-    JOB_NOTIFICATION = 1
-    DATA_NOTIFICATION = 2
+    PROJECT_NOTIFICATION = 1
+    JOB_NOTIFICATION = 2
+    DATA_NOTIFICATION = 3
 
     __collection__ = 'notifications'
     __database__ = Config.config().get('app:main','db_name')
@@ -38,8 +39,6 @@ class Notification(Document):
 
     def my(self,control,request,authenticated_userid):
         user  = connection.User.find_one({'email': authenticated_userid})
-        if user and user['admin']:
-            return {}
         if user:
             return { 'user' : user['_id'] }
         else:
@@ -64,18 +63,23 @@ class Notification(Document):
         """
         if Notification.is_debug:
             return True
-
+        
+        emails = []
         mconfig = MobyleConfig.get_current()
         if email is None:
-            email = mconfig['mail']['list']
-        if not email:
-            return False
+            #Send to all users
+            users  = connection.User.find()
+            for user in users:
+                emails.append(user['email'])
+        else:
+            emails.append(email)
 
-        msg = MIMEText(self['message'])
-        msg['Subject'] = 'Mobyle notification'
-        msg['From'] = mconfig['mail']['origin']
-        msg['To'] = email
         s = smtplib.SMTP(mconfig['mail']['gateway'])
-        s.sendmail(msg['From'], msg.as_string())
+        for mail in emails:
+            msg = MIMEText(self['message'])
+            msg['Subject'] = 'Mobyle notification'
+            msg['From'] = mconfig['mail']['origin']
+            msg['To'] = mail
+            s.sendmail(msg['From'], msg.as_string())
         s.quit()
         return True
