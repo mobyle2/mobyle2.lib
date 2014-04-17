@@ -77,6 +77,6 @@ class Notification(Document):
             msg['Subject'] = 'Mobyle notification'
             msg['From'] = mconfig['mail']['origin']
             msg['To'] = mail
-            s.sendmail(msg['From'], msg.as_string())
+            s.sendmail(msg['From'], [mail], msg.as_string())
         s.quit()
         return True
