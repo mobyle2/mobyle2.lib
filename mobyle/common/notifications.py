@@ -10,6 +10,7 @@ from .mobyleConfig import MobyleConfig
 import smtplib
 from email.mime.text import MIMEText
 
+
 @mf_decorator
 @connection.register
 class Notification(Document):
@@ -23,11 +24,11 @@ class Notification(Document):
     DATA_NOTIFICATION = 3
 
     __collection__ = 'notifications'
-    __database__ = Config.config().get('app:main','db_name')
+    __database__ = Config.config().get('app:main', 'db_name')
 
-    structure = { 'message' : basestring, 
-                  'user' : ObjectId,
-                  'type' : int,
+    structure = {'message': basestring,
+                  'user': ObjectId,
+                  'type': int,
                   'read': bool
                 }
 
@@ -36,11 +37,10 @@ class Notification(Document):
 
     is_debug = False
 
-
-    def my(self,control,request,authenticated_userid):
-        user  = connection.User.find_one({'email': authenticated_userid})
+    def my(self, control, request, authenticated_userid):
+        user = connection.User.find_one({'email': authenticated_userid})
         if user:
-            return { 'user' : user['_id'] }
+            return {'user': user['_id']}
         else:
             return None
 
@@ -53,26 +53,23 @@ class Notification(Document):
         if self['type'] == 0:
             res = self.sendMail()
         else:
-            user  = connection.User.find_one({'_id': self['user']})
+            user = connection.User.find_one({'_id': self['user']})
             res = self.sendMail(user['email'])
         return res
 
-    def sendMail(self, email=None):
+    def sendMail(self, emails=[]):
         """
         Send notification by email
         """
         if Notification.is_debug:
             return True
-        
-        emails = []
+
         mconfig = MobyleConfig.get_current()
-        if email is None:
+        if not emails:
             #Send to all users
-            users  = connection.User.find()
+            users = connection.User.find()
             for user in users:
                 emails.append(user['email'])
-        else:
-            emails.append(email)
 
         s = smtplib.SMTP(mconfig['mail']['gateway'])
         for mail in emails:
