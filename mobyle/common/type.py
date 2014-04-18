@@ -46,9 +46,20 @@ class IntegerType(Type):
     """
     An integer
     """
+    structure = {
+                 'min': int,
+                 'max': int
+                }
+
     def check_value(self, value):
         if not(type(value) == int):
             raise TypeError("value %s is not an integer" % value)
+        if self['min'] is not None and value < self['min']:
+            raise TypeError("value %s should be > to min value %s"
+                % (value, self['min']))
+        if self['max'] is not None and value > self['max']:
+            raise TypeError("value %s should be < to max value %s"
+                % (value, self['max']))
 
 
 @connection.register
