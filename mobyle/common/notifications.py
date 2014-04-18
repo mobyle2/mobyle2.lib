@@ -10,6 +10,8 @@ from .mobyleConfig import MobyleConfig
 import smtplib
 from email.mime.text import MIMEText
 
+import logging
+
 
 @mf_decorator
 @connection.register
@@ -70,10 +72,14 @@ class Notification(Document):
             users = connection.User.find()
             for user in users:
                 emails.append(user['email'])
-
-        s = smtplib.SMTP(mconfig['mail']['gateway'])
-        if mconfig['mail']['user'] and mconfig['mail']['password']:
-            s.login(mconfig['mail']['user'], mconfig['mail']['password'])
+        try: 
+            s = smtplib.SMTP(mconfig['mail']['gateway'])
+            if mconfig['mail']['user'] and mconfig['mail']['password']:
+                s.login(str(mconfig['mail']['user']),
+                        str(mconfig['mail']['password']))
+        except Exception as e:
+            logging.error("Failed to connect to SMTP gateway: "+str(e))
+            return False
 
 
         for mail in emails:
