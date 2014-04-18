@@ -54,7 +54,7 @@ class Notification(Document):
             res = self.sendMail()
         else:
             user = connection.User.find_one({'_id': self['user']})
-            res = self.sendMail(user['email'])
+            res = self.sendMail([user['email']])
         return res
 
     def sendMail(self, emails=[]):
@@ -72,6 +72,10 @@ class Notification(Document):
                 emails.append(user['email'])
 
         s = smtplib.SMTP(mconfig['mail']['gateway'])
+        if mconfig['mail']['user'] and mconfig['mail']['password']:
+            s.login(mconfig['mail']['user'], mconfig['mail']['password'])
+
+
         for mail in emails:
             msg = MIMEText(self['message'])
             msg['Subject'] = 'Mobyle notification'
