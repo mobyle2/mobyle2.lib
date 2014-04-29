@@ -1,0 +1,178 @@
+[
+{
+  "comment": null,
+  "operations": [
+    "EDAM_operation:0336"
+  ],
+  "topics": [
+    "EDAM_topic:0220"
+  ],
+  "references": [],
+  "documentation_links": [
+    "http://bioweb2.pasteur.fr/docs/squizz/seqfmt.html",
+    "http://bioweb2.pasteur.fr/docs/squizz/alifmt.html"
+  ],
+  "title": "Test service for preconds",
+  "public_name": "preconds",
+  "version": "1",
+  "env": [],
+  "source_links": [],
+  "inputs": {
+    "comment": null,
+    "_type": "InputParagraph",
+    "prompt": null,
+    "name": null,
+    "precond": null,
+    "children": [
+      {
+        "comment": "",
+        "_type": "InputProgramParameter",
+        "prompt": "Parameter a",
+        "name": "a",
+        "ctrl": null,
+        "simple": true,
+        "precond": null,
+        "format": {},
+        "mandatory": false,
+        "argpos": "1",
+        "command": false,
+        "hidden": false,
+        "main": false,
+        "type": {
+          "default": false,
+          "_type": "BooleanType",
+          "data_terms": []
+        },
+        "paramfile": null
+      },
+      {
+        "comment": "",
+        "_type": "InputProgramParameter",
+        "prompt": "Parameter b (only if a true)",
+        "name": "b",
+        "ctrl": null,
+        "simple": true,
+        "precond": {"a":true},
+        "format": {},
+        "mandatory": false,
+        "argpos": "1",
+        "command": false,
+        "hidden": false,
+        "main": false,
+        "type": {
+          "default": false,
+          "_type": "BooleanType",
+          "data_terms": []
+        },
+        "paramfile": null
+      },
+      {
+        "comment": "",
+        "_type": "InputProgramParameter",
+        "prompt": "Parameter c (only if a false)",
+        "name": "c",
+        "ctrl": null,
+        "simple": true,
+        "precond": {"a":false},
+        "format": {},
+        "mandatory": false,
+        "argpos": "1",
+        "command": false,
+        "hidden": false,
+        "main": false,
+        "type": {
+          "default": false,
+          "_type": "BooleanType",
+          "data_terms": []
+        },
+        "paramfile": null
+      },
+      {
+        "comment": "",
+        "_type": "InputProgramParameter",
+        "prompt": "Parameter d",
+        "name": "d",
+        "ctrl": null,
+        "simple": true,
+        "precond": null,
+        "format": {},
+        "mandatory": false,
+        "argpos": "1",
+        "command": false,
+        "hidden": false,
+        "main": false,
+        "type": {
+          "default": 0,
+          "_type": "IntegerType",
+          "data_terms": []
+        },
+        "paramfile": null
+      },
+      {
+        "comment": "",
+        "_type": "InputProgramParameter",
+        "prompt": "Parameter e (only if a false and d==1)",
+        "name": "e",
+        "ctrl": null,
+        "simple": true,
+        "precond": {"a":false, "d":1},
+        "format": {},
+        "mandatory": false,
+        "argpos": "1",
+        "command": false,
+        "hidden": false,
+        "main": false,
+        "type": {
+          "default": false,
+          "_type": "BooleanType",
+          "data_terms": []
+        },
+        "paramfile": null
+      },
+      {
+        "comment": "",
+        "_type": "InputProgramParameter",
+        "prompt": "Parameter f (only if d>1)",
+        "name": "f",
+        "ctrl": null,
+        "simple": true,
+        "precond": {"d":{"$gt":1}},
+        "format": {},
+        "mandatory": false,
+        "argpos": "1",
+        "command": false,
+        "hidden": false,
+        "main": false,
+        "type": {
+          "default": false,
+          "_type": "BooleanType",
+          "data_terms": []
+        },
+        "paramfile": null
+      }
+    ]
+  },
+  "_type": "Program",
+  "description": "Sequence/Alignment format checker",
+  "outputs": {
+    "comment": null,
+    "_type": "OutputParagraph",
+    "prompt": null,
+    "name": null,
+    "precond": null,
+    "children": []
+  },
+  "authors": "H. Ménager",
+  "homepage_links": [],
+  "classifications": [],
+  "name": "preconds",
+  "package": null,
+  "project": {
+    "$oid": "52a81ea393546d30063750f2"
+  },
+  "command": {
+    "path": null,
+    "value": "squizz"
+  }
+}
+]
