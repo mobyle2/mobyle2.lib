@@ -54,7 +54,8 @@ class Para(SchemaDocument):
     structure = {
                 'name': basestring,
                 'prompt': basestring,
-                'precond': Code,
+                #TODO: add a schema for preconds
+                'precond': None,
                 'comment': basestring
                 }
 
