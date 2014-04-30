@@ -388,6 +388,12 @@ def parse_parameter(p_dict, service_type):
                 # standardize default value for boolean types to true or false
                 m2_type['default'] = True if m2_type['default']\
                                           in ['true', 1, True] else False
+            elif m2_type.get('_type') == 'IntegerType':
+                # cast integer default values to correct type
+                m2_type['default'] = int(m2_type['default'])
+            elif m2_type.get('_type') == 'FloatType':
+                # cast float default values to correct type
+                m2_type['default'] = float(m2_type['default'])
         parameter['type'] = m2_type
     return parameter
 
