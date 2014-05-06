@@ -311,7 +311,7 @@ class MobyleExprTranslator(object):
 
         def visit_UnaryOp(self, node):
             return {ast.NodeVisitor.visit(self, node.op):
-                    {ast.NodeVisitor.visit(self, node.operand): True}}
+                    ast.NodeVisitor.visit(self, node.operand)}
 
         def generic_visit(self, node):
             raise NotImplementedError(
