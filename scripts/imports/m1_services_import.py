@@ -8,6 +8,7 @@ Created on Feb 08, 2013
 @license: GPLv3
 """
 import os
+import ast
 import xml.etree.cElementTree as ET
 import xml.etree.ElementInclude as EI
 from xml2json import elem_to_internal, internal_to_elem
@@ -262,6 +263,67 @@ class OperationConversionMap(object):
 operations_map = OperationConversionMap()
 
 
+class MobyleExprTranslator(object):
+    class MyTransformer(ast.NodeTransformer):
+
+        def visit_Expression(self, node):
+            return ast.NodeVisitor.visit(self, node.body)
+
+        def visit_Compare(self, node):
+            left = ast.NodeVisitor.visit(self, node.left)
+            ops = ast.NodeVisitor.visit(self, node.ops[0])
+            comparators = ast.NodeVisitor.visit(self, node.comparators[0])
+            return {left: {ops: comparators}}
+
+        def visit_Num(self, node):
+            return str(node.n)
+
+        def visit_Name(self, node):
+            return str(node.id)
+
+        def visit_List(self, node):
+            return [ast.NodeVisitor.visit(self, elt) for elt in node.elts]
+
+        def visit_In(self, node):
+            return '#in'
+
+        def visit_And(self, node):
+            return '#and'
+
+        def visit_Or(self, node):
+            return '#or'
+
+        def visit_Not(self, node):
+            return '#not'
+
+        def visit_IsNot(self, node):
+            return '#ne'
+
+        def visit_Is(self, node):
+            return '#eq'
+
+        def visit_Str(self, node):
+            return node.s
+
+        def visit_BoolOp(self, node):
+            return {ast.NodeVisitor.visit(self, node.op):
+                    [ast.NodeVisitor.visit(self, val) for val in node.values]}
+
+        def visit_UnaryOp(self, node):
+            return {ast.NodeVisitor.visit(self, node.op):
+                    {ast.NodeVisitor.visit(self, node.operand): True}}
+
+        def generic_visit(self, node):
+            raise NotImplementedError(
+                 "translation of node %s is not yet implemented" % node)
+
+    def translate(self, python_str):
+        my_ast = ast.parse(python_str, mode="eval")
+        expr = self.MyTransformer().visit(my_ast)
+        print expr
+        return expr
+
+
 def parse_software(d, s):
     """
     parse top-level elements of the software
@@ -326,9 +388,10 @@ def parse_para(p_dict, para, service_type):
     if p_dict.has('precond'):
         para['precond'] = {}
         for code in p_dict.get('precond').list('code'):
-            para['precond'][code.att('proglang')] = code.text()
-        #for
-        #para['precond'] = p_dict.get('precond').list('code')
+            if code.att('proglang') == 'python':
+                print "para:" + para['name'], " - precond:\n  " + code.text()
+                para['precond'] = MobyleExprTranslator().translate(
+                    code.text())
 
 
 def parse_parameter(p_dict, service_type):
