@@ -271,9 +271,12 @@ class MobyleExprTranslator(object):
 
         def visit_Compare(self, node):
             left = ast.NodeVisitor.visit(self, node.left)
-            ops = ast.NodeVisitor.visit(self, node.ops[0])
             comparators = ast.NodeVisitor.visit(self, node.comparators[0])
-            return {left: {ops: comparators}}
+            if isinstance(node.ops[0], ast.Eq):
+                return {left: comparators}
+            else:
+                ops = ast.NodeVisitor.visit(self, node.ops[0])
+                return {left: {ops: comparators}}
 
         def visit_Num(self, node):
             return str(node.n)
@@ -287,6 +290,9 @@ class MobyleExprTranslator(object):
         def visit_In(self, node):
             return '#in'
 
+        def visit_Nin(self, node):
+            return '#nin'
+
         def visit_And(self, node):
             return '#and'
 
@@ -299,11 +305,26 @@ class MobyleExprTranslator(object):
         def visit_IsNot(self, node):
             return '#ne'
 
+        def visit_NotEq(self, node):
+            return '#ne'
+
         def visit_Is(self, node):
             return '#eq'
 
         def visit_Str(self, node):
             return node.s
+
+        def visit_Gt(self, node):
+            return '#gt'
+
+        def visit_Lt(self, node):
+            return '#lt'
+
+        def visit_Gte(self, node):
+            return '#gte'
+
+        def visit_Lte(self, node):
+            return '#lte'
 
         def visit_BoolOp(self, node):
             return {ast.NodeVisitor.visit(self, node.op):
