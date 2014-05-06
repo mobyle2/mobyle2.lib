@@ -136,7 +136,7 @@
         "name": "f",
         "ctrl": null,
         "simple": true,
-        "precond": {"d":{"$gt":1}},
+        "precond": {"d":{"#gt":1}},
         "format": {},
         "mandatory": false,
         "argpos": "1",
@@ -149,6 +149,36 @@
           "data_terms": []
         },
         "paramfile": null
+      },
+      {
+	"comment": null,
+	"_type": "InputParagraph",
+	"prompt": "Paragraph 1 (if d>0)",
+	"name": "p1",
+	"precond": {"d":{"#gt":0}},
+	"children": [
+	      {
+		"comment": "",
+		"_type": "InputProgramParameter",
+		"prompt": "Parameter p1a",
+		"name": "p1a",
+		"ctrl": null,
+		"simple": true,
+		"precond": null,
+		"format": {},
+		"mandatory": false,
+		"argpos": "1",
+		"command": false,
+		"hidden": false,
+		"main": false,
+		"type": {
+		  "default": false,
+		  "_type": "BooleanType",
+		  "data_terms": []
+		},
+		"paramfile": null
+	      }
+	]
       }
     ]
   },
