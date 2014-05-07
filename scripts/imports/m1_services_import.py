@@ -333,10 +333,10 @@ class MobyleExprTranslator(object):
         def visit_Lt(self, node):
             return '#lt'
 
-        def visit_Gte(self, node):
+        def visit_GtE(self, node):
             return '#gte'
 
-        def visit_Lte(self, node):
+        def visit_LtE(self, node):
             return '#lte'
 
         def visit_BoolOp(self, node):
