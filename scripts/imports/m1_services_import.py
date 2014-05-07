@@ -287,10 +287,23 @@ class MobyleExprTranslator(object):
         def visit_List(self, node):
             return [ast.NodeVisitor.visit(self, elt) for elt in node.elts]
 
+        def visit_Tuple(self, node):
+            return [ast.NodeVisitor.visit(self, elt) for elt in node.elts]
+
+        def visit_Call(self, node):
+            function_name = ast.NodeVisitor.visit(self, node.func)
+            if function_name == 'bool':
+                return ast.NodeVisitor.visit(self, node.args[0])
+            elif function_name == 'int':
+                return ast.NodeVisitor.visit(self, node.args[0])
+            else:
+                raise NotImplementedError(
+                     "translation of node %s is not yet implemented" % node)
+
         def visit_In(self, node):
             return '#in'
 
-        def visit_Nin(self, node):
+        def visit_NotIn(self, node):
             return '#nin'
 
         def visit_And(self, node):
@@ -340,8 +353,12 @@ class MobyleExprTranslator(object):
 
     def translate(self, python_str):
         my_ast = ast.parse(python_str, mode="eval")
-        expr = self.MyTransformer().visit(my_ast)
-        print expr
+        try:
+            expr = self.MyTransformer().visit(my_ast)
+        except NotImplementedError, err:
+            logger.error("Error translating expression '%s'" % python_str,
+                exc_info=True)
+            raise err
         return expr
 
 
@@ -410,7 +427,6 @@ def parse_para(p_dict, para, service_type):
         para['precond'] = {}
         for code in p_dict.get('precond').list('code'):
             if code.att('proglang') == 'python':
-                print "para:" + para['name'], " - precond:\n  " + code.text()
                 para['precond'] = MobyleExprTranslator().translate(
                     code.text())
 
