@@ -321,6 +321,21 @@ class MobyleExprTranslator(object):
         def visit_NotEq(self, node):
             return '#ne'
 
+        def visit_Add(self, node):
+            return '+'
+
+        def visit_Mod(self, node):
+            return '%'
+
+        def visit_Sub(self, node):
+            return '-'
+
+        def visit_Div(self, node):
+            return '/'
+
+        def visit_Mult(self, node):
+            return '*'
+
         def visit_Is(self, node):
             return '#eq'
 
@@ -342,6 +357,11 @@ class MobyleExprTranslator(object):
         def visit_BoolOp(self, node):
             return {ast.NodeVisitor.visit(self, node.op):
                     [ast.NodeVisitor.visit(self, val) for val in node.values]}
+
+        def visit_BinOp(self, node):
+            return ast.NodeVisitor.visit(self, node.left) +\
+                   ast.NodeVisitor.visit(self, node.op) +\
+                   ast.NodeVisitor.visit(self, node.right)
 
         def visit_UnaryOp(self, node):
             return {ast.NodeVisitor.visit(self, node.op):
