@@ -109,7 +109,7 @@ class InputParameter(Parameter):
     """
     structure = {
                 'mandatory': bool,
-                'ctrl': Code
+                'ctrl': None
                 }
 
 

@@ -512,7 +512,9 @@ def parse_input_parameter(p_dict, parameter, service_type):
     if p_dict.has('ctrl'):
         parameter['ctrl'] = {}
         for code in p_dict.get('ctrl').list('code'):
-            parameter['ctrl'][code.att('proglang')] = code.text()
+            if code.att('proglang') == 'python':
+                parameter['ctrl'] = MobyleExprTranslator().translate(
+                    code.text())
     if service_type == 'program':
         parameter['command'] = p_dict.att('iscommand') in ['1', 'true', 'True']
         parameter['argpos'] = p_dict.text('argpos')
