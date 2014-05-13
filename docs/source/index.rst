@@ -33,6 +33,7 @@ mobyle.common API documentation
    stats
    mobyleError
    objectmanager
+   notifications
 
 Indices and tables
 ==================
