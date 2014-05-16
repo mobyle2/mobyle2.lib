@@ -304,6 +304,7 @@ class ObjectManager:
         :return: list of updated datasets
         '''
 
+
         dataset = connection.ProjectData.find_one({"_id":
                                                    ObjectId(options['id'])})
         updated_datasets = [dataset]
@@ -335,7 +336,9 @@ class ObjectManager:
                     updated_datasets = []
 
                 if options['group']:
-                    types = options['type'].split('+')
+                    types = options['type_name'].split('+')
+                    struct_format = options['format'].split('+')
+                    struct_type_edam = options['type'].split('+')
                     if len(types) > 1:
                         # Complex type ie StructData
                         subdata = StructData()
@@ -346,8 +349,8 @@ class ObjectManager:
                         subdata['files'] = []
                         for struct_type in types:
                             subdata['properties'][struct_type] = RefData()
-                            subdata['properties'][struct_type]['type'] = None
-                            subdata['properties'][struct_type]['format'] = None
+                            subdata['properties'][struct_type]['type'] = struct_type_edam[i]
+                            subdata['properties'][struct_type]['format'] = struct_format[i]
                             subdata['properties'][struct_type]['path'] = []
                             filepath = options['files'][i]
                             #for filepath in options['files']:
@@ -522,6 +525,7 @@ class ObjectManager:
         :type options: dict
         :return: dataset
         '''
+
         dataset = None
         if options is None:
             options = {}
