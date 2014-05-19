@@ -56,7 +56,7 @@ class ObjectManager:
     ERROR = 5
     UNCOMPRESSED = 6
     SYMLINK = 7
-    NEEDFORMAT = 8
+    NEED_EDIT = 8
 
     FILEROOT = 'data'
 
@@ -296,10 +296,11 @@ class ObjectManager:
         Update the status of the object
 
         :param status: Status of the  upload/download \
-                    (QUEUED,DOWNLOADING,DOWNLOADED,ERROR)
+                    (QUEUED,DOWNLOADING,DOWNLOADED,ERROR,...)
         :type status: int
         :return: list of updated datasets
         '''
+
 
         dataset = connection.ProjectData.find_one({"_id":
                                                    ObjectId(options['id'])})
@@ -322,7 +323,7 @@ class ObjectManager:
             path = ObjectManager._get_file_root(uid)
             obj = ObjectManager.storage.get_object(uid)
             if options['uncompress'] or len(options['files']) > 1:
-                msg = 'Add: '
+                msg = 'Import data '
                 if 'msg' in options:
                     msg = options['msg']
                 if options['group']:
@@ -332,32 +333,66 @@ class ObjectManager:
                     updated_datasets = []
 
                 if options['group']:
-                    dataset['data']['type'] = options['type']
-                    subdata = RefData()
-                    subdata['path'] = []
-                    subdata['type'] = options['type']
-                    fullsize = 0
-
-                    for filepath in options['files']:
-                        # Copy files
-                        with open(filepath, 'rb') as stream:
-                            obj.add_bytestream(os.path.basename(filepath),
+                    types = options['type_name'].split('+')
+                    struct_format = options['format'].split('+')
+                    struct_type_edam = options['type'].split('+')
+                    if len(types) > 1:
+                        # Complex type ie StructData
+                        subdata = StructData()
+                        subdata['type'] = options['type']
+                        subdata['properties'] = {}
+                        status = ObjectManager.NEED_EDIT
+                        i = 0
+                        subdata['files'] = []
+                        for struct_type in types:
+                            subdata['properties'][struct_type] = RefData()
+                            subdata['properties'][struct_type]['type'] = struct_type_edam[i]
+                            subdata['properties'][struct_type]['format'] = struct_format[i]
+                            subdata['properties'][struct_type]['path'] = []
+                            filepath = options['files'][i]
+                            #for filepath in options['files']:
+                            # Copy files
+                            with open(filepath, 'rb') as stream:
+                                obj.add_bytestream(os.path.basename(filepath),
                                                 stream, path)
-                        filespath = pairtree.id2path(uid) + '/' + path +\
+                            filespath = pairtree.id2path(uid) + '/' + path +\
                                      '/' + os.path.basename(filepath)
-                        fullsize = \
-                            os.path.getsize(ObjectManager.get_storage_path() +
+                            fullsize = \
+                                    os.path.getsize(ObjectManager.get_storage_path() +
                                             filespath)
-                        subdata['path'].append(os.path.basename(filepath))
-                        # Update history
-                        if ObjectManager.use_repo:
-                            index = ObjectManager.get_repository_index(uid)
-                            index.add([os.path.basename(filepath)])
-                            if 'msg' not in options:
-                                msg += os.path.basename(filepath) + ","
-                        status = ObjectManager.DOWNLOADED
-                    subdata['size'] = fullsize
-                    dataset['data'] = subdata
+                            subdata['files'].append({'path': os.path.basename(filepath), 'size': fullsize })
+
+                            #subdata['properties'][struct_type]['path'].append(os.path.basename(filepath))
+                            #subdata['properties'][struct_type]['size'] = fullsize
+                            i = i + 1
+                        dataset['data'] = subdata
+                    else:
+                        # RefData
+                        subdata = RefData()
+                        subdata['path'] = []
+                        subdata['type'] = options['type']
+                        fullsize = 0
+
+                        for filepath in options['files']:
+                            # Copy files
+                            with open(filepath, 'rb') as stream:
+                                obj.add_bytestream(os.path.basename(filepath),
+                                                stream, path)
+                            filespath = pairtree.id2path(uid) + '/' + path +\
+                                     '/' + os.path.basename(filepath)
+                            fullsize = \
+                                os.path.getsize(ObjectManager.get_storage_path() +
+                                            filespath)
+                            subdata['path'].append(os.path.basename(filepath))
+                            # Update history
+                            if ObjectManager.use_repo:
+                                index = ObjectManager.get_repository_index(uid)
+                                index.add([os.path.basename(filepath)])
+                                if 'msg' not in options:
+                                    msg += os.path.basename(filepath) + ","
+                            status = ObjectManager.DOWNLOADED
+                        subdata['size'] = fullsize
+                        dataset['data'] = subdata
                 else:
                     for filepath in options['files']:
                         # Create a new data for this file
@@ -395,11 +430,11 @@ class ObjectManager:
                         # Create schema for files in directory
                         symdirfiles = os.listdir(options['files'][0])
                         dataset['data']['value'] = []
-                        st_path = ObjectManager.get_storage_path()
+                        ObjectManager.get_storage_path()
                         for symdirfile in symdirfiles:
                             relative_file = os.path.join(file_name, symdirfile)
                             subdata = RefData()
-                            subdata['path'] = [ relative_file ]
+                            subdata['path'] = [relative_file]
                             subdata['name'] = relative_file
                             subdata['size'] = \
                             os.path.getsize(os.path.join(options['files'][0],
@@ -487,6 +522,7 @@ class ObjectManager:
         :type options: dict
         :return: dataset
         '''
+
         dataset = None
         if options is None:
             options = {}
