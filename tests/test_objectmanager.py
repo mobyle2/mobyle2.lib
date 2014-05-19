@@ -95,6 +95,39 @@ class TestObjectManager(unittest.TestCase):
                                                     'test.fake')))
         self.assertTrue(ObjectManager.get(my_dataset['_id']) is None)
 
+    def test_add_complex_object_and_delete(self):
+        options = {}
+        options['project'] = str(self.my_project['_id'])
+
+        my_dataset = ObjectManager.add("sample", options, False)
+
+        sample_bam = os.path.join(os.path.dirname(__file__), 'test.bam')
+        sample_bai = os.path.join(os.path.dirname(__file__), 'test.bai')
+
+        options['format'] = 'EDAM:bam_format+EDAM:bai_format'
+        options['type'] = 'EDAM:bam+EDAM:bai'
+        options['type_name']= 'bam_data+bai_data'
+        options['uncompress'] = True
+        options['group'] = True
+        options['name'] = 'bam+bai'
+        options['status'] = ObjectManager.UNCOMPRESSED
+        options['files'] = [ sample_bam, sample_bai ]
+        options['id'] = str(my_dataset['_id'])
+
+        my_dataset_from_manager = ObjectManager.update(ObjectManager.UNCOMPRESSED, options)
+        my_dataset_from_manager = my_dataset_from_manager[0]
+        
+        ObjectManager.delete(my_dataset['_id'])
+        self.assertTrue(my_dataset_from_manager['status'] ==
+        ObjectManager.NEED_EDIT)
+        self.assertTrue(my_dataset_from_manager['data']['type']==options['type'])
+        self.assertTrue('properties' in my_dataset_from_manager['data'])
+        self.assertTrue('bam_data' in my_dataset_from_manager['data']['properties'])
+        self.assertTrue('bai_data' in my_dataset_from_manager['data']['properties'])
+        self.assertTrue(my_dataset_from_manager['data']['properties']['bam_data']['format']=='EDAM:bam_format')
+        self.assertTrue(my_dataset_from_manager['data']['properties']['bam_data']['type']=='EDAM:bam')
+
+
     def test_update_existing_projectdata(self):
         options = {}
         options['project'] = str(self.my_project['_id'])
@@ -180,7 +213,7 @@ class TestObjectManager(unittest.TestCase):
         self.assertTrue(os.path.isfile(os.path.join(my_path, file_name)))
         self.assertEqual(my_dataset_from_manager['status'], ObjectManager.DOWNLOADED)
 
-    def test_store_and_udpate_file_projectdata(self):
+    def test_store_and_update_file_projectdata(self):
         options = {}
         options['project'] = str(self.my_project['_id'])
 

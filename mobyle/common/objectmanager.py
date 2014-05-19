@@ -333,7 +333,9 @@ class ObjectManager:
                     updated_datasets = []
 
                 if options['group']:
-                    types = options['type_name'].split('+')
+                    types = []
+                    if 'type_name' in options and options['type_name']:
+                        types = options['type_name'].split('+')
                     struct_format = options['format'].split('+')
                     struct_type_edam = options['type'].split('+')
                     if len(types) > 1:
