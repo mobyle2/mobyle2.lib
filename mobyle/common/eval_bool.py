@@ -4,7 +4,7 @@
 class EvalBoolFactory(object):
 
     def __init__(self, values={}):
-        self.values = {}
+        self.values = values
 
     def test(self, expr):
         if not(expr):
@@ -43,7 +43,7 @@ class EvalBoolFactory(object):
                 # logical operators
                 elif key == '#or':
                     inner_result = True
-                    for inner_test in value[key]:
+                    for inner_test in value:
                         inner_result = self.test(inner_test)
                         if inner_result is True:
                             result = True
@@ -51,12 +51,11 @@ class EvalBoolFactory(object):
                     result = True
                 elif key == '#and':
                     inner_result = True
-                    for inner_test in value[key]:
+                    for inner_test in value:
                         inner_result = self.test(inner_test)
                         if inner_result is False:
                             result = False
                             break
-                    result = True
                 elif key == '#not':
                     result = not(self.test(value[key]))
                 elif key == '#nor':
