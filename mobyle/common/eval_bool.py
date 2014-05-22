@@ -42,6 +42,8 @@ class EvalBoolFactory(object):
                                 result = self.values[key] != operand
                             elif operator == '#nin':
                                 result = self.values[key] not in operand
+                            if result is False:
+                                break
                 # logical operators
                 elif key == '#or':
                     inner_result = True

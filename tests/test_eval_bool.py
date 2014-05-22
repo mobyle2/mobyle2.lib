@@ -87,6 +87,12 @@ class TestEvalBool(unittest.TestCase):
     def test_c_ne_1(self):
         self.assertFalse(self.evaluator.test({'c': {'#ne': 1}}))
 
+    def test_c_ne_2_gt_0(self):
+        self.assertTrue(self.evaluator.test({'c': {'#ne': 2, '#gt': 0}}))
+
+    def test_c_ne_1_gt_0(self):
+        self.assertFalse(self.evaluator.test({'c': {'#ne': 1, '#gt': 0}}))
+
 if __name__ == '__main__':
     unittest.main()
 
