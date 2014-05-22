@@ -25,21 +25,23 @@ class EvalBoolFactory(object):
                         or isinstance(value, float) or isinstance(value, bool):
                             if self.values[key] != value:
                                 result = False
-                # comparison operators
-                elif key == '#gt':
-                    result = self.values[key] > value[key]
-                elif key == '#gte':
-                    result = self.values[key] >= value[key]
-                elif key == '#lt':
-                    result = self.values[key] < value[key]
-                elif key == '#lte':
-                    result = self.values[key] <= value[key]
-                elif key == '#in':
-                    result = self.values[key] in value[key]
-                elif key == '#ne':
-                    result = self.values[key] != value[key]
-                elif key == '#nin':
-                    result = self.values[key] not in value[key]
+                    elif isinstance(value, dict):
+                        for operator, operand in value.items():
+                            # comparison operators
+                            if operator == '#gt':
+                                result = self.values[key] > operand
+                            elif operator == '#gte':
+                                result = self.values[key] >= operand
+                            elif operator == '#lt':
+                                result = self.values[key] < operand
+                            elif operator == '#lte':
+                                result = self.values[key] <= operand
+                            elif operator == '#in':
+                                result = self.values[key] in operand
+                            elif operator == '#ne':
+                                result = self.values[key] != operand
+                            elif operator == '#nin':
+                                result = self.values[key] not in operand
                 # logical operators
                 elif key == '#or':
                     inner_result = True
@@ -57,10 +59,10 @@ class EvalBoolFactory(object):
                             result = False
                             break
                 elif key == '#not':
-                    result = not(self.test(value[key]))
+                    result = not(self.test(value))
                 elif key == '#nor':
                     inner_result = True
-                    for inner_test in value[key]:
+                    for inner_test in value:
                         inner_result = not(self.test(inner_test))
                         if inner_result is False:
                             result = False
