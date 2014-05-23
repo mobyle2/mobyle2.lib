@@ -8,6 +8,7 @@ Created on Feb 08, 2013
 @license: GPLv3
 """
 import os
+import ast
 import xml.etree.cElementTree as ET
 import xml.etree.ElementInclude as EI
 from xml2json import elem_to_internal, internal_to_elem
@@ -262,6 +263,125 @@ class OperationConversionMap(object):
 operations_map = OperationConversionMap()
 
 
+class MobyleExprTranslator(object):
+    class MyTransformer(ast.NodeTransformer):
+
+        def visit_Expression(self, node):
+            return ast.NodeVisitor.visit(self, node.body)
+
+        def visit_Compare(self, node):
+            left = ast.NodeVisitor.visit(self, node.left)
+            comparators = ast.NodeVisitor.visit(self, node.comparators[0])
+            if isinstance(node.ops[0], ast.Eq):
+                return {left: comparators}
+            else:
+                ops = ast.NodeVisitor.visit(self, node.ops[0])
+                return {left: {ops: comparators}}
+
+        def visit_Num(self, node):
+            return str(node.n)
+
+        def visit_Name(self, node):
+            return str(node.id)
+
+        def visit_List(self, node):
+            return [ast.NodeVisitor.visit(self, elt) for elt in node.elts]
+
+        def visit_Tuple(self, node):
+            return [ast.NodeVisitor.visit(self, elt) for elt in node.elts]
+
+        def visit_Call(self, node):
+            function_name = ast.NodeVisitor.visit(self, node.func)
+            if function_name == 'bool':
+                return ast.NodeVisitor.visit(self, node.args[0])
+            elif function_name == 'int':
+                return ast.NodeVisitor.visit(self, node.args[0])
+            else:
+                raise NotImplementedError(
+                     "translation of node %s is not yet implemented" % node)
+
+        def visit_In(self, node):
+            return '#in'
+
+        def visit_NotIn(self, node):
+            return '#nin'
+
+        def visit_And(self, node):
+            return '#and'
+
+        def visit_Or(self, node):
+            return '#or'
+
+        def visit_Not(self, node):
+            return '#not'
+
+        def visit_IsNot(self, node):
+            return '#ne'
+
+        def visit_NotEq(self, node):
+            return '#ne'
+
+        def visit_Add(self, node):
+            return '+'
+
+        def visit_Mod(self, node):
+            return '%'
+
+        def visit_Sub(self, node):
+            return '-'
+
+        def visit_Div(self, node):
+            return '/'
+
+        def visit_Mult(self, node):
+            return '*'
+
+        def visit_Is(self, node):
+            return '#eq'
+
+        def visit_Str(self, node):
+            return node.s
+
+        def visit_Gt(self, node):
+            return '#gt'
+
+        def visit_Lt(self, node):
+            return '#lt'
+
+        def visit_GtE(self, node):
+            return '#gte'
+
+        def visit_LtE(self, node):
+            return '#lte'
+
+        def visit_BoolOp(self, node):
+            return {ast.NodeVisitor.visit(self, node.op):
+                    [ast.NodeVisitor.visit(self, val) for val in node.values]}
+
+        def visit_BinOp(self, node):
+            return ast.NodeVisitor.visit(self, node.left) +\
+                   ast.NodeVisitor.visit(self, node.op) +\
+                   ast.NodeVisitor.visit(self, node.right)
+
+        def visit_UnaryOp(self, node):
+            return {ast.NodeVisitor.visit(self, node.op):
+                    ast.NodeVisitor.visit(self, node.operand)}
+
+        def generic_visit(self, node):
+            raise NotImplementedError(
+                 "translation of node %s is not yet implemented" % node)
+
+    def translate(self, python_str):
+        my_ast = ast.parse(python_str, mode="eval")
+        try:
+            expr = self.MyTransformer().visit(my_ast)
+        except NotImplementedError, err:
+            logger.error("Error translating expression '%s'" % python_str,
+                exc_info=True)
+            raise err
+        return expr
+
+
 def parse_software(d, s):
     """
     parse top-level elements of the software
@@ -326,9 +446,9 @@ def parse_para(p_dict, para, service_type):
     if p_dict.has('precond'):
         para['precond'] = {}
         for code in p_dict.get('precond').list('code'):
-            para['precond'][code.att('proglang')] = code.text()
-        #for
-        #para['precond'] = p_dict.get('precond').list('code')
+            if code.att('proglang') == 'python':
+                para['precond'] = MobyleExprTranslator().translate(
+                    code.text())
 
 
 def parse_parameter(p_dict, service_type):
@@ -388,6 +508,12 @@ def parse_parameter(p_dict, service_type):
                 # standardize default value for boolean types to true or false
                 m2_type['default'] = True if m2_type['default']\
                                           in ['true', 1, True] else False
+            elif m2_type.get('_type') == 'IntegerType':
+                # cast integer default values to correct type
+                m2_type['default'] = int(m2_type['default'])
+            elif m2_type.get('_type') == 'FloatType':
+                # cast float default values to correct type
+                m2_type['default'] = float(m2_type['default'])
         parameter['type'] = m2_type
     return parameter
 
@@ -404,9 +530,12 @@ def parse_input_parameter(p_dict, parameter, service_type):
     """
     parameter['mandatory'] = p_dict.att('ismandatory') in ['1', 'true', 'True']
     if p_dict.has('ctrl'):
-        parameter['ctrl'] = {}
-        for code in p_dict.get('ctrl').list('code'):
-            parameter['ctrl'][code.att('proglang')] = code.text()
+        parameter['ctrl'] = []
+        for ctrl in p_dict.list('ctrl'):
+            if ctrl.get('code').att('proglang') == 'python':
+                test = MobyleExprTranslator().translate(ctrl.get('code').text())
+                message = ctrl.get('message').text_or_html()
+                parameter['ctrl'].append({'test': test, 'message': message})
     if service_type == 'program':
         parameter['command'] = p_dict.att('iscommand') in ['1', 'true', 'True']
         parameter['argpos'] = p_dict.text('argpos')
