@@ -72,6 +72,11 @@ class Parameter(Para):
                 'type': Type
                 }
 
+    default_values = {
+                     'main': False,
+                     'hidden': False,
+                     'simple': False,
+                     }
 
 @connection.register
 class Paragraph(Para):
@@ -111,6 +116,10 @@ class InputParameter(Parameter):
                 'mandatory': bool,
                 'ctrl': None
                 }
+
+    default_values = {
+                     'mandatory': False,
+                     }
 
 
 @connection.register
@@ -153,6 +162,10 @@ class InputProgramParameter(InputParameter):
                 'format': Code,
                 'paramfile': basestring
                 }
+
+    default_values = {
+                     'command': False,
+                     }
 
 
 def inputs_validator(paras_list):
@@ -210,6 +223,9 @@ class Software(ProjectDocument):
     describes the common properties of these levels.
     """
     __database__ = Config.config().get('app:main', 'db_name')
+
+    keys_order = ['_type', 'name', 'version', 'title', 'description',
+                  'authors']
 
     structure = {
                   '_type': unicode,
@@ -290,6 +306,10 @@ class Service(Software, ProjectDocument):
     a service is an executable piece of software
     """
     __collection__ = 'services'
+
+    keys_order = Software.keys_order + \
+                 ['package', 'inputs', 'outputs']
+
     structure = {
                   # package reference
                   'package': Package,
