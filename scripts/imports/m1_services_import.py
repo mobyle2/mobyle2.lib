@@ -411,9 +411,6 @@ def parse_software(d, s):
         s['homepage_links'].append(link.text())
     if d.get('doc').has('comment'):
         s['comment'] = d.get('doc').get('comment').text_or_html()
-    for cat in d.list('category'):
-        s['classifications'].append({'type': 'mobyle1',
-                                     'classification': cat.text()})
     s['operations'] = operations_map.get_operation(s['name']) or []
     s['topics'] = topics_map.get_topic(s['name']) or []
     if d.get('package'):

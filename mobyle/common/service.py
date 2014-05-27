@@ -229,13 +229,6 @@ class Software(ProjectDocument):
                   'homepage_links': [basestring],
                   # miscelaneous comments
                   'comment': basestring,
-                  # software classifications
-                  'classifications': [{
-                                       # type of classification
-                                       'type':basestring,
-                                       # classification value
-                                       'classification':basestring
-                                     }],
                   # operations
                   'operations': [basestring],
                   'topics': [basestring],
