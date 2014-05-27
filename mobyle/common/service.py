@@ -28,25 +28,6 @@ class Code(SchemaDocument):
 
 
 @connection.register
-class LegacyType(SchemaDocument):
-    """
-    type information
-    WARNING: this is Mobyle1 information
-    the real type information will be defined
-    in type.py
-    """
-    structure = {
-                'datatype': {'class': basestring, 'superclass': basestring},
-                'biotypes': [basestring],
-                'formats': [basestring],
-                'card': [basestring],
-                'biomoby_datatypes': [{'datatype': basestring,
-                                       'namespace': basestring}],
-                'edam_types': [basestring]
-                }
-
-
-@connection.register
 class Para(SchemaDocument):
     """
     parent class for parameters and paragraphs
