@@ -540,9 +540,10 @@ def parse_input_parameter(p_dict, parameter, service_type):
         parameter['command'] = p_dict.att('iscommand') in ['1', 'true', 'True']
         parameter['argpos'] = p_dict.text('argpos')
         if p_dict.has('format'):
-            parameter['format'] = {}
+            parameter['format'] = p_dict.get('format').list('code')
             for code in p_dict.get('format').list('code'):
-                parameter['format'][code.att('proglang')] = code.text()
+                if code.att('proglang')=='python':
+                    parameter['format'] = code.text()
         parameter['paramfile'] = p_dict.text('paramfile')
 
 
@@ -566,7 +567,8 @@ def parse_output_parameter(p_dict, parameter, service_type):
         if p_dict.has('filenames'):
             parameter['filenames'] = {}
             for code in p_dict.get('filenames').list('code'):
-                parameter['filenames'][code.att('proglang')] = code.text()
+                if code.att('proglang')=='python':
+                    parameter['filenames'] = code.text()
 
 
 def parse_paragraph(p_dict, service_type):

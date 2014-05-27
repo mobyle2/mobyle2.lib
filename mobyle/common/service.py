@@ -17,17 +17,6 @@ from .type import Type
 
 
 @connection.register
-class Code(SchemaDocument):
-    """
-    python or perl code to be evaluated
-    """
-    structure = {
-                'python': basestring,
-                'perl': basestring
-                }
-
-
-@connection.register
 class Para(SchemaDocument):
     """
     parent class for parameters and paragraphs
@@ -128,7 +117,7 @@ class OutputProgramParameter(OutputParameter):
     output parameter for a program
     """
     structure = {
-                'filenames': Code
+                'filenames': basestring
                 }
 
 
@@ -140,7 +129,7 @@ class InputProgramParameter(InputParameter):
     structure = {
                 'command': bool,
                 'argpos': int,
-                'format': Code,
+                'format': basestring,
                 'paramfile': basestring
                 }
 
