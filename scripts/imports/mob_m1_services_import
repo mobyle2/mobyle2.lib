@@ -1,12 +1,17 @@
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Created on Feb 08, 2013
 
-@author: Hervé Ménager
-@contact: hmenager@pasteur.fr
-@organization: Institut Pasteur
-@license: GPLv3
-"""
+
+#===============================================================================
+# Created on Feb 08, 2013
+# 
+# @author: Hervé Ménager
+# @contact: hmenager@pasteur.fr
+# @organization: Institut Pasteur
+# @license: GPLv3
+#===============================================================================
+
+
 import os
 import ast
 import xml.etree.cElementTree as ET
@@ -21,6 +26,12 @@ from mobyle.common.config import Config
 # pylint: disable=C0103
 #        Invalid name "logger" for type constant
 logger = logging.getLogger('mobyle.service_migration')
+
+_prefix_data = '$PREFIXDATA'
+if 'MOBYLE_HOME' in os.environ and os.environ['MOBYLE_HOME']:
+    _prefix_data = os.path.join(os.environ['MOBYLE_HOME'], 'data')
+   
+_import_data_dir = os.path.join(_prefix_data, 'imports')
 
 
 class JSONProxy(object):
@@ -150,8 +161,8 @@ class TypeConversionMap(object):
 
     def __init__(self):
         self.mapping = {}
-        mapping_file = open(os.path.join(os.path.dirname(__file__),
-                            'types_mapping.txt'), 'r')
+        mapping_file = open(os.path.join(_import_data_dir, 
+                                         'types_mapping.txt'), 'r')
         self.missing = set()
         for line in iter(mapping_file):
             if not(line.startswith('#')):
@@ -188,8 +199,8 @@ class FormatConversionMap(object):
 
     def __init__(self):
         self.mapping = {}
-        mapping_file = open(os.path.join(os.path.dirname(__file__),
-                            'formats_mapping.txt'), 'r')
+        mapping_file = open(os.path.join(_import_data_dir,
+                                         'formats_mapping.txt'), 'r')
         self.missing = set()
         for line in iter(mapping_file):
             if not(line.startswith('#')):
@@ -217,8 +228,8 @@ class TopicConversionMap(object):
 
     def __init__(self):
         self.mapping = {}
-        mapping_file = open(os.path.join(os.path.dirname(__file__),
-                            'topic_mapping.txt'), 'r')
+        mapping_file = open(os.path.join(_import_data_dir,
+                                         'topic_mapping.txt'), 'r')
         self.missing = set()
         for line in iter(mapping_file):
             if not(line.startswith('#')):
@@ -242,8 +253,8 @@ class OperationConversionMap(object):
 
     def __init__(self):
         self.mapping = {}
-        mapping_file = open(os.path.join(os.path.dirname(__file__),
-                            'operation_mapping.txt'), 'r')
+        mapping_file = open(os.path.join(_import_data_dir,
+                                         'operation_mapping.txt'), 'r')
         self.missing = set()
         for line in iter(mapping_file):
             if not(line.startswith('#')):

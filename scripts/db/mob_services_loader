@@ -1,12 +1,16 @@
+#! /usr/bin/env python
 # -*- coding: utf-8 -*-
-"""
-Created on Feb 08, 2013
 
-@author: Hervé Ménager
-@contact: hmenager@pasteur.fr
-@organization: Institut Pasteur
-@license: GPLv3
-"""
+#===============================================================================
+# Created on Feb 08, 2013
+# 
+# @author: Hervé Ménager
+# @contact: hmenager@pasteur.fr
+# @organization: Institut Pasteur
+# @license: GPLv3
+#===============================================================================
+
+
 import os
 from collections import OrderedDict
 
