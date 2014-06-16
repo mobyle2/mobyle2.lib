@@ -5,17 +5,29 @@
 import time
 import sys
 import os
-from distutils.core import setup
 from distutils.command.install_egg_info import install_egg_info
 from distutils.dist import Distribution as _Distribution
 from distutils.command.build import build
-from distutils.command.install import install as _install
 from distutils.command.install_scripts import install_scripts as _install_scripts
 from distutils.command.install_data import install_data as _install_data
 from distutils.versionpredicate import VersionPredicate
 from distutils import log, dir_util
 from distutils.util import get_platform, change_root, convert_path
 from distutils.util import subst_vars as distutils_subst_vars
+
+
+with_setuptools = False
+if 'USE_SETUPTOOLS' in os.environ or 'pip' in __file__:
+    try:
+        from setuptools.command.install import install as _install
+        from setuptools import setup
+        with_setuptools = True
+    except:
+        with_setuptools = False
+        
+if with_setuptools is False:
+    from distutils.command.install import install as _install
+    from distutils.core import setup
 
 class check_and_build( build ):
     def run(self):
