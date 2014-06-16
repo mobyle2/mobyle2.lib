@@ -12,8 +12,11 @@ from .config import Config
 @mf_decorator
 @connection.register
 class User(Document):
-    """Base user of Mobyle. User can be a registered user or
-    authenticated via external endpoints."""
+    """
+    Base user of Mobyle. User can be a registered user or
+    authenticated via external endpoints.
+
+    """
 
     __collection__ = 'users'
     __database__ = Config.config().get('app:main','db_name')
@@ -27,10 +30,21 @@ class User(Document):
                  'groups' : [ basestring ],
                  'apikey' : basestring,
                  'home_dir': basestring,
-                 'default_project': ObjectId
+                 'default_project': ObjectId,
+                 'notifications': {
+                                    'mail_project': bool,
+                                    'mail_job': bool,
+                                    'mail_data': bool
+                                  }
                  }
 
-    default_values = { 'hashed_password' : '', 'admin': False, 'apikey' : uuid.uuid4().hex }
+    default_values = { 'hashed_password' : '',
+                        'admin': False,
+                        'apikey' : uuid.uuid4().hex ,
+                        'notifications.mail_project': False,
+                        'notifications.mail_job': False,
+                        'notifications.mail_data': False
+                    }
     
     required_fields = [ 'email' ]    
     
