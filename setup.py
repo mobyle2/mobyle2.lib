@@ -17,8 +17,10 @@ from distutils.util import subst_vars as distutils_subst_vars
 
 
 with_setuptools = False
+print __file__
 if 'USE_SETUPTOOLS' in os.environ or 'pip' in __file__:
     try:
+        print 'setuptools'
         from setuptools.command.install import install as _install
         from setuptools import setup
         with_setuptools = True
@@ -26,6 +28,7 @@ if 'USE_SETUPTOOLS' in os.environ or 'pip' in __file__:
         with_setuptools = False
         
 if with_setuptools is False:
+    print 'distutils'
     from distutils.command.install import install as _install
     from distutils.core import setup
 
