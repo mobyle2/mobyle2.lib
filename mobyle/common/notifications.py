@@ -25,6 +25,12 @@ class Notification(Document):
     JOB_NOTIFICATION = 2
     DATA_NOTIFICATION = 3
 
+    NOTIF_TYPE = { 0: 'mobyle',
+                   1: 'project',
+                   2: 'job',
+                   3: 'data'
+                 }
+
     __collection__ = 'notifications'
     __database__ = Config.config().get('app:main', 'db_name')
 
@@ -56,8 +62,24 @@ class Notification(Document):
             res = self.sendMail()
         else:
             user = connection.User.find_one({'_id': self['user']})
-            res = self.sendMail([user['email']])
+            if self.user_wants_notif(user, 'mail', self['type']):
+                res = self.sendMail([user['email']])
         return res
+
+    def user_wants_notif(user, notif_mean, notif_type):
+        """
+        Checks user preferences to get a notification
+
+        :param user: User to check
+        :type user: User
+        :param notif_mean: Notif to use (mail)
+        :type notif_mean: basestring
+        :param notif_type: Type of notif (project, data, ...)
+        :type notif_type: int
+        :return: bool
+        """
+        user_pref = notif_mean+'_'+Notification.NOTIF_TYPE[notif_type]
+        return user['notifications'][user_pref]
 
     def sendMail(self, emails=[]):
         """
