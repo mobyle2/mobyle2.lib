@@ -17,36 +17,6 @@ from .type import Type
 
 
 @connection.register
-class Code(SchemaDocument):
-    """
-    python or perl code to be evaluated
-    """
-    structure = {
-                'python': basestring,
-                'perl': basestring
-                }
-
-
-@connection.register
-class LegacyType(SchemaDocument):
-    """
-    type information
-    WARNING: this is Mobyle1 information
-    the real type information will be defined
-    in type.py
-    """
-    structure = {
-                'datatype': {'class': basestring, 'superclass': basestring},
-                'biotypes': [basestring],
-                'formats': [basestring],
-                'card': [basestring],
-                'biomoby_datatypes': [{'datatype': basestring,
-                                       'namespace': basestring}],
-                'edam_types': [basestring]
-                }
-
-
-@connection.register
 class Para(SchemaDocument):
     """
     parent class for parameters and paragraphs
@@ -54,7 +24,8 @@ class Para(SchemaDocument):
     structure = {
                 'name': basestring,
                 'prompt': basestring,
-                'precond': Code,
+                #TODO: add a schema for preconds
+                'precond': None,
                 'comment': basestring
                 }
 
@@ -71,6 +42,11 @@ class Parameter(Para):
                 'type': Type
                 }
 
+    default_values = {
+                     'main': False,
+                     'hidden': False,
+                     'simple': False,
+                     }
 
 @connection.register
 class Paragraph(Para):
@@ -108,8 +84,12 @@ class InputParameter(Parameter):
     """
     structure = {
                 'mandatory': bool,
-                'ctrl': Code
+                'ctrl': None
                 }
+
+    default_values = {
+                     'mandatory': False,
+                     }
 
 
 @connection.register
@@ -137,7 +117,7 @@ class OutputProgramParameter(OutputParameter):
     output parameter for a program
     """
     structure = {
-                'filenames': Code
+                'filenames': basestring
                 }
 
 
@@ -149,9 +129,13 @@ class InputProgramParameter(InputParameter):
     structure = {
                 'command': bool,
                 'argpos': int,
-                'format': Code,
+                'format': basestring,
                 'paramfile': basestring
                 }
+
+    default_values = {
+                     'command': False,
+                     }
 
 
 def inputs_validator(paras_list):
@@ -210,6 +194,9 @@ class Software(ProjectDocument):
     """
     __database__ = Config.config().get('app:main', 'db_name')
 
+    keys_order = ['_type', 'name', 'version', 'title', 'description',
+                  'authors']
+
     structure = {
                   '_type': unicode,
                   # software name
@@ -242,13 +229,6 @@ class Software(ProjectDocument):
                   'homepage_links': [basestring],
                   # miscelaneous comments
                   'comment': basestring,
-                  # software classifications
-                  'classifications': [{
-                                       # type of classification
-                                       'type':basestring,
-                                       # classification value
-                                       'classification':basestring
-                                     }],
                   # operations
                   'operations': [basestring],
                   'topics': [basestring],
@@ -289,6 +269,10 @@ class Service(Software, ProjectDocument):
     a service is an executable piece of software
     """
     __collection__ = 'services'
+
+    keys_order = Software.keys_order + \
+                 ['package', 'inputs', 'outputs']
+
     structure = {
                   # package reference
                   'package': Package,

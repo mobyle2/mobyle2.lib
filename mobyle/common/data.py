@@ -36,7 +36,7 @@ class RefData(AbstractData):
     """
 
     structure = {'path': [basestring],
-                 'size': int
+                 'size': int,
                 }
 
 
@@ -72,7 +72,10 @@ class StructData(AbstractData):
     """
 
     structure = {
-                 'properties': {basestring: AbstractData}
+                 'properties': {basestring: AbstractData},
+                 # Temporary storage to get list of files, waiting for user to map them
+                 # with ontology terms
+                 'files': None
                 }
 
 
