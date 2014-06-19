@@ -45,6 +45,8 @@ class Classification(Document):
             node_input = self['tree']
         node_output = {'id': node_input['id'],
                        'name': node_input['name'],
+                       'comment': node_input['comment'],
+                       'definition': node_input['definition'],
                        'services': [], 'sublevels': []}
         for sublevel in node_input['sublevels']:
             n = self.get_classification(node_input=sublevel, filter=filter)
@@ -108,7 +110,12 @@ class ClassificationLoader(object):
             entry = {'name': s['name'],
                      'public_name': s.get('public_name'),
                      'version': s.get('version'),
-                     '_id': s['_id']}
+                     '_id': s['_id'],
+                     'authors': s['authors'],
+                     'comment': s['comment'],
+                     'description': s['description'],
+                     'title': s['title'],
+                     }
             # if no classification, assign service to root
             if not(keys):
                 keys = [self.classification['root_term']]
@@ -130,10 +137,14 @@ class ClassificationLoader(object):
         if node_input:
             node_output['id'] = node_input['id']
             node_output['name'] = node_input['name']
+            node_output['comment'] = node_input['comment']
+            node_output['definition'] = node_input['definition']
             node_filter = {'subclassOf': {'$in': [node_input['id']]}}
         else:
             node_output['id'] = 'EDAM:0000'
             node_output['name'] = 'nowhere'
+            node_output['comment'] = None
+            node_output['definition'] = None
             node_filter = {'subclassOf': []}
         node_output['sublevels'] = []
         for t in connection.Term.find(node_filter):
