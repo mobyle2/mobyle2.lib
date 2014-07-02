@@ -54,7 +54,9 @@ class Classification(Document):
                 node_output['sublevels'].append(n)
         if filter is not None:
             node_output['services'] = [service for service in
-                node_input['services'] if filter in service['name']]
+                node_input['services'] if filter in service['name'] or
+                (service['comment'] and filter in service['comment']) or
+                (service['description'] and filter in service['description'])]
         else:
             node_output['services'] = list(node_input['services'])
         node_output = self.prune(node_output)
