@@ -40,7 +40,7 @@ class Classification(Document):
          },
      ]
 
-    def get_classification(self, node_input=None, filter=None):
+    def get_classification(self, node_input=None, filter=None, prune=False):
         if not(node_input):
             node_input = self['tree']
         node_output = {'id': node_input['id'],
@@ -49,7 +49,7 @@ class Classification(Document):
                        'definition': node_input['definition'],
                        'services': [], 'sublevels': []}
         for sublevel in node_input['sublevels']:
-            n = self.get_classification(node_input=sublevel, filter=filter)
+            n = self.get_classification(node_input=sublevel, filter=filter, prune=prune)
             if n:
                 node_output['sublevels'].append(n)
         if filter is not None:
@@ -59,20 +59,30 @@ class Classification(Document):
                 (service['description'] and filter in service['description'])]
         else:
             node_output['services'] = list(node_input['services'])
-        node_output = self.prune(node_output)
+        node_output = self.prune_empty_node(node_output)
+        if node_output and prune:
+            node_output = self.prune(node_output)
         return node_output
+
+    def prune_empty_node(self, node):
+        if len(node['services']) == 0 and len(node['sublevels']) == 0:
+            # do not load empty tree nodes
+            log.debug('pruning empty node %s' % node['name'])
+            return None
+        else:
+            return node
 
     def prune(self, node):
         """
         prune classification tree to simplify it
         """
-        if len(node['services']) == 0 and len(node['sublevels']) == 0:
-            # do not load empty tree nodes
-            return None
+        log.debug('processing %s for pruning' % node['name'])
         if len(node['services']) == 0 and len(node['sublevels']) == 1:
             # replace current node with child node if there is only one
+            log.debug('pruning node %s with only one child' % node['name'])
             return node['sublevels'][0]
         if len(node['sublevels']) > 1:
+            log.debug('pruning subnodes of %s' % node['name'])
             node['sublevels'] = [k for k, v in groupby(
                                  sorted(node['sublevels']))]
         return node
@@ -95,6 +105,7 @@ class ClassificationLoader(object):
             connection.Classification.fetch_one({'root_term': key})
         if previous_classification:
             previous_classification.delete()
+        self.classification['tree'] = self.classification.get_classification(prune=True)
         self.classification.save()
         log.debug('ended classification loading on %s' % key)
 
