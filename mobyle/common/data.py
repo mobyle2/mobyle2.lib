@@ -27,6 +27,12 @@ class AbstractData(SchemaDocument):
     def check_value(self):
         raise NotImplementedError()
 
+    def job_import(destination_job):
+        pass
+
+    def clean():
+        pass
+
 
 @connection.register
 class RefData(AbstractData):
@@ -39,6 +45,20 @@ class RefData(AbstractData):
                  'size': int,
                 }
 
+    def job_import(destination_job):
+        """
+        Copy all files in the job folder
+        """
+        #TODO copy as binary if the type format is binary subclass
+        #     otherwise copy as text
+        return
+
+    def clean():
+        """
+        Clean "text" data from Windows(TM) encoding
+        """
+        #TODO only clean if format is text
+        return
 
 @connection.register
 class ValueData(AbstractData):
