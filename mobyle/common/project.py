@@ -108,7 +108,7 @@ class Project(Document):
         # is in admin mode and should access everything
         admin_mode = hasattr(request, 'session') \
                      and 'adminmode' in request.session
-        if user and user['admin'] and admin_mode:
+        if user and user.get('admin') and admin_mode:
             # admin_mode = provide everything
             project_filter = {}
         elif control == MF_READ:
