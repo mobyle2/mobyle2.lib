@@ -29,6 +29,13 @@ class Token(Document):
 
     required_fields = ['token', 'timestamp']
 
+    def renew(self, validity_period = 3600):
+        """
+        Renew the validity period
+        """
+        timestamp = datetime.now()
+        self['timestamp'] = timestamp + timedelta(seconds=validity_period)
+
 
     def generate(self, validity_period = 3600):
         """

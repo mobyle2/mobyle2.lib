@@ -35,3 +35,17 @@ class TestToken(unittest.TestCase):
         is_token = connection.Token.find_one({'token': token})
         self.assertEqual(is_token, None)
 
+    def test_renew_token(self):
+        my_token = connection.Token()
+        my_token.generate()
+        # Go back in time to get an old timestamp
+        my_token['timestamp'] = my_token['timestamp'] - timedelta(seconds=7200)
+        my_token.save()
+        token = my_token['token']
+        self.assertFalse(my_token.check_validity(False))
+        is_token = connection.Token.find_one({'token': token})
+        self.assertEqual(is_token, None)
+        my_token.renew()
+        my_token.save()
+        self.assertTrue(my_token.check_validity())
+
