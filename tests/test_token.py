@@ -43,8 +43,6 @@ class TestToken(unittest.TestCase):
         my_token.save()
         token = my_token['token']
         self.assertFalse(my_token.check_validity(False))
-        is_token = connection.Token.find_one({'token': token})
-        self.assertEqual(is_token, None)
         my_token.renew()
         my_token.save()
         self.assertTrue(my_token.check_validity())
