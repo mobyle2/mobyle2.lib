@@ -254,7 +254,7 @@ class CustomStatus(CustomType):
 
         :param value: input value
         :type value: string
-        :return: a Status corresnonding to this value
+        :return: a Status corresponding to this value
         :rtype: :class:`mobyle.common.job.Status` object
         """
         return Status(value)
@@ -320,10 +320,14 @@ class Job(ProjectDocument):
         return d
 
     def __setstate__(self, state):
+        _log.debug("__setstate__  state = ".format(state))
         self.connection = connection
         self.db = Database(self.connection, self.__database__)
         self.collection = Collection(self.db, self.__collection__)
-
+        for attr, val in state.iteritems():
+            _log.debug("attr = {0}  val = {1}".format(attr, val))
+            setattr(self, attr, val)
+            
     def __cmp__(self, other):
         """
         :param other: a :class:`mobyle.common.job.Job` object I want to compared with self
@@ -441,16 +445,20 @@ class ClJob(Job):
 
     structure = {
                  'cmd_line': basestring,
-                 'cmd_env': dict
+                 'cmd_env': dict,
+                 #'route': None
                 }
 
     def __getstate__(self):
         """
         """
         d = super(ClJob, self).__getstate__()
+        _log.debug( "@@@@ DEBUG  ClJob __getstate__ job.id = {1} route in dir = {0}".format(bool('route' in dir(self)), self.id ))
         d['_type'] = self._type
         d['cmd_line'] = self.cmd_line
         d['cmd_env'] = self.cmd_env
+        if hasattr(self, 'route'):
+            d['route'] = self.route
         return d
 
     def must_be_notified(self):
@@ -472,3 +480,4 @@ class WorkflowJob(Job):
     not implemented for now
     """
     pass
+
