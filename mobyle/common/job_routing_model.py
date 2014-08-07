@@ -27,29 +27,13 @@ class ExecutionSystem(Document):
                  'native_specifications' : basestring
                 }
 
+
 class ExecutionRule(SchemaDocument):
     
     structure = {'name' : basestring,
                  'parameters': dict
                  }
     
-    
-# @mf_decorator
-# @connection.register
-# class ExecutionRoutes(Document):
-#     
-#     __collection__ = 'exec_routes'
-#     __database__ = Config.config().get('app:main', 'db_name')
-#     
-#     structure = {"map" : [
-#                          {'name' : basestring,
-#                           'rules' : [{'name' : basestring,
-#                                       'parameters': dict
-#                                       }],
-#                           'exec_system' : basestring
-#                          }
-#                         ]
-#                  }
     
 @mf_decorator
 @connection.register
