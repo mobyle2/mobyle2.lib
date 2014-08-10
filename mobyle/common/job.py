@@ -254,7 +254,7 @@ class CustomStatus(CustomType):
 
         :param value: input value
         :type value: string
-        :return: a Status corresnonding to this value
+        :return: a Status corresponding to this value
         :rtype: :class:`mobyle.common.job.Status` object
         """
         return Status(value)
@@ -303,27 +303,7 @@ class Job(ProjectDocument):
     default_values = {'has_been_notified': False,
                       '_dir': None}
 
-    def __getstate__(self):
-        """
-        """
-        d = {}
-        d['_type'] = self._type
-        d['name'] = self.name
-        d['status'] = self.status
-        d['owner'] = self.owner
-        d['message'] = self.message
-        d['end_time'] = self.end_time
-        d['has_been_notified'] = self.has_been_notified
-        d['_id'] = self._id
-        d['project'] = self.project
-        d['_dir'] = self._dir
-        return d
-
-    def __setstate__(self, state):
-        self.connection = connection
-        self.db = Database(self.connection, self.__database__)
-        self.collection = Collection(self.db, self.__collection__)
-
+            
     def __cmp__(self, other):
         """
         :param other: a :class:`mobyle.common.job.Job` object I want to compared with self
@@ -441,17 +421,10 @@ class ClJob(Job):
 
     structure = {
                  'cmd_line': basestring,
-                 'cmd_env': dict
+                 'cmd_env': dict,
+                 'execution': {'exec_system_id': basestring,
+                               'job_no': basestring }
                 }
-
-    def __getstate__(self):
-        """
-        """
-        d = super(ClJob, self).__getstate__()
-        d['_type'] = self._type
-        d['cmd_line'] = self.cmd_line
-        d['cmd_env'] = self.cmd_env
-        return d
 
     def must_be_notified(self):
         """
@@ -472,3 +445,4 @@ class WorkflowJob(Job):
     not implemented for now
     """
     pass
+
