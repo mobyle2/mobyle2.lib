@@ -68,9 +68,9 @@ class Paragraph(Para):
 
 
 @connection.register
-class OutputProgramParagraph(Paragraph):
+class InputProgramParagraph(Paragraph):
     """
-    a program output paragraph
+    a program input paragraph
     """
     structure = {
                 'argpos': int
