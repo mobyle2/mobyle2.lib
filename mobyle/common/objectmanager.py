@@ -300,6 +300,14 @@ class ObjectManager:
         :type status: int
         :return: list of updated datasets
         '''
+        if not 'group' in options:
+            options['group'] = False
+        if not 'uncompress' in options:
+            options['uncompress'] = False
+        if not 'format' in options:
+            options['format'] = None
+        if not 'type' in options:
+            options['type'] = None
 
 
         dataset = connection.ProjectData.find_one({"_id":
@@ -322,6 +330,8 @@ class ObjectManager:
             uid = str(dataset['_id'])
             path = ObjectManager._get_file_root(uid)
             obj = ObjectManager.storage.get_object(uid)
+            # Cannot update multiple files. If multiple files we
+            # consider it is a complete dataset definition
             if options['uncompress'] or len(options['files']) > 1:
                 msg = 'Import data '
                 if 'msg' in options:
@@ -364,8 +374,6 @@ class ObjectManager:
                                             filespath)
                             subdata['files'].append({'path': os.path.basename(filepath), 'size': fullsize })
 
-                            #subdata['properties'][struct_type]['path'].append(os.path.basename(filepath))
-                            #subdata['properties'][struct_type]['size'] = fullsize
                             i = i + 1
                         dataset['data'] = subdata
                     else:
@@ -452,13 +460,14 @@ class ObjectManager:
                     os.symlink(options['files'][0], filepath)
                     status = ObjectManager.READY
                 else:
-                    dataset['data']['path'] = [ file_name ]
                     with open(options['files'][0], 'rb') as stream:
                         obj.add_bytestream(file_name, stream, path)
+                    dataset['data']['path'] = [ file_name ]
                     dataset['data']['size'] = \
-                        os.path.getsize(filepath)
+                            os.path.getsize(filepath)
 
-                dataset['data']['type'] = options['type']
+                if options['type'] is not None:
+                    dataset['data']['type'] = options['type']
 
                 if ObjectManager.use_repo:
                     index = ObjectManager.get_repository_index(uid)
@@ -504,7 +513,8 @@ class ObjectManager:
             else:
                 fformat = options['format']
 
-            dataset['data']['format'] = fformat
+            if fformat is not None: 
+                dataset['data']['format'] = fformat
 
         dataset['status'] = status
         dataset.save()
