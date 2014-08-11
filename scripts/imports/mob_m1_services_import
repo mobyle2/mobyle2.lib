@@ -30,9 +30,11 @@ logger = logging.getLogger('mobyle.service_migration')
 _prefix_data = '$PREFIXDATA'
 if 'MOBYLE_HOME' in os.environ and os.environ['MOBYLE_HOME']:
     _prefix_data = os.path.join(os.environ['MOBYLE_HOME'], 'data')
+
+if _prefix_data.endswith('PREFIXDATA'):
+    _prefix_data = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
    
 _import_data_dir = os.path.join(_prefix_data, 'imports')
-
 
 class JSONProxy(object):
     """
