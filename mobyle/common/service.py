@@ -29,7 +29,6 @@ class Para(SchemaDocument):
                 'comment': basestring
                 }
 
-
 @connection.register
 class Parameter(Para):
     """
@@ -57,7 +56,24 @@ class Paragraph(Para):
                 'children': [Para]
                 }
 
+    def _init_ancestors(self, ancestors=[]):
+        """
+        Store the ordered list of ancestor paragraphs in each
+        "Para" object, as the "ancestors" property.
+        This is especially usefull in Command line generation.
+        It should be automatically called by the Service constructor
+        when a service is fetched from the DB.
+        """
+        for child_para in self['children']:
+            if isinstance(child_para, Parameter):
+                child_para.ancestors = ancestors+[self]
+            else:
+                child_para._init_ancestors(ancestors+[self])
+
     def parameters_list(self):
+        """
+        Return a flattened list of all the contained Parameters
+        """
         paras_list = []
         for child_para in self['children']:
             if isinstance(child_para, Parameter):
@@ -264,7 +280,7 @@ class Package(Software):
 
 @mf_decorator
 @connection.register
-class Service(Software, ProjectDocument):
+class Service(Software):
     """
     a service is an executable piece of software
     """
@@ -284,6 +300,27 @@ class Service(Software, ProjectDocument):
                   'project': ObjectId
                 }
 
+    #FIXME __init__ override does not work (must be a mongokit gotcha)
+    #      for now init_ancestors() needs to be called manually.
+    #def __init__(self, doc=None, gen_skel=True, gen_auth_types=False, collection=None, lang='en', fallback_lang='en'):
+    #    super(Service, self).__init__(
+    #      doc=doc, gen_skel=gen_skel, lang=lang,
+    #      fallback_lang=fallback_lang
+    #    )
+
+    def init_ancestors(self):
+        self['inputs']._init_ancestors()
+        self['outputs']._init_ancestors()
+
+
+    def inputs_list(self):
+        """ 
+        return the list of all parameters
+        """
+        if self['inputs'] is not None:
+            return self['inputs'].parameters_list()
+        else:
+            return []
 
 @mf_decorator
 @connection.register
@@ -302,6 +339,11 @@ class Program(Service):
                           }]
                 }
 
+    def inputs_list_by_argpos(self):
+        """ 
+        return the list of all parameters ordered by argpos
+        """
+        return []
 
 @mf_decorator
 @connection.register

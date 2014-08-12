@@ -82,5 +82,68 @@ class TestService(unittest.TestCase):
         #service.validate()
         #service.save()
 
+    def test_service_parameters_list_getters(self):
+        """
+        test if parameters lists methods return the right data
+        """
+        par_x = InputParagraph()
+        par_x['name'] = 'x'
+        input_a = InputParameter()
+        input_a['name'] = 'a'
+        input_b = InputParameter()
+        input_b['name'] = 'b'
+        x_parameters = [input_b, input_a]
+        par_x['children'].append(input_a)
+        par_x['children'].append(input_b)
+        # using sorted to be order-independent in the test
+        self.assertEqual(sorted(par_x.parameters_list()), sorted(x_parameters),
+                         "par_x.parameters_list() is the two input parameters contained")
+        par_y = InputParagraph()
+        par_y['name'] = 'y'
+        input_c = InputParameter()
+        input_c['name'] = 'c'
+        par_y['children'].append(input_c)
+        par_x['children'].append(par_y)
+        x_parameters = [input_b, input_a, input_c]
+        self.assertEqual(sorted(par_x.parameters_list()), sorted(x_parameters),
+                         "par_x.parameters_list() is the three nested input parameters contained")
+        service = Program()
+        service['inputs'] = par_x
+        self.assertEqual(sorted(service.inputs_list()), sorted(x_parameters),
+                         "service.inputs_list() is the three nested input parameters contained")
+
+    def test_program_parameters_list_getters(self):
+        """
+        test if program-specific parameters lists methods return the right data
+        """
+        par_x = InputProgramParagraph()
+        par_x['name'] = 'x'
+        input_a = InputProgramParameter()
+        input_a['name'] = 'a'
+        input_a['argpos'] = 3
+        input_b = InputProgramParameter()
+        input_b['name'] = 'b'
+        input_a['argpos'] = 2
+        x_parameters = [input_b, input_a]
+        par_x['children'].append(input_a)
+        par_x['children'].append(input_b)
+        par_y = InputProgramParagraph()
+        par_y['name'] = 'y'
+        input_c = InputProgramParameter()
+        input_c['name'] = 'c'
+        input_c['argpos'] = 1
+        par_y['children'].append(input_c)
+        par_x['children'].append(par_y)
+        x_parameters = [input_c, input_b, input_a]
+        program = Program()
+        program['inputs'] = par_x
+        self.assertEqual(sorted(program.inputs_list()), sorted(x_parameters),
+                         "service.inputs_list() is the three nested input parameters contained")        
+        program.init_ancestors()
+        #TODO continue testing here...
+        #for para in program.inputs_list():
+        #    print para['name'], [ancestor['name'] for ancestor in para.ancestors]
+
+
 if __name__ == '__main__':
     unittest.main()
