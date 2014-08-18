@@ -10,6 +10,7 @@ config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 
 from mobyle.common.connection import connection
 from mobyle.common.service import *
+from mobyle.common.type import *
 
 class TestService(unittest.TestCase):
 
@@ -149,6 +150,53 @@ class TestService(unittest.TestCase):
         self.assertEqual(input_a.argpos,3)
         self.assertEqual(program.inputs_list_by_argpos(), [input_c, input_b, input_a])
 
+    def test_program_get_env(self):
+        program = Program()
+        program['env'] = {'a':'alpha', 'b':'beta'}
+        self.assertEqual(program.env, {'a':'alpha', 'b':'beta'}) 
+
+    def test_input_mandatory(self):
+        input_a = InputParameter()
+        self.assertFalse(input_a.mandatory)
+        input_a['mandatory'] = True
+        self.assertTrue(input_a.mandatory)
+
+    def test_preconds(self):
+        input_a = InputParameter()
+        input_a['precond'] = {'a': True}
+        par_x = InputParagraph()
+        par_x['precond'] = {'x': True}
+        par_x['children'].append(input_a)
+        par_y = InputParagraph()
+        par_y['precond'] = {'y': True}
+        par_y['children'].append(par_x)
+        par_y._init_ancestors()
+        self.assertEqual(input_a.preconds,[par_y['precond'], par_x['precond'], input_a['precond']])
+
+    def test_format(self):
+        input_a = InputProgramParameter()
+        self.assertFalse(input_a.has_format())
+        self.assertEqual(input_a.format, None)
+        input_a['format'] = '-t'
+        self.assertTrue(input_a.has_format())
+        self.assertEqual(input_a.format, '-t')
+        
+    def test_format(self):
+        input_a = InputProgramParameter()
+        self.assertFalse(input_a.has_paramfile())
+        self.assertEqual(input_a.paramfile, None)
+        input_a['paramfile'] = 'test.in'
+        self.assertTrue(input_a.has_paramfile())
+        self.assertEqual(input_a.paramfile, 'test.in')
+
+    def test_default_value(self):
+        input_a = InputProgramParameter()
+        self.assertIsNone(input_a.default_value)
+        input_a['type'] = BooleanType()
+        input_a['type']['default'] = True
+        self.assertTrue(input_a.default_value)
+        input_a['type']['default'] = False
+        self.assertFalse(input_a.default_value)
 
 if __name__ == '__main__':
     unittest.main()

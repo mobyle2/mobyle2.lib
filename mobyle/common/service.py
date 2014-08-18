@@ -29,6 +29,21 @@ class Para(SchemaDocument):
                 'comment': basestring
                 }
 
+    @property
+    def preconds(self):
+        """
+        returns the list of preconds, starting from
+        the topmost ancestor and downwards
+        """
+        preconds = []
+        if hasattr(self,'ancestors'):
+            for ancestor in reversed(self.ancestors):
+                if ancestor['precond'] is not None:
+                    preconds.append(ancestor['precond'])
+        if self['precond'] is not None:
+            preconds.append(self['precond'])
+        return preconds
+
 @connection.register
 class Parameter(Para):
     """
@@ -46,6 +61,14 @@ class Parameter(Para):
                      'hidden': False,
                      'simple': False,
                      }
+
+    @property
+    def default_value(self):
+        if 'type' in self and self['type'] is not None \
+            and 'default' in self['type']:
+            return self['type']['default']
+        else:
+            return None
 
 @connection.register
 class Paragraph(Para):
@@ -106,6 +129,10 @@ class InputParameter(Parameter):
     default_values = {
                      'mandatory': False,
                      }
+
+    @property
+    def mandatory(self):
+        return self['mandatory'] or False
 
 
 @connection.register
@@ -168,6 +195,31 @@ class InputProgramParameter(InputParameter):
         else:
             return 1
 
+    def has_format(self):
+        """
+        return existence of the format property
+        """
+        return True if self['format'] is not None else False
+
+    @property
+    def format(self):
+        """
+        return the format value if it is defined
+        """
+        return self['format']
+    
+    def has_paramfile(self):
+        """
+        return existence of the paramfile property
+        """
+        return True if self['paramfile'] is not None else False
+
+    @property
+    def paramfile(self):
+        """
+        return the paramfile value if it is defined
+        """
+        return self['paramfile']
 def inputs_validator(paras_list):
     """
     checks that all parameters and paragraphs in the list are inputs
@@ -353,10 +405,7 @@ class Program(Service):
                               'path': basestring,
                               'value': basestring
                              },
-                  'env': [{
-                           'name': basestring,
-                           'value': basestring
-                          }]
+                  'env': dict
                 }
 
     def inputs_list_by_argpos(self):
@@ -365,6 +414,13 @@ class Program(Service):
         ordered by argpos, in ascending order
         """
         return sorted(self.inputs_list(), key=lambda x: x.argpos)
+
+    @property
+    def env(self):
+        """
+        return the environment variables as a dictionary
+        """
+        return self['env'] or {} 
 
 @mf_decorator
 @connection.register
