@@ -361,9 +361,10 @@ class Program(Service):
 
     def inputs_list_by_argpos(self):
         """ 
-        return the list of all parameters ordered by argpos
+        return the list of all parameters 
+        ordered by argpos, in ascending order
         """
-        return []
+        return sorted(self.inputs_list(), key=lambda x: x.argpos)
 
 @mf_decorator
 @connection.register
