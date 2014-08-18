@@ -314,17 +314,23 @@ class Service(Software):
                   'project': ObjectId
                 }
 
-    #FIXME __init__ override does not work (must be a mongokit gotcha)
-    #      for now init_ancestors() needs to be called manually.
-    #def __init__(self, doc=None, gen_skel=True, gen_auth_types=False, collection=None, lang='en', fallback_lang='en'):
-    #    super(Service, self).__init__(
-    #      doc=doc, gen_skel=gen_skel, lang=lang,
-    #      fallback_lang=fallback_lang
-    #    )
+    def __init__(self, doc=None, gen_skel=True, collection=None, 
+                 lang='en', fallback_lang='en', schema_2_restore=None):
+        """
+        Service constructor, automatically calls the init_ancestors()
+        method to link parameters and paragraphs to their ancestors 
+        """
+        super(Service, self).__init__(
+          doc=doc, gen_skel=gen_skel, collection=collection, lang=lang, 
+          fallback_lang=lang, schema_2_restore=schema_2_restore
+        )
+        self.init_ancestors()
 
     def init_ancestors(self):
-        self['inputs']._init_ancestors()
-        self['outputs']._init_ancestors()
+        if self['inputs']:
+            self['inputs']._init_ancestors()
+        if self['outputs']:
+            self['outputs']._init_ancestors()
 
 
     def inputs_list(self):
