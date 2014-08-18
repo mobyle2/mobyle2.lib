@@ -66,9 +66,9 @@ class Paragraph(Para):
         """
         for child_para in self['children']:
             if isinstance(child_para, Parameter):
-                child_para.ancestors = ancestors+[self]
+                child_para.ancestors = [self]+ancestors
             else:
-                child_para._init_ancestors(ancestors+[self])
+                child_para._init_ancestors([self]+ancestors)
 
     def parameters_list(self):
         """
