@@ -153,6 +153,20 @@ class InputProgramParameter(InputParameter):
                      'command': False,
                      }
 
+    @property
+    def argpos(self):
+        """
+        returns the argpos of the parameter, exploring the ancestor
+        paragraphs if necessary
+        """
+        if self['argpos'] is not None:
+            return self['argpos']
+        elif hasattr(self,'ancestors'):
+            for ancestor in self.ancestors:
+                if ancestor['argpos'] is not None:
+                    return ancestor['argpos']
+        else:
+            return 1
 
 def inputs_validator(paras_list):
     """
