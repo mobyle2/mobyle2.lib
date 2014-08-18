@@ -123,7 +123,7 @@ class TestService(unittest.TestCase):
         input_a['argpos'] = 3
         input_b = InputProgramParameter()
         input_b['name'] = 'b'
-        input_a['argpos'] = 2
+        input_b['argpos'] = 2
         x_parameters = [input_b, input_a]
         par_x['children'].append(input_a)
         par_x['children'].append(input_b)
@@ -131,18 +131,23 @@ class TestService(unittest.TestCase):
         par_y['name'] = 'y'
         input_c = InputProgramParameter()
         input_c['name'] = 'c'
-        input_c['argpos'] = 1
+        par_y['argpos'] = 1
         par_y['children'].append(input_c)
         par_x['children'].append(par_y)
         x_parameters = [input_c, input_b, input_a]
         program = Program()
         program['inputs'] = par_x
         self.assertEqual(sorted(program.inputs_list()), sorted(x_parameters),
-                         "service.inputs_list() is the three nested input parameters contained")        
+            "service.inputs_list() is the three nested input parameters contained")        
+        # we need to call init_ancestors manually here because ancestors are linked
+        # only during service creation (by __init__)
         program.init_ancestors()
-        #TODO continue testing here...
-        #for para in program.inputs_list():
-        #    print para['name'], [ancestor['name'] for ancestor in para.ancestors]
+        self.assertEqual(input_a.ancestors,[par_x])
+        self.assertEqual(input_c.ancestors,[par_y, par_x])
+        self.assertEqual(input_c.argpos,1)
+        self.assertEqual(input_b.argpos,2)
+        self.assertEqual(input_a.argpos,3)
+        self.assertEqual(program.inputs_list_by_argpos(), [input_c, input_b, input_a])
 
 
 if __name__ == '__main__':
