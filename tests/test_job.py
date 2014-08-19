@@ -15,14 +15,14 @@ from mobyle.common.users import User
 from mobyle.common.project import Project
 from mobyle.common.job import Status
 from mobyle.common.job import CustomStatus
-from mobyle.common.job import ClJob
+from mobyle.common.job import ProgramJob
 from mobyle.common.mobyleError import MobyleError
 
 
 class TestJob(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.ClJob.collection.remove({})
+        objects = connection.ProgramJob.collection.remove({})
         objects = connection.User.collection.remove({})
         objects = connection.Project.collection.remove({})
         
@@ -38,16 +38,16 @@ class TestJob(unittest.TestCase):
         self.status = Status(Status.INIT)
 
     def test_insert(self):
-        job = connection.ClJob()
+        job = connection.ProgramJob()
         #test that status is required
         job.project = self.project.id
         self.assertRaises(MobyleError, job.save)
         #test that project is required
-        job = connection.ClJob()
+        job = connection.ProgramJob()
         job.status = self.status
         self.assertRaises(RequireFieldError, job.save)
             
-        job = connection.ClJob()
+        job = connection.ProgramJob()
         job.project = self.project.id
         job.status = self.status
         job.name = "first job"
@@ -101,8 +101,8 @@ class TestJob(unittest.TestCase):
         with self.assertRaises(MobyleError):
             job.dir = 'foo'
             
-    def test_ClJob(self):
-        job_send = connection.ClJob()
+    def test_ProgramJob(self):
+        job_send = connection.ProgramJob()
         job_send.project = self.project.id
         job_send.name = "first job"
         job_send.status = self.status

@@ -412,7 +412,7 @@ class Job(ProjectDocument):
 
 @mf_decorator
 @connection.register
-class ClJob(Job):
+class ProgramJob(Job):
     """
     Job implementation for a Command line  job
     """
