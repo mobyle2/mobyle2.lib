@@ -64,6 +64,11 @@ class Parameter(Para):
 
     @property
     def default_value(self):
+        """
+        Return the default value corresponding to a parameter
+        :return: the value corresponding to the parameter name
+                 or None
+        """
         if 'type' in self and self['type'] is not None \
             and 'default' in self['type']:
             return self['type']['default']
@@ -220,6 +225,8 @@ class InputProgramParameter(InputParameter):
         return the paramfile value if it is defined
         """
         return self['paramfile']
+
+
 def inputs_validator(paras_list):
     """
     checks that all parameters and paragraphs in the list are inputs
