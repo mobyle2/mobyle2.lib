@@ -405,10 +405,21 @@ class Job(ProjectDocument):
             self['inputs'][parameter['name']] = data
 
     def get_input_value(self, parameter_name):
-        data = self['inputs'][parameter_name]
-        if isinstance(data, ObjectId):
-            data = connection.ProjectData.fetch_one({'_id': data})
-        return data
+        """
+        Return the user-set value corresponding to a parameter
+        :param parameter_name: the name of the parameter
+        :type parameter_name: basestring
+        :return: the data corresponding to the parameter name
+                 or None
+        :rtype: AbstractData
+        """
+        if parameter_name in self['inputs']:
+            data = self['inputs'][parameter_name]
+            if isinstance(data, ObjectId):
+                data = connection.ProjectData.fetch_one({'_id': data})
+            return data
+        else:
+            return None
 
 @mf_decorator
 @connection.register
