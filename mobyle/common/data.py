@@ -128,7 +128,7 @@ class StructData(AbstractData):
         i.e. the dictionary of properties with their
         expr_values.
         """
-        return {prop_name: self['properties'][prop_name].expr_value() for prop_name in self['properties'].keys()}
+        return {prop_name: prop_val.expr_value() for prop_name, prop_val in self['properties'].items()}
 
 
 def new_data(new_data_type):
