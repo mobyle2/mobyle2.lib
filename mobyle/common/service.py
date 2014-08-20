@@ -408,10 +408,7 @@ class Program(Service):
     a program is a command line tool
     """
     structure = {
-                  'command': {
-                              'path': basestring,
-                              'value': basestring
-                             },
+                  'command': basestring
                   'env': dict
                 }
 
