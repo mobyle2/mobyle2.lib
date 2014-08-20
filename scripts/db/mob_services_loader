@@ -40,7 +40,7 @@ if __name__ == '__main__':
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument('--dump', help=
                         "export services to specified directory")
-    action.add_argument('--load', help=
+    action.add_argument('--load', nargs='*', help=
                         "import services from specified directory")
     args = parser.parse_args()
     # Init config
