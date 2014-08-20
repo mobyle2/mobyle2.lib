@@ -27,12 +27,18 @@ class AbstractData(SchemaDocument):
     def check_value(self):
         raise NotImplementedError()
 
-    def job_import(destination_job):
+    def job_import(self, destination_job):
         pass
 
-    def clean():
+    def clean(self):
         pass
 
+    def expr_value(self):
+        """
+        Get the value used for evaluated
+        expressions (precond, ctrl, format, etc.)
+        """
+        raise NotImplementedError()
 
 @connection.register
 class RefData(AbstractData):
@@ -60,6 +66,14 @@ class RefData(AbstractData):
         #TODO only clean if format is text
         return
 
+    def expr_value(self, separator=" "):
+        """
+        Get the value used for evaluated
+        expressions (precond, ctrl, format, etc.)
+        i.e. the list of file names.
+        """
+        return separator.join(self['path'])
+
 @connection.register
 class ValueData(AbstractData):
     """
@@ -73,6 +87,8 @@ class ValueData(AbstractData):
     def check_value(self):
         self['type'].check_value(self['value'])
 
+    def expr_value(self):
+        return self['value']
 
 @connection.register
 class ListData(AbstractData):
@@ -84,6 +100,13 @@ class ListData(AbstractData):
                  'value': [AbstractData]
                 }
 
+    def expr_value(self):
+        """
+        Get the value used for evaluated
+        expressions (precond, ctrl, format, etc.)
+        i.e. the list of its elements expr_values.
+        """
+        return [el.expr_value() for el in self['value']]
 
 @connection.register
 class StructData(AbstractData):
@@ -97,6 +120,15 @@ class StructData(AbstractData):
                  # with ontology terms
                  'files': None
                 }
+
+    def expr_value(self):
+        """
+        Get the value used for evaluated
+        expressions (precond, ctrl, format, etc.)
+        i.e. the dictionary of properties with their
+        expr_values.
+        """
+        return {prop_name: self['properties'][prop_name].expr_value() for prop_name in self['properties'].keys()}
 
 
 def new_data(new_data_type):
