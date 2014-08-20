@@ -412,6 +412,10 @@ class Program(Service):
                   'env': dict
                 }
 
+    @property
+    def command(self):
+        return self['command']
+
     def inputs_list_by_argpos(self):
         """ 
         return the list of all parameters 
