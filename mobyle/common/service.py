@@ -14,8 +14,10 @@ from .connection import connection
 from .config import Config
 from .project import ProjectDocument
 from .type import Type
+from .myaml import myaml
 
 
+@myaml.register
 @connection.register
 class Para(SchemaDocument):
     """
@@ -44,6 +46,8 @@ class Para(SchemaDocument):
             preconds.append(self['precond'])
         return preconds
 
+
+@myaml.register
 @connection.register
 class Parameter(Para):
     """
@@ -75,6 +79,8 @@ class Parameter(Para):
         else:
             return None
 
+
+@myaml.register
 @connection.register
 class Paragraph(Para):
     """
@@ -111,6 +117,7 @@ class Paragraph(Para):
         return paras_list
 
 
+@myaml.register
 @connection.register
 class InputProgramParagraph(Paragraph):
     """
@@ -121,6 +128,7 @@ class InputProgramParagraph(Paragraph):
                 }
 
 
+@myaml.register
 @connection.register
 class InputParameter(Parameter):
     """
@@ -140,6 +148,7 @@ class InputParameter(Parameter):
         return self['mandatory'] or False
 
 
+@myaml.register
 @connection.register
 class OutputParameter(Parameter):
     """
@@ -159,6 +168,7 @@ class OutputParameter(Parameter):
     default_values = {'output_type': u'file'}
 
 
+@myaml.register
 @connection.register
 class OutputProgramParameter(OutputParameter):
     """
@@ -169,6 +179,7 @@ class OutputProgramParameter(OutputParameter):
                 }
 
 
+@myaml.register
 @connection.register
 class InputProgramParameter(InputParameter):
     """
@@ -253,6 +264,7 @@ def outputs_validator(paras_list):
     return True
 
 
+@myaml.register
 @connection.register
 class InputParagraph(Paragraph):
     """
@@ -263,7 +275,7 @@ class InputParagraph(Paragraph):
                   'children': inputs_validator
                  }
 
-
+@myaml.register
 @connection.register
 class OutputParagraph(Paragraph):
     """
@@ -274,7 +286,7 @@ class OutputParagraph(Paragraph):
                   'children': outputs_validator
                  }
 
-
+@myaml.register
 @mf_decorator
 class Software(ProjectDocument):
     """
@@ -336,12 +348,13 @@ class Software(ProjectDocument):
         """
         if (self['public_name'] is not None):
             if (self.collection.find({'public_name': self['public_name'],
-                'version': self['version'],
+                'version': self.get('version',None),
                 '_id': {'$ne': self.get('_id', None)}}).count() > 0):
                 raise ValidationError('Public name / version already used.')
         super(Software, self).validate(*args, **kwargs)
 
 
+@myaml.register
 @mf_decorator
 @connection.register
 class Package(Software):
@@ -351,6 +364,7 @@ class Package(Software):
     __collection__ = 'packages'
 
 
+@myaml.register
 @mf_decorator
 @connection.register
 class Service(Software):
@@ -401,6 +415,7 @@ class Service(Software):
         else:
             return []
 
+@myaml.register
 @mf_decorator
 @connection.register
 class Program(Service):
@@ -430,6 +445,8 @@ class Program(Service):
         """
         return self['env'] or {} 
 
+
+@myaml.register
 @mf_decorator
 @connection.register
 class Workflow(Service):
@@ -441,6 +458,7 @@ class Workflow(Service):
                 }
 
 
+@myaml.register
 @mf_decorator
 @connection.register
 class Widget(Service):
