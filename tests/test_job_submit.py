@@ -65,6 +65,7 @@ class TestJobSubmit(unittest.TestCase):
         input_e['argpos'] = 3
         input_e['name'] = 'e'
         input_e['format'] = '"-e" if value else ""'
+        input_e['precond'] = {'n': True}
         input_options['children'].append(input_e)
         self.program['inputs']['children'].append(input_string)
         self.program['inputs']['children'].append(input_options)
