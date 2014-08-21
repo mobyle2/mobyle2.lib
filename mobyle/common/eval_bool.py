@@ -3,8 +3,8 @@
 
 class EvalBoolFactory(object):
 
-    def __init__(self, values={}):
-        self.values = values
+    def __init__(self, values=None):
+        self.values = values if values is not None else {}
 
     def test(self, expr):
         if not(expr):
