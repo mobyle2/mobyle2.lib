@@ -238,6 +238,14 @@ class InputProgramParameter(InputParameter):
         """
         return self['format']
     
+    @property
+    def command(self):
+        """
+        :return: True if parameter is command, False otherwise
+        :rtype: boolean
+        """
+        return self['command'] or False
+    
     def has_paramfile(self):
         """
         return existence of the paramfile property
@@ -367,6 +375,9 @@ class Software(ProjectDocument):
                 raise ValidationError('Public name / version already used.')
         super(Software, self).validate(*args, **kwargs)
 
+    @property
+    def name(self):
+        return self['name']
 
 @myaml.register
 @mf_decorator
