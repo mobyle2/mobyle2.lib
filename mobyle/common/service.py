@@ -216,9 +216,11 @@ class InputProgramParameter(InputParameter):
         returns the argpos of the parameter, exploring the ancestor
         paragraphs if necessary
         """
-        if self['argpos'] is not None:
+        if self['command']:
+            return 0
+        elif self['argpos'] is not None:
             return self['argpos']
-        elif hasattr(self,'ancestors'):
+        elif hasattr(self, 'ancestors'):
             for ancestor in self.ancestors:
                 if ancestor['argpos'] is not None:
                     return ancestor['argpos']

@@ -161,6 +161,76 @@ class TestService(unittest.TestCase):
         input_a['mandatory'] = True
         self.assertTrue(input_a.mandatory)
 
+    def test_input_argpos(self):
+        program = connection.Program()
+        program['name'] = 'echo'
+        
+        inputs = InputParagraph()
+        outputs = OutputParagraph()
+        program['inputs'] = inputs
+        program['outputs'] = outputs
+
+        input_string = InputProgramParameter()
+        input_string['name'] = 'string'
+        input_string['argpos'] = 99
+        input_string['format'] = '" " + value'
+        input_string_type = StringType()
+        input_string['type'] = input_string_type
+
+        input_first = InputProgramParameter()
+        input_first['name'] = 'string'
+        input_first['argpos'] = -10
+        input_first['format'] = '"ln -s toto titi && "'
+        input_first_type = StringType()
+        input_first['type'] = input_first_type
+
+        input_options = InputProgramParagraph()
+
+        input_options['argpos'] = 2
+        input_n = InputProgramParameter()
+        # n has no argpos, its argpos will be 2
+        input_n['type'] = BooleanType()
+        input_n['name'] = 'n'
+        input_n['format'] = '" -n " if value else ""'
+        input_options['children'].append(input_n)
+
+        # e has an argpos of 3
+        input_e = InputProgramParameter()
+        input_e['type'] = BooleanType()
+        input_e['argpos'] = 3
+        input_e['name'] = 'e'
+        input_e['format'] = '" -e " if value else ""'
+        input_e['precond'] = {'n': True}
+        input_options['children'].append(input_e)
+
+        program['inputs']['children'].append(input_string)
+        program['inputs']['children'].append(input_first)
+        program['inputs']['children'].append(input_options)
+
+        p_cmd = InputProgramParameter()
+        p_cmd['name'] = 'cmd'
+        p_cmd['command'] = True
+        p_cmd['format'] = '"echo "'
+        p_cmd_type = StringType()
+        p_cmd['type'] = p_cmd_type      
+        program['inputs']['children'].append(p_cmd)
+
+        output_stdout = OutputProgramParameter()
+        output_stdout['name'] = 'stdout'
+        output_stdout['output_type'] = 'stdout'
+        output_stdout_type = FormattedType()
+        output_stdout['type'] = output_stdout_type
+        program['outputs']['children'].append(output_stdout)
+        program.init_ancestors()
+        
+        program.save()
+        self.assertEqual(input_string.argpos, 99)
+        self.assertEqual(input_e.argpos, 3)
+        self.assertEqual(input_n.argpos, 2)
+        self.assertEqual(input_first.argpos, -10)
+        self.assertEqual(p_cmd.argpos, 0)
+        
+        
     def test_preconds(self):
         input_a = InputParameter()
         input_a['precond'] = {'a': True}
@@ -198,5 +268,8 @@ class TestService(unittest.TestCase):
         input_a['type']['default'] = False
         self.assertFalse(input_a.default_value)
 
+    
+        
+        
 if __name__ == '__main__':
     unittest.main()
