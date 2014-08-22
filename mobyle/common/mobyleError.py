@@ -29,7 +29,7 @@ class UserValueError(MobyleError):
         else:
             super(UserValueError, self).__init__()
         type_parameters = type(parameters)
-        if isinstance(ListType, type_parameters) or isinstance(TupleType, type_parameters): 
+        if isinstance(type_parameters, (ListType, TupleType)): 
             self.parameters = parameters
         else:
             self.parameters = [parameters]
