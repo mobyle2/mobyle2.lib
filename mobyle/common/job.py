@@ -106,7 +106,7 @@ class Status(object):
         if state in self.all_states :
             self._state = state
         else:
-            raise MobyleError("invalid state: %s " % state)
+            raise MobyleError("invalid state: {0} ".format(state))
 
     @property
     def state(self):
@@ -115,11 +115,11 @@ class Status(object):
     @state.setter
     def state(self, state):
         if not state in self.all_states:
-            raise MobyleError("invalid state: %s " % state)
+            raise MobyleError("invalid state: {0} ".format(state))
         if state in self._transitions[self._state]:
             self._state = state
         else:
-            raise MobyleError("transition from '%s' to '%s' is not allowed" % (self._state, state) )
+            raise MobyleError("transition from '{0}' to '{1}' is not allowed".format(self._state, state) )
 
     def __eq__(self , other):
         """
@@ -373,7 +373,7 @@ class Job(ProjectDocument):
 
     def process_inputs(self, inputs_dict):
         for parameter in self['service']['inputs'].parameters_list():
-            req_param_name = "input:%s" % parameter['name']
+            req_param_name = "input:{0}".format(parameter['name'])
             if req_param_name in inputs_dict:
                 value = inputs_dict[req_param_name]
                 self.set_input_value(parameter, value)
@@ -382,7 +382,7 @@ class Job(ProjectDocument):
         data = new_data(parameter['type'])
         if isinstance(data, RefData):
             objectManager = ObjectManager()
-            data_name = "input for parameter %s" % (parameter['name'])
+            data_name = "input for parameter {0}".format(parameter['name'])
             options = {'project': self['project']}
             my_dataset = objectManager.add(data_name, options, False)
             my_path = my_dataset.get_file_path()
