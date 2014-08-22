@@ -43,6 +43,10 @@ class Para(SchemaDocument):
         if self['precond'] is not None:
             preconds.append(self['precond'])
         return preconds
+    
+    @property
+    def name(self):
+        return self['name']
 
 @connection.register
 class Parameter(Para):
@@ -140,6 +144,16 @@ class InputParameter(Parameter):
         return self['mandatory'] or False
 
 
+    def has_ctrl(self):
+        return True if self['ctrl'] is not None else False
+
+    @property
+    def ctrl(self):
+        """
+        :return: the ctrl 
+        """
+        return self['ctrl']
+    
 @connection.register
 class OutputParameter(Parameter):
     """
