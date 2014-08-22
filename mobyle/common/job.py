@@ -373,9 +373,8 @@ class Job(ProjectDocument):
 
     def process_inputs(self, inputs_dict):
         for parameter in self['service']['inputs'].parameters_list():
-            req_param_name = "input:{0}".format(parameter['name'])
-            if req_param_name in inputs_dict:
-                value = inputs_dict[req_param_name]
+            if parameter.name in inputs_dict:
+                value = inputs_dict[parameter.name]
                 self.set_input_value(parameter, value)
 
     def set_input_value(self, parameter, value):
