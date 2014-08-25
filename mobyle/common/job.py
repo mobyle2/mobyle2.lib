@@ -419,7 +419,25 @@ class Job(ProjectDocument):
             return data
         else:
             return None
-
+        
+    @property    
+    def message(self):
+        """
+        :return: a message or None. message is use when error occured error
+        :rtype: string or None
+        """
+        return self['message']
+    
+    @message.setter
+    def message(self, msg):
+        """
+        :param msg: set a new message for the job (usually use to set an error messsage.
+        :param type: string
+        """
+        self['message'] = msg
+        
+        
+        
 @mf_decorator
 @connection.register
 class ProgramJob(Job):
@@ -446,8 +464,24 @@ class ProgramJob(Job):
             return self.end_time - self.create_time > datetime.timedelta(seconds = delay)
         else:
             return False
+    
 
-
+    def get_cmd_line(self):
+        return self['cmd_line'] 
+    
+    def set_cmd_line(self, cmd_line):
+        self['cmd_line'] = cmd_line 
+    
+    cmd_line = property(get_cmd_line, set_cmd_line)
+    
+    @property
+    def cmd_env(self):
+        return self['cmd_env'] if self['cmd_env'] is not None else {}
+    
+    @cmd_env.setter
+    def cmd_env(self, cmd_env):
+        self['cmd_env'] = cmd_env
+    
 @mf_decorator
 @connection.register
 class WorkflowJob(Job):
