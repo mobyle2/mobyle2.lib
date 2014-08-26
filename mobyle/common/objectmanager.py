@@ -57,6 +57,7 @@ class ObjectManager:
     UNCOMPRESSED = 6
     SYMLINK = 7
     NEED_EDIT = 8
+    UPDATE = 9
 
     FILEROOT = 'data'
 
@@ -462,9 +463,18 @@ class ObjectManager:
                 else:
                     with open(options['files'][0], 'rb') as stream:
                         obj.add_bytestream(file_name, stream, path)
-                    dataset['data']['path'] = [ file_name ]
-                    dataset['data']['size'] = \
+                    if 'properties' not in dataset['data']:
+                        # Not a complex object dataset
+                        dataset['data']['path'] = [ file_name ]
+                        dataset['data']['size'] = \
                             os.path.getsize(filepath)
+                    else:
+                        #Simple RefData dataset
+                        for prop,subdata in dataset['data']['properties']:
+                            if subdata['path'] == file_name:
+                                subdata['size'] = \
+                                     os.path.getsize(filepath)
+                                break
 
                 if options['type'] is not None:
                     dataset['data']['type'] = options['type']
