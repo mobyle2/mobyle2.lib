@@ -14,8 +14,10 @@ from .connection import connection
 from .config import Config
 from .project import ProjectDocument
 from .type import Type
+from .myaml import myaml
 
 
+@myaml.register
 @connection.register
 class Para(SchemaDocument):
     """
@@ -29,7 +31,27 @@ class Para(SchemaDocument):
                 'comment': basestring
                 }
 
+    @property
+    def preconds(self):
+        """
+        returns the list of preconds, starting from
+        the topmost ancestor and downwards
+        """
+        preconds = []
+        if hasattr(self,'ancestors'):
+            for ancestor in reversed(self.ancestors):
+                if ancestor['precond'] is not None:
+                    preconds.append(ancestor['precond'])
+        if self['precond'] is not None:
+            preconds.append(self['precond'])
+        return preconds
+    
+    @property
+    def name(self):
+        return self['name']
 
+
+@myaml.register
 @connection.register
 class Parameter(Para):
     """
@@ -48,6 +70,21 @@ class Parameter(Para):
                      'simple': False,
                      }
 
+    @property
+    def default_value(self):
+        """
+        Return the default value corresponding to a parameter
+        :return: the value corresponding to the parameter name
+                 or None
+        """
+        if 'type' in self and self['type'] is not None \
+            and 'default' in self['type']:
+            return self['type']['default']
+        else:
+            return None
+
+
+@myaml.register
 @connection.register
 class Paragraph(Para):
     """
@@ -57,7 +94,24 @@ class Paragraph(Para):
                 'children': [Para]
                 }
 
+    def _init_ancestors(self, ancestors=[]):
+        """
+        Store the ordered list of ancestor paragraphs in each
+        "Para" object, as the "ancestors" property.
+        This is especially usefull in Command line generation.
+        It should be automatically called by the Service constructor
+        when a service is fetched from the DB.
+        """
+        for child_para in self['children']:
+            if isinstance(child_para, Parameter):
+                child_para.ancestors = [self]+ancestors
+            else:
+                child_para._init_ancestors([self]+ancestors)
+
     def parameters_list(self):
+        """
+        Return a flattened list of all the contained Parameters
+        """
         paras_list = []
         for child_para in self['children']:
             if isinstance(child_para, Parameter):
@@ -67,16 +121,18 @@ class Paragraph(Para):
         return paras_list
 
 
+@myaml.register
 @connection.register
-class OutputProgramParagraph(Paragraph):
+class InputProgramParagraph(Paragraph):
     """
-    a program output paragraph
+    a program input paragraph
     """
     structure = {
                 'argpos': int
                 }
 
 
+@myaml.register
 @connection.register
 class InputParameter(Parameter):
     """
@@ -91,7 +147,22 @@ class InputParameter(Parameter):
                      'mandatory': False,
                      }
 
+    @property
+    def mandatory(self):
+        return self['mandatory'] or False
 
+
+    def has_ctrl(self):
+        return True if self['ctrl'] is not None else False
+
+    @property
+    def ctrl(self):
+        """
+        :return: the ctrl 
+        """
+        return self['ctrl']
+    
+@myaml.register
 @connection.register
 class OutputParameter(Parameter):
     """
@@ -111,6 +182,7 @@ class OutputParameter(Parameter):
     default_values = {'output_type': u'file'}
 
 
+@myaml.register
 @connection.register
 class OutputProgramParameter(OutputParameter):
     """
@@ -121,6 +193,7 @@ class OutputProgramParameter(OutputParameter):
                 }
 
 
+@myaml.register
 @connection.register
 class InputProgramParameter(InputParameter):
     """
@@ -136,6 +209,57 @@ class InputProgramParameter(InputParameter):
     default_values = {
                      'command': False,
                      }
+
+    @property
+    def argpos(self):
+        """
+        returns the argpos of the parameter, exploring the ancestor
+        paragraphs if necessary
+        """
+        if self['command']:
+            return 0
+        elif self['argpos'] is not None:
+            return self['argpos']
+        elif hasattr(self, 'ancestors'):
+            for ancestor in self.ancestors:
+                if ancestor['argpos'] is not None:
+                    return ancestor['argpos']
+        else:
+            return 1
+
+    def has_format(self):
+        """
+        return existence of the format property
+        """
+        return True if self['format'] is not None else False
+
+    @property
+    def format(self):
+        """
+        return the format value if it is defined
+        """
+        return self['format']
+    
+    @property
+    def command(self):
+        """
+        :return: True if parameter is command, False otherwise
+        :rtype: boolean
+        """
+        return self['command'] or False
+    
+    def has_paramfile(self):
+        """
+        return existence of the paramfile property
+        """
+        return True if self['paramfile'] is not None else False
+
+    @property
+    def paramfile(self):
+        """
+        return the paramfile value if it is defined
+        """
+        return self['paramfile']
 
 
 def inputs_validator(paras_list):
@@ -164,6 +288,7 @@ def outputs_validator(paras_list):
     return True
 
 
+@myaml.register
 @connection.register
 class InputParagraph(Paragraph):
     """
@@ -174,7 +299,7 @@ class InputParagraph(Paragraph):
                   'children': inputs_validator
                  }
 
-
+@myaml.register
 @connection.register
 class OutputParagraph(Paragraph):
     """
@@ -185,7 +310,7 @@ class OutputParagraph(Paragraph):
                   'children': outputs_validator
                  }
 
-
+@myaml.register
 @mf_decorator
 class Software(ProjectDocument):
     """
@@ -247,12 +372,16 @@ class Software(ProjectDocument):
         """
         if (self['public_name'] is not None):
             if (self.collection.find({'public_name': self['public_name'],
-                'version': self['version'],
+                'version': self.get('version',None),
                 '_id': {'$ne': self.get('_id', None)}}).count() > 0):
                 raise ValidationError('Public name / version already used.')
         super(Software, self).validate(*args, **kwargs)
 
+    @property
+    def name(self):
+        return self['name']
 
+@myaml.register
 @mf_decorator
 @connection.register
 class Package(Software):
@@ -262,9 +391,10 @@ class Package(Software):
     __collection__ = 'packages'
 
 
+@myaml.register
 @mf_decorator
 @connection.register
-class Service(Software, ProjectDocument):
+class Service(Software):
     """
     a service is an executable piece of software
     """
@@ -284,7 +414,35 @@ class Service(Software, ProjectDocument):
                   'project': ObjectId
                 }
 
+    def __init__(self, doc=None, gen_skel=True, collection=None, 
+                 lang='en', fallback_lang='en', schema_2_restore=None):
+        """
+        Service constructor, automatically calls the init_ancestors()
+        method to link parameters and paragraphs to their ancestors 
+        """
+        super(Service, self).__init__(
+          doc=doc, gen_skel=gen_skel, collection=collection, lang=lang, 
+          fallback_lang=lang, schema_2_restore=schema_2_restore
+        )
+        self.init_ancestors()
 
+    def init_ancestors(self):
+        if self['inputs']:
+            self['inputs']._init_ancestors()
+        if self['outputs']:
+            self['outputs']._init_ancestors()
+
+
+    def inputs_list(self):
+        """ 
+        return the list of all parameters
+        """
+        if self['inputs'] is not None:
+            return self['inputs'].parameters_list()
+        else:
+            return []
+
+@myaml.register
 @mf_decorator
 @connection.register
 class Program(Service):
@@ -292,17 +450,30 @@ class Program(Service):
     a program is a command line tool
     """
     structure = {
-                  'command': {
-                              'path': basestring,
-                              'value': basestring
-                             },
-                  'env': [{
-                           'name': basestring,
-                           'value': basestring
-                          }]
+                  'command': basestring,
+                  'env': dict
                 }
 
+    @property
+    def command(self):
+        return self['command']
 
+    def inputs_list_by_argpos(self):
+        """ 
+        return the list of all parameters 
+        ordered by argpos, in ascending order
+        """
+        return sorted(self.inputs_list(), key=lambda x: x.argpos)
+
+    @property
+    def env(self):
+        """
+        return the environment variables as a dictionary
+        """
+        return self['env'] or {} 
+
+
+@myaml.register
 @mf_decorator
 @connection.register
 class Workflow(Service):
@@ -314,6 +485,7 @@ class Workflow(Service):
                 }
 
 
+@myaml.register
 @mf_decorator
 @connection.register
 class Widget(Service):

@@ -30,9 +30,11 @@ logger = logging.getLogger('mobyle.service_migration')
 _prefix_data = '$PREFIXDATA'
 if 'MOBYLE_HOME' in os.environ and os.environ['MOBYLE_HOME']:
     _prefix_data = os.path.join(os.environ['MOBYLE_HOME'], 'data')
+
+if _prefix_data.endswith('PREFIXDATA'):
+    _prefix_data = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', 'data'))
    
 _import_data_dir = os.path.join(_prefix_data, 'imports')
-
 
 class JSONProxy(object):
     """
@@ -457,6 +459,8 @@ def parse_para(p_dict, para, service_type):
             if code.att('proglang') == 'python':
                 para['precond'] = MobyleExprTranslator().translate(
                     code.text())
+    if service_type == 'program':
+        para['argpos'] = p_dict.text('argpos')
 
 
 def parse_parameter(p_dict, service_type):
@@ -591,7 +595,10 @@ def parse_paragraph(p_dict, service_type):
     :rtype: tuple
     """
     logger.debug("processing paragraph %s" % p_dict.text('name'))
-    input_paragraph = InputParagraph()
+    if service_type == 'program':
+        input_paragraph = InputProgramParagraph()
+    else:
+        input_paragraph = InputParagraph()
     parse_para(p_dict, input_paragraph, service_type)
     output_paragraph = OutputParagraph()
     parse_para(p_dict, output_paragraph, service_type)
@@ -644,9 +651,7 @@ def parse_program(s_dict):
     parse_parameters(s_dict.get('parameters'), (p['inputs'], p['outputs']),
                      'program')
     if s_dict.get('head').has('command'):
-        p['command'] = {'path': s_dict.get('head').get('command').att('path'),
-                        'value': s_dict.get('head').text('command')
-                       }
+        p['command'] = s_dict.get('head').text('command')
     for env in s_dict.get('head').list('env'):
         p['env'].append({'name': env.att('name'), 'value': env.text()})
     return p
@@ -732,6 +737,7 @@ if __name__ == '__main__':
     else:
         from mobyle.common.service import Service, Program, Package
     from mobyle.common.service import InputParagraph, OutputParagraph, \
+                                      InputProgramParagraph, \
                                       InputParameter, OutputParameter, \
                                       InputProgramParameter, \
                                       OutputProgramParameter

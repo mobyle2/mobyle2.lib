@@ -6,10 +6,12 @@ Created on Nov. 13, 2013
 '''
 from mongokit import SchemaDocument
 from .connection import connection
+from .myaml import myaml
 
 # pylint: disable=W0201,R0904,R0913
 
 
+@myaml.register
 @connection.register
 class Type(SchemaDocument):
     """
@@ -27,6 +29,7 @@ class Type(SchemaDocument):
         raise NotImplementedError()
 
 
+@myaml.register
 @connection.register
 class BooleanType(Type):
     """
@@ -41,6 +44,7 @@ class BooleanType(Type):
             raise TypeError("value %s is not an boolean" % value)
 
 
+@myaml.register
 @connection.register
 class IntegerType(Type):
     """
@@ -62,6 +66,7 @@ class IntegerType(Type):
                 % (value, self['max']))
 
 
+@myaml.register
 @connection.register
 class FloatType(Type):
     """
@@ -70,6 +75,7 @@ class FloatType(Type):
     pass
 
 
+@myaml.register
 @connection.register
 class StringType(Type):
     """
@@ -80,6 +86,7 @@ class StringType(Type):
                 }
 
 
+@myaml.register
 @connection.register
 class FormattedType(Type):
     """
@@ -90,6 +97,7 @@ class FormattedType(Type):
                 }
 
 
+@myaml.register
 @connection.register
 class ArrayType(Type):
     """
@@ -101,6 +109,7 @@ class ArrayType(Type):
                 }
 
 
+@myaml.register
 @connection.register
 class StructType(Type):
     """

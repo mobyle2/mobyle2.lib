@@ -302,10 +302,10 @@ setup(name        = 'mobyle.lib',
                  'scripts/imports/mob_m1_services_import'
                  ],
       #(dataprefix +'where to put the data in the install, [where to find the data in the tar ball]
-      data_files = [('mobyle/imports', ['scripts/imports/formats_mapping.txt',
-                                     'scripts/imports/operation_mapping.txt',
-                                     'scripts/imports/topic_mapping.txt',
-                                     'scripts/imports/types_mapping.txt'
+      data_files = [('mobyle/imports', ['data/imports/formats_mapping.txt',
+                                     'data/imports/operation_mapping.txt',
+                                     'data/imports/topic_mapping.txt',
+                                     'data/imports/types_mapping.txt'
                                      ]) ],
       #scripts files where some variables must be fix by install_scripts
       fix_scripts = ['mob_edam_import', 'mob_m1_services_import'],

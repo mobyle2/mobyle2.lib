@@ -16,7 +16,6 @@ from collections import OrderedDict
 
 import xml.etree.cElementTree as ET
 import xml.etree.ElementInclude as EI
-from xml2json import elem_to_internal, internal_to_elem
 import logging
 import argparse
 from importlib import import_module
@@ -24,6 +23,7 @@ import yaml
 from mongokit import SchemaDocument, ObjectId
 
 from mobyle.common.config import Config
+from mobyle.common.myaml import myaml
 
 # pylint: disable=C0103
 #        Invalid name "logger" for type constant
@@ -40,7 +40,7 @@ if __name__ == '__main__':
     action = parser.add_mutually_exclusive_group(required=True)
     action.add_argument('--dump', help=
                         "export services to specified directory")
-    action.add_argument('--load', help=
+    action.add_argument('--load', nargs='*', help=
                         "import services from specified directory")
     args = parser.parse_args()
     # Init config
@@ -54,30 +54,6 @@ if __name__ == '__main__':
         except ValueError, ve:
             logger.error(("invalid logging level specified %s," +
                          "loglevel is ignored") % args.loglevel)
-
-    def represent_schema_doc( self, data):
-        d = OrderedDict()
-        def set_value(key):
-            if data[key] is not None and data[key]!=[] and\
-                not(isinstance(data[key], ObjectId)):
-                if hasattr(data, 'default_values') and \
-                    key in data.default_values and \
-                    data.default_values[key]==data[key]:
-                        return
-                d[key] = data[key]
-        d['_type'] = data['_type']
-        if hasattr(data,'keys_order'):
-            keys = data.keys_order
-            keys += [key for key in data.structure if key not in data.keys_order]
-        else:
-            keys = data.structure.keys()
-        for key in keys:
-            set_value(key)
-        return self.represent_mapping('tag:yaml.org,2002:map', d.items())
-
-    yaml.add_multi_representer(SchemaDocument, represent_schema_doc)
-    yaml.add_representer(unicode, yaml.representer.SafeRepresenter.represent_unicode)
-
     if args.dump:
         for s in connection.Service.fetch():
             logger.info("exporting service %s/%s" % (s['name'], s['version']))
@@ -85,13 +61,15 @@ if __name__ == '__main__':
             if s['version']:
                 basefilename += "_%s" % s['version']
             filename = os.path.join(args.dump, basefilename + ".yaml")
-            s_yaml = yaml.dump(s, file(filename, 'w'), indent=4, tags=None)
+            s_yaml = myaml.dump(s, file(filename, 'w'), indent=4, tags=None)
             logger.info("done exporting service to file %s" % (filename))
     elif args.load:
         filenames = args.load
         for filename in filenames:
             logger.info("importing service from file %s" % (filename))
-            s_yaml = yaml.load(file(filename, 'r'))
-            s = connection.Service(s_yaml)
+            print connection
+            s = myaml.load(file(filename, 'r'))
+            print s, s.__collection__
+            #print s.to_json()
             s.save()
             logger.info("done importing service %s/%s" % (s['name'], s['version']))

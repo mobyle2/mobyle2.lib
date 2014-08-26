@@ -106,7 +106,7 @@ class Status(object):
         if state in self.all_states :
             self._state = state
         else:
-            raise MobyleError("invalid state: %s " % state)
+            raise MobyleError("invalid state: {0} ".format(state))
 
     @property
     def state(self):
@@ -115,11 +115,11 @@ class Status(object):
     @state.setter
     def state(self, state):
         if not state in self.all_states:
-            raise MobyleError("invalid state: %s " % state)
+            raise MobyleError("invalid state: {0} ".format(state))
         if state in self._transitions[self._state]:
             self._state = state
         else:
-            raise MobyleError("transition from '%s' to '%s' is not allowed" % (self._state, state) )
+            raise MobyleError("transition from '{0}' to '{1}' is not allowed".format(self._state, state) )
 
     def __eq__(self , other):
         """
@@ -373,16 +373,15 @@ class Job(ProjectDocument):
 
     def process_inputs(self, inputs_dict):
         for parameter in self['service']['inputs'].parameters_list():
-            req_param_name = "input:%s" % parameter['name']
-            if req_param_name in inputs_dict:
-                value = inputs_dict[req_param_name]
+            if parameter.name in inputs_dict:
+                value = inputs_dict[parameter.name]
                 self.set_input_value(parameter, value)
 
     def set_input_value(self, parameter, value):
         data = new_data(parameter['type'])
         if isinstance(data, RefData):
             objectManager = ObjectManager()
-            data_name = "input for parameter %s" % (parameter['name'])
+            data_name = "input for parameter {0}".format(parameter['name'])
             options = {'project': self['project']}
             my_dataset = objectManager.add(data_name, options, False)
             my_path = my_dataset.get_file_path()
@@ -405,14 +404,43 @@ class Job(ProjectDocument):
             self['inputs'][parameter['name']] = data
 
     def get_input_value(self, parameter_name):
-        data = self['inputs'][parameter_name]
-        if isinstance(data, ObjectId):
-            data = connection.ProjectData.fetch_one({'_id': data})
-        return data
-
+        """
+        Return the user-set value corresponding to a parameter
+        :param parameter_name: the name of the parameter
+        :type parameter_name: basestring
+        :return: the data corresponding to the parameter name
+                 or None
+        :rtype: AbstractData
+        """
+        if parameter_name in self['inputs']:
+            data = self['inputs'][parameter_name]
+            if isinstance(data, ObjectId):
+                data = connection.ProjectData.fetch_one({'_id': data})
+            return data
+        else:
+            return None
+        
+    @property    
+    def message(self):
+        """
+        :return: a message or None. message is use when error occured error
+        :rtype: string or None
+        """
+        return self['message']
+    
+    @message.setter
+    def message(self, msg):
+        """
+        :param msg: set a new message for the job (usually use to set an error messsage.
+        :param type: string
+        """
+        self['message'] = msg
+        
+        
+        
 @mf_decorator
 @connection.register
-class ClJob(Job):
+class ProgramJob(Job):
     """
     Job implementation for a Command line  job
     """
@@ -436,8 +464,24 @@ class ClJob(Job):
             return self.end_time - self.create_time > datetime.timedelta(seconds = delay)
         else:
             return False
+    
 
-
+    def get_cmd_line(self):
+        return self['cmd_line'] 
+    
+    def set_cmd_line(self, cmd_line):
+        self['cmd_line'] = cmd_line 
+    
+    cmd_line = property(get_cmd_line, set_cmd_line)
+    
+    @property
+    def cmd_env(self):
+        return self['cmd_env'] if self['cmd_env'] is not None else {}
+    
+    @cmd_env.setter
+    def cmd_env(self, cmd_env):
+        self['cmd_env'] = cmd_env
+    
 @mf_decorator
 @connection.register
 class WorkflowJob(Job):

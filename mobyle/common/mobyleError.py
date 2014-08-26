@@ -11,9 +11,25 @@
 
 
 from exceptions import Exception
+from types import ListType, TupleType
+
 
 class MobyleError(Exception):
     """
     MobyleError is a class that manages Mobyle specific exceptions. 
     """
     pass
+
+
+class UserValueError(MobyleError):
+    
+    def __init__(self, parameters = None, message = None):
+        if message is not None:
+            super(UserValueError, self).__init__(message)
+        else:
+            super(UserValueError, self).__init__()
+        if isinstance(parameters, (ListType, TupleType)): 
+            self.parameters = parameters
+        else:
+            self.parameters = [parameters]
+        
