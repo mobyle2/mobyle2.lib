@@ -113,6 +113,21 @@ class TestService(unittest.TestCase):
         self.assertEqual(sorted(service.inputs_list()), sorted(x_parameters),
                          "service.inputs_list() is the three nested input parameters contained")
 
+    @unittest.expectedFailure
+    def test_service_embedded_paragraphs_reload(self):
+        par_x = InputProgramParagraph()
+        par_x['name'] = 'x'
+        program = connection.Program()
+        program['name'] = 'test'
+        program['inputs'] = par_x
+        program.save()
+        # this works since we use fetch which restores correctly
+        # embedded documents
+        program2 = connection.Program.fetch_one({'name':'test'})
+        # this fails since we use find that does *not* restore
+        # embedded documents
+        program2 = connection.Program.find_one({'name':'test'})
+
     def test_program_parameters_list_getters(self):
         """
         test if program-specific parameters lists methods return the right data
