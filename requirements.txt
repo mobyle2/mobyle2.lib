@@ -13,3 +13,4 @@ python-ldap
 gitpython==0.3.2.RC1
 pairtree
 rdflib>=4.1.1
+PyYAML>=3.11
