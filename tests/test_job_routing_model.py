@@ -69,12 +69,15 @@ class TestExecutionSystem(unittest.TestCase):
         self.assertEqual(count, 3)
         
         big_one_received = connection.ExecutionSystem.find_one({"_id" : "big_one"})
+        del big_one_received[u'_type']
         self.assertDictEqual(big_one, big_one_received)
         
         cluster_two_received = connection.ExecutionSystem.find_one({"_id" : "cluster_two"})
+        del cluster_two_received[u'_type']
         self.assertDictEqual(cluster_two, cluster_two_received)
         
         local_received = connection.ExecutionSystem.find_one({"_id" : "local"})
+        del local_received[u'_type']
         self.assertDictEqual(local, local_received)
         
 class TestExecutionRoutes(unittest.TestCase):        
@@ -148,6 +151,7 @@ class TestExecutionRoutes(unittest.TestCase):
         routes.save()
         
         map_received = connection.ExecutionRoutes.find_one({})
+        del map_received[u'_type']
         map_send = {"map":map,
                     "_id" : _id}
         self.assertDictEqual(map_send, map_received)
