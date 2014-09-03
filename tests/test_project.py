@@ -58,10 +58,6 @@ class TestProject(unittest.TestCase):
         my_project['name'] = 'MyProject'
         my_project.save()
         self.assertIsNone(my_project.dir)
-        my_project.dir = '/tmp'
-        self.assertEqual(my_project.dir, '/tmp')
-        with self.assertRaises(MobyleError):
-            my_project.dir = 'foo'
     
     def test_id(self):
         my_project = connection.Project()
