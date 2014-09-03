@@ -7,6 +7,9 @@ Created on Nov. 23, 2012
 @license: GPLv3
 '''
 import os
+from ConfigParser import Error as ConfigParserError
+import logging
+_log = logging.getLogger(__name__)
 
 from mongokit import Document, ObjectId, IS
 from mf.annotation import mf_decorator
@@ -73,7 +76,13 @@ class Project(Document):
         :return: the project directory
         :rtype: string
         """
-        return os.path.join(os.path.dirname(Config.config().get("mob2exec","pid_file")),
+        try:
+            pid_file_path = Config.config().get("mob2exec","pid_file")
+        except ConfigParserError:
+            _log.warning("cannot compute a project directory path from the config file",
+                      exc_info=True)
+            return None 
+        return os.path.join(os.path.dirname(pid_file_path),
                                      'projects',str(self['_id']))
 
 #    @dir.setter
