@@ -6,6 +6,7 @@ Created on Nov. 23, 2012
 @contact: emeline.legros@ibcp.fr
 @license: GPLv3
 '''
+import os
 
 from mongokit import Document, ObjectId, IS
 from mf.annotation import mf_decorator
@@ -72,22 +73,23 @@ class Project(Document):
         :return: the project directory
         :rtype: string
         """
-        return self['_dir']
+        return os.path.join(os.path.dirname(Config.config().get("mob2exec","pid_file")),
+                                     'projects',str(self['_id']))
 
-    @dir.setter
-    def dir(self, dir):
-        """
-        set the path to the project directory. it can be set only one time.
-
-        :param dir: the path to a directory
-        :type dir: string
-        :raise: :class:`MobyleError` if the dir is try to be set a second time.
-        """
-        if self['_dir'] is None:
-            self['_dir'] = dir
-        else:
-            raise MobyleError("the project dir is already" +
-                              " set and cannot be changed")
+#    @dir.setter
+#    def dir(self, dir):
+#        """
+#        set the path to the project directory. it can be set only one time.
+#
+#        :param dir: the path to a directory
+#        :type dir: string
+#        :raise: :class:`MobyleError` if the dir is try to be set a second time.
+#        """
+#        if self['_dir'] is None:
+#            self['_dir'] = dir
+#        else:
+#            raise MobyleError("the project dir is already" +
+#                              " set and cannot be changed")
 
     @property
     def id(self):

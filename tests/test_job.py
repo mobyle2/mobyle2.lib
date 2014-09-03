@@ -17,7 +17,7 @@ from mobyle.common.job import Status
 from mobyle.common.job import CustomStatus
 from mobyle.common.job import ProgramJob
 from mobyle.common.mobyleError import MobyleError
-
+from mobyle.common.service import Program
 
 class TestJob(unittest.TestCase):
 
@@ -136,7 +136,22 @@ class TestJob(unittest.TestCase):
         self.assertEqual(job_send.end_time, job_send.end_time)
         self.assertEqual(job_send.cmd_line, job_send.cmd_line)
         self.assertEqual(job_send.cmd_env, job_send.cmd_env)
-        
+
+    def test_restore_service(self):
+        job = connection.ProgramJob()
+        job.project = self.project.id
+        job.name = "restore job service test"
+        job.status = self.status
+        job.owner = {'id': self.project.id, 'klass': 'Project'}
+        program = connection.Program()
+        program['name'] = "test_program_service"
+        program.save()
+        job.service = program
+        job.save()
+        restored_job = connection.Job.fetch_one({'name': "restore job service test"})
+        print restored_job.__class__
+        print restored_job.service.__class__
+ 
 if __name__ == '__main__':
     unittest.main()
 
