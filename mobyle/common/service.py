@@ -15,7 +15,7 @@ from .config import Config
 from .project import ProjectDocument
 from .type import Type
 from .myaml import myaml
-
+from .data import new_data
 
 @myaml.register
 @connection.register
@@ -77,9 +77,13 @@ class Parameter(Para):
         :return: the value corresponding to the parameter name
                  or None
         """
+        #FIXME default value should not be systematically a
+        #      ValueData see task #62 in redmine
         if 'type' in self and self['type'] is not None \
             and 'default' in self['type']:
-            return self['type']['default']
+            data = new_data(self['type'])
+            data['value'] = self['type']['default']            
+            return data
         else:
             return None
 
