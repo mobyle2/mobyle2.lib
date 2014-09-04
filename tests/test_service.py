@@ -281,7 +281,7 @@ class TestService(unittest.TestCase):
         input_a['type']['default'] = True
         self.assertTrue(input_a.default_value)
         input_a['type']['default'] = False
-        self.assertFalse(input_a.default_value)
+        self.assertFalse(input_a.default_value.expr_value())
 
     
         
