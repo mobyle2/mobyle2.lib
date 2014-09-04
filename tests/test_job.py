@@ -110,14 +110,10 @@ class TestJob(unittest.TestCase):
         job_send.status = self.status
         job_send.owner = {'id': self.project.id, 'klass': 'Project'}
         
-        #in mongo creation time does not record microsecond :((
-        #need to remove them to be compare
-        create_time = datetime(*datetime.utcnow().timetuple()[:6])
         job_send.save()
         
         job_rcv = connection.Job.find_one({'_id': job_send.id })
         self.assertEqual(job_send.id, job_rcv.id)
-        self.assertEqual(create_time, job_rcv.create_time)
         self.assertEqual(job_send.name, job_rcv.name)
         self.assertEqual(job_send.status, job_rcv.status)
         self.assertEqual(job_send.owner, job_rcv.owner)
@@ -129,7 +125,9 @@ class TestJob(unittest.TestCase):
         self.assertEqual(job_send.cmd_env, {})
                       
         job_send.message = "a message"
-        job_send.end_time = datetime.now()
+        #because MongoDB does not store microseconds...
+        end_time = datetime(*datetime.utcnow().timetuple()[:6])
+        job_send.end_time = end_time
         job_send.cmd_line = "golden db:id" 
         job_send.cmd_env = {'GOLDENDATA': '/usr/local/golden'}
         job_send.save()
