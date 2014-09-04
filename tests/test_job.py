@@ -134,10 +134,10 @@ class TestJob(unittest.TestCase):
         job_send.cmd_env = {'GOLDENDATA': '/usr/local/golden'}
         job_send.save()
         job_rcv = connection.Job.find_one({'_id': job_send.id })
-        self.assertEqual(job_send.message, job_send.message)
-        self.assertEqual(job_send.end_time, job_send.end_time)
-        self.assertEqual(job_send.cmd_line, job_send.cmd_line)
-        self.assertEqual(job_send.cmd_env, job_send.cmd_env)
+        self.assertEqual(job_send.message, job_rcv.message)
+        self.assertEqual(job_send.end_time, job_rcv.end_time)
+        self.assertEqual(job_send.cmd_line, job_rcv.cmd_line)
+        self.assertEqual(job_send.cmd_env, job_rcv.cmd_env)
 
     def test_restore_service(self):
         job = connection.ProgramJob()
