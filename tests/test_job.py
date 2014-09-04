@@ -17,7 +17,9 @@ from mobyle.common.job import Status
 from mobyle.common.job import CustomStatus
 from mobyle.common.job import ProgramJob
 from mobyle.common.mobyleError import MobyleError
-from mobyle.common.service import Program
+from mobyle.common.service import Program, InputParagraph, InputProgramParameter
+from mobyle.common.type import StringType
+from mobyle.common.data import ValueData
 
 class TestJob(unittest.TestCase):
 
@@ -145,12 +147,26 @@ class TestJob(unittest.TestCase):
         job.owner = {'id': self.project.id, 'klass': 'Project'}
         program = connection.Program()
         program['name'] = "test_program_service"
+        inputs = InputParagraph()
+        program['inputs'] = inputs
+        input_string = InputProgramParameter()
+        input_string['name'] = 'string'
+        input_string['argpos'] = 99
+        input_string['format'] = '" " + value'
+        input_string_type = StringType()
+        input_string['type'] = input_string_type
+        program['inputs']['children'].append(input_string)
         program.save()
-        job.service = program
+        job['service'] = program
+        job.process_inputs({'string':'toto'})
         job.save()
         restored_job = connection.Job.fetch_one({'name': "restore job service test"})
-        print restored_job.__class__
-        print restored_job.service.__class__
+        self.assertIsInstance(restored_job.get_input_value('string'), ValueData)
+        #print "job.get_input_value('string')=", type(job.get_input_value('string'))
+        #print "restored_job.get_input_value('string')=", type(restored_job.get_input_value('string'))
+        #print "job.inputs=", type(job.inputs)
+        #print "restored_job.inputs=", type(restored_job.inputs)
+        #print type(restored_job)
  
 if __name__ == '__main__':
     unittest.main()
