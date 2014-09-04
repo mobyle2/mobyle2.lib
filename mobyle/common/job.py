@@ -269,14 +269,13 @@ class CustomStatus(CustomType):
     def validate(self, value, path):
         return isinstance(value, Status)
 
-
 @mf_decorator
 @connection.register
 class Job(ProjectDocument):
     """
     Job is an abstract class that describes the common interface of all jobs
     """
-    use_dot_notation = True
+    #use_dot_notation = True
 
     __collection__ = 'jobs'
     __database__ = Config.config().get('app:main', 'db_name')
@@ -322,7 +321,7 @@ class Job(ProjectDocument):
 
         :note: _id is available only after first mongokit save
         """
-        tz_aware = self._id.generation_time
+        tz_aware = self.id.generation_time
         tz_naive = tz_aware.replace(tzinfo=None)
         return tz_naive
 
@@ -332,7 +331,7 @@ class Job(ProjectDocument):
         :return: the unique identifier of this job
         :rtype:
         """
-        return self._id
+        return self['_id']
 
     def must_be_notified(self):
         """
@@ -347,7 +346,7 @@ class Job(ProjectDocument):
         :return: the job directory
         :rtype: string
         """
-        return self._dir
+        return self['_dir']
 
     @dir.setter
     def dir(self, dir):
@@ -358,10 +357,50 @@ class Job(ProjectDocument):
         :type dir: string
         :raise: :class:`MobyleError` if the dir is try to be set a second time.
         """
-        if self._dir is None:
-            self._dir = dir
+        if self['_dir'] is None:
+            self['_dir'] = dir
         else:
             raise MobyleError("the job dir is already set and cannot be changed")
+
+    @property
+    def project(self):
+        return self['project']
+
+    @project.setter
+    def project(self, project_id):
+        self['project'] = project_id
+
+    @property
+    def status(self):
+        return self['status']
+
+    @status.setter
+    def status(self, status):
+        self['status'] = status
+
+    @property
+    def name(self):
+        return self['name']
+
+    @name.setter
+    def name(self, name):
+        self['name'] = name
+
+    @property
+    def owner(self):
+        return self['owner']
+
+    @owner.setter
+    def owner(self, owner):
+        self['owner'] = owner
+
+    @property
+    def end_time(self):
+        return self['end_time']
+
+    @end_time.setter
+    def end_time(self, end_time):
+        self['end_time'] = end_time
 
     def get_project(self):
         """
@@ -445,7 +484,7 @@ class ProgramJob(Job):
     Job implementation for a Command line  job
     """
 
-    use_dot_notation = True
+    #use_dot_notation = True
 
     structure = {
                  'cmd_line': basestring,
