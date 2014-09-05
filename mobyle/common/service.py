@@ -144,7 +144,7 @@ class InputParameter(Parameter):
     """
     structure = {
                 'mandatory': bool,
-                'ctrl': None
+                'ctrls': None
                 }
 
     default_values = {
@@ -156,15 +156,15 @@ class InputParameter(Parameter):
         return self['mandatory'] or False
 
 
-    def has_ctrl(self):
-        return True if self['ctrl'] is not None else False
+    def has_ctrls(self):
+        return True if self['ctrls'] is not None else False
 
     @property
-    def ctrl(self):
+    def ctrls(self):
         """
-        :return: the ctrl 
+        :return: the ctrls
         """
-        return self['ctrl']
+        return self['ctrls']
     
 @myaml.register
 @connection.register
