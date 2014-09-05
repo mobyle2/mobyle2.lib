@@ -528,6 +528,22 @@ class ProgramJob(Job):
     @cmd_env.setter
     def cmd_env(self, cmd_env):
         self['cmd_env'] = cmd_env
+
+    @property
+    def execution_system_id(self):
+        return self['execution']['exec_system_id']
+
+    @execution_system_id.setter
+    def execution_system_id(self, system_id):
+        self['execution']['exec_system_id'] = system_id
+
+    @property
+    def execution_job_no(self):
+        return self['execution']['job_no']
+
+    @execution_job_no.setter
+    def execution_job_no(self, job_no):
+        self['execution']['job_no'] = job_no
     
 @mf_decorator
 @connection.register
