@@ -363,6 +363,14 @@ class Job(ProjectDocument):
             raise MobyleError("the job dir is already set and cannot be changed")
 
     @property
+    def service(self):
+        return self['service']
+
+    @service.setter
+    def service(self, service):
+        self['service'] = service
+
+    @property
     def project(self):
         return self['project']
 
