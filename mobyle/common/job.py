@@ -463,7 +463,9 @@ class Job(ProjectDocument):
             data = self['inputs'][parameter_name]
             if isinstance(data, ObjectId):
                 project_data = connection.ProjectData.fetch_one({'_id': data})
-            return project_data['data']
+                return project_data['data']
+            else:
+                return data
         else:
             return None
         
