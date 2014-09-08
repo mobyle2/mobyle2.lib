@@ -410,6 +410,14 @@ class Job(ProjectDocument):
     def end_time(self, end_time):
         self['end_time'] = end_time
 
+    @property
+    def has_been_notified(self):
+        return self['has_been_notified']
+
+    @end_time.setter
+    def has_been_notified(self, has_been_notified):
+        self['has_been_notified'] = has_been_notified
+
     def get_project(self):
         """
         :return: the project in which this job has been created
