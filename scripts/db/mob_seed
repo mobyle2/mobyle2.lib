@@ -85,3 +85,33 @@ if conn.MobyleConfig.find().count() == 0:
     cf['active'] = True
     cf.save()
 
+#Create minimal exec engine configuration
+def push_exec_sys_in_db(conf):
+    exec_sys = conn.ExecutionSystem()
+    exec_sys['_id'] = conf['_id']
+    exec_sys['class'] = conf['class']
+    if "drm_options" in conf:
+        exec_sys["drm_options"] = conf["drm_options"]
+    if "native_specifications" in conf:
+        exec_sys["native_specifications"] = conf["native_specifications"]
+    exec_sys.save()
+
+def push_routes_in_db(conf_map):
+    _map = conn.ExecutionRoutes()
+    _map["map"] = conf_map
+    _map.save()
+
+conf = {"execution_systems" : [{"_id" : "local",
+                                 "class" : "Local",
+                                 "native_specifications" : " nice -n 18 "
+                                 }],
+
+        "map": [ {"name" : "default",
+                  "rules" : [],
+                  "exec_system" : "local"
+                 }]
+       }
+
+for exec_sys in conf["execution_systems"]:
+    push_exec_sys_in_db(exec_sys)
+push_routes_in_db(conf["map"])
