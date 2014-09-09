@@ -465,13 +465,13 @@ class Job(ProjectDocument):
         :type parameter_name: basestring
         :return: the data corresponding to the parameter name
                  or None
-        :rtype: AbstractData
+        :rtype: AbstractData or ProjectData
         """
         if parameter_name in self['inputs']:
             data = self['inputs'][parameter_name]
             if isinstance(data, ObjectId):
                 project_data = connection.ProjectData.fetch_one({'_id': data})
-                return project_data['data']
+                return project_data
             else:
                 return data
         else:

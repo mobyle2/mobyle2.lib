@@ -199,6 +199,19 @@ class ProjectData(ProjectDocument):
 
     default_values = {'persistent': False, 'public': False}
 
+    @property
+    def default_value(self):
+        """
+        return default_value, delegated to data property
+        """
+        return self['data'].default_value
+
+    def expr_value(self):
+        """
+        return expr_value(), delegated to data property
+        """
+        return self['data'].expr_value()
+
     def get_file_path(self):
         '''Get root path for files of the dataset'''
         if self['path']:
