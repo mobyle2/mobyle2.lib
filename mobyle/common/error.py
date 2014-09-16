@@ -17,11 +17,23 @@ from types import ListType, TupleType
 class MobyleError(Exception):
     """
     MobyleError is a class that manages Mobyle specific exceptions. 
+    This is the base class for all error produced by Mobyle
     """
     pass
 
 
-class UserValueError(MobyleError):
+class UserError(MobyleError):
+    """
+    UserError is the base class for error due to an invalid action of the user 
+    """
+    pass
+
+
+class UserValueError(UserError):
+    """
+    Handle error due to a wrong value provide by the user
+    This Error have a list of parameters which produces this error 
+    """
     
     def __init__(self, parameters = None, message = None):
         if message is not None:
@@ -33,3 +45,9 @@ class UserValueError(MobyleError):
         else:
             self.parameters = [parameters]
         
+        
+class InternalError(MobyleError):
+    """
+    This is the base class for error which are not the consequence of user action.
+    """
+    pass
