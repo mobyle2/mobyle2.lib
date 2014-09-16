@@ -14,6 +14,18 @@ class TestConfig(unittest.TestCase):
     """ Tests for the Config class
     """
 
+    @classmethod
+    def setUpClass(cls):
+        cls._bckconfig = Config._config
+        cls._bcklog = Config._log
+        cls._bckfile = Config._file
+
+    @classmethod
+    def tearDownClass(cls):
+        Config._config = cls._bckconfig
+        Config._log = cls._bcklog
+        Config._file = cls._bckfile
+
     def setUp(self):
         Config._config = None
         Config._log = None
