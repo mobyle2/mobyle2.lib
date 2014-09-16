@@ -18,7 +18,7 @@ from mf.views import MF_READ, MF_EDIT
 from .connection import connection
 from .config import Config
 from .data import AbstractData
-from .mobyleError import MobyleError
+from .error import MobyleError
 from .objectmanager import ObjectManager
 
 

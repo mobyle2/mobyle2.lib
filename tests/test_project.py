@@ -11,7 +11,7 @@ from mobyle.common.connection import connection
 from mobyle.common.data import ValueData
 from mobyle.common.project import Project, ProjectData
 from mobyle.common.users import User
-from mobyle.common.mobyleError import MobyleError
+from mobyle.common.error import MobyleError
 
 from mongokit import SchemaTypeError
 

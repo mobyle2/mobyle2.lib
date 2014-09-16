@@ -26,7 +26,7 @@ from .connection import connection
 from .data import AbstractData, RefData, new_data
 from .service import Service
 from .project import ProjectDocument, ProjectData
-from .mobyleError import MobyleError
+from .error import MobyleError
 from mobyle.common.objectmanager import ObjectManager
 
 

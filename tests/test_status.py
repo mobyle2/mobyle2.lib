@@ -17,7 +17,7 @@ import types
 from mobyle.common.config import Config
 config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common.job import Status
-from mobyle.common.mobyleError import MobyleError
+from mobyle.common.error import MobyleError
 
 class StatusTest(unittest.TestCase):
 

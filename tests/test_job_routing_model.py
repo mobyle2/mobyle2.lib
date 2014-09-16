@@ -14,7 +14,7 @@ from mobyle.common.connection import connection
 from mobyle.common.job_routing_model import ExecutionSystem
 from mobyle.common.job_routing_model import ExecutionRoutes, ExecutionRule
 
-from mobyle.common.mobyleError import MobyleError
+from mobyle.common.error import MobyleError
 
 
 class TestExecutionSystem(unittest.TestCase):
@@ -151,6 +151,9 @@ class TestExecutionRoutes(unittest.TestCase):
         routes.save()
         
         map_received = connection.ExecutionRoutes.find_one({})
+        print 
+        print map_received
+        print 
         del map_received[u'_type']
         map_send = {"map":map,
                     "_id" : _id}

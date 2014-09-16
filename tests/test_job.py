@@ -16,7 +16,7 @@ from mobyle.common.project import Project
 from mobyle.common.job import Status
 from mobyle.common.job import CustomStatus
 from mobyle.common.job import ProgramJob
-from mobyle.common.mobyleError import MobyleError
+from mobyle.common.error import MobyleError
 from mobyle.common.service import Program, InputParagraph, InputProgramParameter
 from mobyle.common.type import StringType
 from mobyle.common.data import ValueData
