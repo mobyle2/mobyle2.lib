@@ -2,9 +2,6 @@
 
 import unittest
 import os.path
-import time
-from datetime import datetime
-from mongokit.schema_document import RequireFieldError
  
 #a config object must be instantiated first for each entry point of the application
 from mobyle.common.config import Config
@@ -14,13 +11,11 @@ from mobyle.common.connection import connection
 from mobyle.common.job_routing_model import ExecutionSystem
 from mobyle.common.job_routing_model import ExecutionRoutes, ExecutionRule
 
-from mobyle.common.error import MobyleError
-
 
 class TestExecutionSystem(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.ExecutionSystem.collection.remove({})
+        connection.ExecutionSystem.collection.remove({})
 
     def test_insert_N_get(self):
         big_one = {"_id" : "big_one",
@@ -151,9 +146,6 @@ class TestExecutionRoutes(unittest.TestCase):
         routes.save()
         
         map_received = connection.ExecutionRoutes.find_one({})
-        print 
-        print map_received
-        print 
         del map_received[u'_type']
         map_send = {"map":map,
                     "_id" : _id}
