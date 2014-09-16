@@ -7,18 +7,14 @@ Created on Nov. 28, 2012
 @license: GPLv3
 '''
 
-import sys
-import os
 import logging
 import logging.config
 import json
 from bson import json_util
-from datetime import datetime
 from mongokit import Document
 from mf.annotation import mf_decorator
 
 from .connection import connection
-from .error import MobyleError
 from .config import Config
 
 @mf_decorator
@@ -76,7 +72,7 @@ class MobyleConfig(Document):
     }
 
     @classmethod
-    def get_current(klass):
+    def get_current(cls):
         """
         Return current active configuration
 
