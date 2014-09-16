@@ -16,7 +16,7 @@ from mobyle.common.project import Project
 from mobyle.common.job import Status
 from mobyle.common.job import CustomStatus
 from mobyle.common.job import ProgramJob
-from mobyle.common.error import MobyleError
+from mobyle.common.error import InternalError
 from mobyle.common.service import Program, InputParagraph, InputProgramParameter
 from mobyle.common.type import StringType
 from mobyle.common.data import ValueData
@@ -24,9 +24,9 @@ from mobyle.common.data import ValueData
 class TestJob(unittest.TestCase):
 
     def setUp(self):
-        objects = connection.ProgramJob.collection.remove({})
-        objects = connection.User.collection.remove({})
-        objects = connection.Project.collection.remove({})
+        connection.ProgramJob.collection.remove({})
+        connection.User.collection.remove({})
+        connection.Project.collection.remove({})
         
         self.user = connection.User()
         self.user['email'] = 'foo@bar.fr'
@@ -43,7 +43,7 @@ class TestJob(unittest.TestCase):
         job = connection.ProgramJob()
         #test that status is required
         job.project = self.project.id
-        self.assertRaises(MobyleError, job.save)
+        self.assertRaises(InternalError, job.save)
         #test that project is required
         job = connection.ProgramJob()
         job.status = self.status
@@ -60,7 +60,7 @@ class TestJob(unittest.TestCase):
         job_list = connection.Job.find({'name': 'first job'})
         count = 0
         for job in job_list:
-            count+=1
+            count += 1
         self.assertEqual(count, 1)
     
     def test_cmp(self):
@@ -100,7 +100,7 @@ class TestJob(unittest.TestCase):
         self.assertIsNone(job.dir)
         job.dir = '/tmp'
         self.assertEqual(job.dir, '/tmp')
-        with self.assertRaises(MobyleError):
+        with self.assertRaises(InternalError):
             job.dir = 'foo'
             
     def test_ProgramJob(self):
