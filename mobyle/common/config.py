@@ -9,16 +9,10 @@ Created on Nov. 27, 2012
 
 
 
-import sys
 import os
-
 import ConfigParser
-
 import logging
 import logging.config
-
-
-from mobyle.common.error import MobyleError
 
 
 class Config:
