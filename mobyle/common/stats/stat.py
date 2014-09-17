@@ -10,10 +10,37 @@ import logging
 from ..connection import connection
 from ..config import Config
 
+@connection.register
+class ServiceUsageStatistic(Document):
+    """
+    Service statistics
+
+    Collects usage info on which service is used after an other service
+    """
+
+    __collection__ = 'serviceusage'
+    __database__ = Config.config().get('app:main','db_name')
+
+    structure = { 'service': basestring, 'follows': None }
+
+    @classmethod
+    def add(cls, service, next_service):
+        """
+        Add a new usage statistic
+
+        :param service: name of the service
+        :type service: str
+        :param next_service: name of the following service
+        :type next_service: str
+        """
+        connection.ServiceUsageStatistic.find_and_modify({'service': service},
+            {'$inc' : { 'follows.'+next_service : 1 }},
+            { 'upsert' : True })
+
 
 class Statistic(Document):
     """
-    Empty class for the moment, only used as reference
+    Base statistic to create time related statistics.
     """
 
     gi = pygeoip.GeoIP(os.path.dirname(os.path.realpath(__file__))+'/GeoIP.dat',pygeoip.MEMORY_CACHE)
@@ -21,15 +48,22 @@ class Statistic(Document):
     __collection__ = 'statistics'
     __database__ = Config.config().get('app:main','db_name')
 
-    structure = { 'timestamp' : datetime.datetime, 'total' : int , 'jobs' :  {  } , 'location' :  {  } , 'year' : int, 'month' : int, 'hour' : int }
+    structure = { 'timestamp' : datetime.datetime, 'total' : int , 'jobs' :  {
+    } , 'location' :  {  } , 'year' : int, 'month' : int, 'hour' : int }
 
-    def add(self,job,location):
-        hstat = HourlyStatistic()
-        hstat.add(job,location)
-        dstat = DailyStatistic()
-        dstat.add(job,location)
-        mstat = MonthlyStatistic()
-        mstat.add(job,location)
+    @classmethod
+    def add(cls,job,location):
+        """
+        Add a new stat for the job (hourly/daily/monthly).
+
+        :param job: job name e.g. service name
+        :type job: str
+        :param location: IP address of the user
+        :type location: str
+        """
+        HourlyStatistic.add(job,location)
+        DailyStatistic.add(job,location)
+        MonthlyStatistic.add(job,location)
 
 
 @connection.register
@@ -37,7 +71,8 @@ class HourlyStatistic(Statistic):
 
     __collection__ = 'hourlystatistics'
 
-    def add(self,job,location):
+    @classmethod
+    def add(cls,job,location):
         import datetime
         date = datetime.datetime.utcnow()
         timestamp = datetime.datetime(date.year, date.month,date.day,date.hour)
@@ -55,7 +90,8 @@ class DailyStatistic(Statistic):
 
     __collection__ = 'dailystatistics'
 
-    def add(self,job,location):
+    @classmethod
+    def add(cls,job,location):
         import datetime
         date = datetime.datetime.utcnow()
         timestamp = datetime.datetime(date.year, date.month,date.day)
@@ -73,7 +109,8 @@ class MonthlyStatistic(Statistic):
 
     __collection__ = 'monthlystatistics'
 
-    def add(self,job,location):
+    @classmethod
+    def add(cls,job,location):
         import datetime
         date = datetime.datetime.utcnow()
         timestamp = datetime.datetime(date.year, date.month,date.day)
