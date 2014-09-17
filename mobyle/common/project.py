@@ -77,13 +77,12 @@ class Project(Document):
         :rtype: string
         """
         try:
-            pid_file_path = Config.config().get("mob2exec","pid_file")
+            pid_file_path = Config.config().get("DEFAULT","projects_store")
         except ConfigParserError:
             _log.warning("cannot compute a project directory path from the config file",
                       exc_info=True)
             return None 
-        return os.path.join(os.path.dirname(pid_file_path),
-                                     'projects',str(self['_id']))
+        return os.path.join(pid_file_path, 'projects', str(self['_id']))
 
 #    @dir.setter
 #    def dir(self, dir):
