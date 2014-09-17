@@ -76,7 +76,8 @@ class ObjectManager:
             config = Config.config()
             fstore = PairtreeStorageFactory()
             ObjectManager.storage = fstore.get_store(
-                store_dir=config.get("app:main", "dm_store"), uri_base="http://")
+                store_dir=config.get("app:main", "dm_store")+'/dm',
+                uri_base="http://")
             logging.debug("store = " + str(config.get("app:main", "dm_store")))
             #if ObjectManager.use_repo:
             #    ObjectManager.repo = Repo.init(self.get_storage_path())
