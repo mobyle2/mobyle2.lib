@@ -64,7 +64,7 @@ class ObjectManager:
     def __init__(self):
         config = Config.config()
         logging.debug("store = " + str(ObjectManager.storage) +
-            ", set to " + config.get("app:main", "store"))
+            ", set to " + config.get("app:main", "dm_store"))
 
         if config.has_option("app:main", "use_history"):
             ObjectManager.use_repo = config.getboolean("app:main",
@@ -76,8 +76,8 @@ class ObjectManager:
             config = Config.config()
             fstore = PairtreeStorageFactory()
             ObjectManager.storage = fstore.get_store(
-                store_dir=config.get("app:main", "store"), uri_base="http://")
-            logging.debug("store = " + str(config.get("app:main", "store")))
+                store_dir=config.get("app:main", "dm_store"), uri_base="http://")
+            logging.debug("store = " + str(config.get("app:main", "dm_store")))
             #if ObjectManager.use_repo:
             #    ObjectManager.repo = Repo.init(self.get_storage_path())
 
@@ -113,7 +113,7 @@ class ObjectManager:
     def get_storage_path(cls):
         '''Get path to the storage'''
         config = Config.config()
-        return config.get("app:main", "store") + "/pairtree_root/"
+        return config.get("app:main", "dm_store") + "/dm/pairtree_root/"
 
     @classmethod
     def get_file_path(cls, uid):
