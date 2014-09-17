@@ -16,6 +16,7 @@ install:
   - "pip install coverage"
   - "pip install python-coveralls"
   - "pip install -r requirements.txt --use-mirrors"
+  - "mkdir -p /tmp/mobyle-datatest/dm"
 # command to run tests
 script: nosetests --with-coverage --cover-package=mobyle
 after_success:
