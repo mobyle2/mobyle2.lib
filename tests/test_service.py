@@ -209,6 +209,16 @@ class TestService(unittest.TestCase):
         input_n['format'] = '" -n " if value else ""'
         input_options['children'].append(input_n)
 
+        input_options_2 = InputProgramParagraph()
+
+        input_options_2['argpos'] = None
+        input_n2 = InputProgramParameter()
+        # n2 has no argpos, its argpos will be 1
+        input_n2['type'] = BooleanType()
+        input_n2['name'] = 'n2'
+        input_n2['format'] = '" -n " if value else ""'
+        input_options_2['children'].append(input_n2)
+
         # e has an argpos of 3
         input_e = InputProgramParameter()
         input_e['type'] = BooleanType()
@@ -221,6 +231,7 @@ class TestService(unittest.TestCase):
         program['inputs']['children'].append(input_string)
         program['inputs']['children'].append(input_first)
         program['inputs']['children'].append(input_options)
+        program['inputs']['children'].append(input_options_2)
 
         p_cmd = InputProgramParameter()
         p_cmd['name'] = 'cmd'
@@ -244,7 +255,9 @@ class TestService(unittest.TestCase):
         self.assertEqual(input_n.argpos, 2)
         self.assertEqual(input_first.argpos, -10)
         self.assertEqual(p_cmd.argpos, 0)
-        
+        self.assertEqual(input_n2.argpos, 1)
+
+                
         
     def test_preconds(self):
         input_a = InputParameter()
