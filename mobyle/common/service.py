@@ -226,7 +226,7 @@ class InputProgramParameter(InputParameter):
             return self['argpos']
         elif hasattr(self, 'ancestors'):
             for ancestor in self.ancestors:
-                if ancestor['argpos'] is not None:
+                if 'argpos' in ancestor and ancestor['argpos'] is not None:
                     return ancestor['argpos']
         else:
             return 1
