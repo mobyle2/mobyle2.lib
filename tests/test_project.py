@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime
 import unittest
 import os.path
 #a config object must be instantiated first for each entry point of the application
@@ -11,7 +10,6 @@ from mobyle.common.connection import connection
 from mobyle.common.data import ValueData
 from mobyle.common.project import Project, ProjectData
 from mobyle.common.users import User
-from mobyle.common.mobyleError import MobyleError
 
 from mongokit import SchemaTypeError
 
@@ -19,10 +17,10 @@ from mf.views import MF_READ, MF_EDIT
 
 class RequestMock(object):
 
-    def __init__(self, adminmode=False):
+    def __init__(self, adminmode = False):
         self.session = {}
         if adminmode:
-            self.session['adminmode']=True
+            self.session['adminmode'] = True
 
 class TestProject(unittest.TestCase):
 
@@ -116,9 +114,9 @@ class TestProject(unittest.TestCase):
         msg5 = "read should be allowed on projects where user is member "\
                + "or public projects"
         filter5 = project1.my(MF_READ, None, user1['email'])
-        self.assertEqual(filter5,{'$or': [{'users': {'$elemMatch': \
-             {'user': user1['_id']}}},\
-             {'public': True}]}, msg5)
+        self.assertEqual(filter5, {'$or': [{'users': {'$elemMatch': \
+                                                      {'user': user1['_id']}}},\
+                                           {'public': True}]}, msg5)
         msg6 = "read should be allowed everywhere in admin mode"
         filter6 = project1.my(MF_READ, admin_request, user1['email'])
         self.assertEqual(filter6, {}, msg6)
@@ -156,7 +154,7 @@ class TestProjectDocument(unittest.TestCase):
     (not registered in MF)
     """
 
-    def _setUpTestUser(self,userid,admin=False):
+    def _setUpTestUser(self, userid, admin = False):
         """
         set up a test user, save it and return it
         """
@@ -194,15 +192,15 @@ class TestProjectDocument(unittest.TestCase):
         self.user1 = self._setUpTestUser(1,True)
         self.user2 = self._setUpTestUser(2)
         self.user3 = self._setUpTestUser(3)
-        self.project1 = self._setUpTestProject(1,self.user1,\
-                [{'user': self.user1['_id'], 'role': u'manager'},\
-                 {'user': self.user2['_id'], 'role': u'contributor'}])
-        self.project2 = self._setUpTestProject(2,self.user1,\
-                [{'user': self.user1['_id'], 'role': u'contributor'},\
-                 {'user': self.user2['_id'], 'role': u'contributor'}])
-        self.project3 = self._setUpTestProject(3,self.user1,\
-                [{'user': self.user1['_id'], 'role': u'watcher'},\
-                 {'user': self.user2['_id'], 'role': u'watcher'}])
+        self.project1 = self._setUpTestProject(1, self.user1,
+                                               [{'user': self.user1['_id'], 'role': u'manager'},
+                                                {'user': self.user2['_id'], 'role': u'contributor'}])
+        self.project2 = self._setUpTestProject(2,self.user1,
+                                               [{'user': self.user1['_id'], 'role': u'contributor'},
+                                                {'user': self.user2['_id'], 'role': u'contributor'}])
+        self.project3 = self._setUpTestProject(3,self.user1,
+                                               [{'user': self.user1['_id'], 'role': u'watcher'},
+                                                {'user': self.user2['_id'], 'role': u'watcher'}])
         self.admin_request = RequestMock(adminmode=True)
 
     def test_my(self):

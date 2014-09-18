@@ -17,7 +17,7 @@ import types
 from mobyle.common.config import Config
 config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common.job import Status
-from mobyle.common.mobyleError import MobyleError
+from mobyle.common.error import InternalError
 
 class StatusTest(unittest.TestCase):
 
@@ -41,16 +41,16 @@ class StatusTest(unittest.TestCase):
     def test_init(self):
         for attr, val in self.all_status_tuple:
             self.assertIsInstance(Status(val), Status)
-        self.assertRaises(MobyleError, Status, 'nimportnaoik')
+        self.assertRaises(InternalError, Status, 'nimportnaoik')
         
         
     def test_transition(self):
         s = Status(Status.INIT)
         s.state = Status.TO_BE_BUILT
         self.assertEqual(s.state, Status.TO_BE_BUILT)
-        self.assertRaises(MobyleError, Status.state.fset, s, Status.FINISHED)
+        self.assertRaises(InternalError, Status.state.fset, s, Status.FINISHED)
         s = Status(Status.KILLED)
-        self.assertRaises(MobyleError, Status.state.fset, s, Status.KILLED)
+        self.assertRaises(InternalError, Status.state.fset, s, Status.KILLED)
         
         
     def test_eq(self):

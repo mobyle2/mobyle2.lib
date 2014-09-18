@@ -9,16 +9,10 @@ Created on Nov. 27, 2012
 
 
 
-import sys
 import os
-
 import ConfigParser
-
 import logging
 import logging.config
-
-
-from mobyle.common.mobyleError import MobyleError
 
 
 class Config:
@@ -152,7 +146,7 @@ class Config:
         ..  seealso:: ConfigParser
         """
         if Config._config is None:
-          # If not config, initialize with defaults
-          Config()
+            # If not config, initialize with defaults
+            Config()
         return Config._config
 

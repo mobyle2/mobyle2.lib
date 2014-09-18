@@ -9,6 +9,6 @@ Created on Nov. 12, 2012
 __import__('pkg_resources').declare_namespace('mobyle')
 
 __all__ = ["classification", "config", "connection", "data",
-           "detector", "job", "mobyleConfig", "mobyleError",
+           "detector", "job", "mobyleConfig", "error",
            "objectmanager", "project", "service", "term", "tokens",
            "type", "users", "job_routing_model"]
