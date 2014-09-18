@@ -51,3 +51,9 @@ class InternalError(MobyleError):
     This is the base class for error which are not the consequence of user action.
     """
     pass
+
+class ConfigError(InternalError):
+    """
+    Handle error due to a misconfiguration of Mobyle.
+    """
+    pass
