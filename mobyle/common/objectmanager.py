@@ -512,7 +512,7 @@ class ObjectManager:
             if 'public' in options:
                 dataset['public'] = options['public']
 
-            if options['format'] == 'auto':
+            if options['format'] == 'auto' and 'properties' not in dataset['data']:
                 # Try auto-detect
                 detector = BioFormat()
                 if dataset['data'].__class__.__name__ == 'ListData':
@@ -569,7 +569,7 @@ class ObjectManager:
                 if 'path' in dataset:
                     # Remove existing file
                     ObjectManager._delete_file_only(options['id'],
-                        dataset['data']['path'])
+                        [dataset['data']['path']])
         else:
             dataset = connection.ProjectData()
             dataset['data'] = RefData()
