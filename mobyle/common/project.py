@@ -18,7 +18,6 @@ from mf.views import MF_READ, MF_EDIT
 from .connection import connection
 from .config import Config
 from .data import AbstractData
-from .mobyleError import MobyleError
 from .objectmanager import ObjectManager
 
 
@@ -84,20 +83,6 @@ class Project(Document):
             return None 
         return os.path.join(pid_file_path, 'projects', str(self['_id']))
 
-#    @dir.setter
-#    def dir(self, dir):
-#        """
-#        set the path to the project directory. it can be set only one time.
-#
-#        :param dir: the path to a directory
-#        :type dir: string
-#        :raise: :class:`MobyleError` if the dir is try to be set a second time.
-#        """
-#        if self['_dir'] is None:
-#            self['_dir'] = dir
-#        else:
-#            raise MobyleError("the project dir is already" +
-#                              " set and cannot be changed")
 
     @property
     def id(self):

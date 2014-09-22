@@ -220,16 +220,16 @@ class InputProgramParameter(InputParameter):
         returns the argpos of the parameter, exploring the ancestor
         paragraphs if necessary
         """
+        argpos = None
         if self['command']:
-            return 0
+            argpos = 0
         elif self['argpos'] is not None:
-            return self['argpos']
+            argpos = self['argpos']
         elif hasattr(self, 'ancestors'):
             for ancestor in self.ancestors:
                 if 'argpos' in ancestor and ancestor['argpos'] is not None:
-                    return ancestor['argpos']
-        else:
-            return 1
+                    argpos = ancestor['argpos']
+        return argpos if argpos is not None else 1
 
     def has_format(self):
         """

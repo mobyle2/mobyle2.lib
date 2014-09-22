@@ -26,7 +26,7 @@ from .connection import connection
 from .data import AbstractData, RefData, new_data
 from .service import Service
 from .project import ProjectDocument, ProjectData
-from .mobyleError import MobyleError
+from .error import InternalError
 from mobyle.common.objectmanager import ObjectManager
 
 
@@ -106,7 +106,7 @@ class Status(object):
         if state in self.all_states :
             self._state = state
         else:
-            raise MobyleError("invalid state: {0} ".format(state))
+            raise InternalError("invalid state: {0} ".format(state))
 
     @property
     def state(self):
@@ -115,11 +115,11 @@ class Status(object):
     @state.setter
     def state(self, state):
         if not state in self.all_states:
-            raise MobyleError("invalid state: {0} ".format(state))
+            raise InternalError("invalid state: {0} ".format(state))
         if state in self._transitions[self._state]:
             self._state = state
         else:
-            raise MobyleError("transition from '{0}' to '{1}' is not allowed".format(self._state, state) )
+            raise InternalError("transition from '{0}' to '{1}' is not allowed".format(self._state, state) )
 
     def __eq__(self , other):
         """
@@ -158,7 +158,7 @@ class Status(object):
         :return: True if the status is among the following ones :
 
                  * "finished", the job is finished without error from Mobyle
-                 * "error", the job has failed due to a MobyleError
+                 * "error", the job has failed due to a InternalError
                  * "killed", the job has been removed by the user, or killed by the admin
 
         :rtype: boolean
@@ -170,7 +170,7 @@ class Status(object):
         """
         :return: True if the status is among the following ones :
 
-                 * "error", the job has failed due to a MobyleError
+                 * "error", the job has failed due to a InternalError
                  * "killed", the job has been removed by the user, or killed by the admin
 
         :rtype: boolean
@@ -355,12 +355,12 @@ class Job(ProjectDocument):
 
         :param dir: the path to a directory
         :type dir: string
-        :raise: :class:`MobyleError` if the dir is try to be set a second time.
+        :raise: :class:`InternalError` if the dir is try to be set a second time.
         """
         if self['_dir'] is None:
             self['_dir'] = dir
         else:
-            raise MobyleError("the job dir is already set and cannot be changed")
+            raise InternalError("the job dir is already set and cannot be changed")
 
     @property
     def service(self):
