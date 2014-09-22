@@ -47,7 +47,7 @@ class RefData(AbstractData):
     on one or more files
     """
 
-    structure = {'path': [basestring],
+    structure = {'path': basestring,
                  'size': int,
                 }
 

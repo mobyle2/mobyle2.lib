@@ -15,6 +15,7 @@ from mobyle.common.connection import connection
 from mobyle.common.config import Config
 from mobyle.common.data import RefData, ListData, StructData
 from mobyle.common import tokens
+from mobyle.common.type import FormattedType
 
 from bson.objectid import ObjectId
 
@@ -323,7 +324,6 @@ class ObjectManager:
 
         if status == ObjectManager.SYMLINK:
             options['uncompress'] = False
-
         if status == ObjectManager.DOWNLOADED or \
              status == ObjectManager.UNCOMPRESSED or \
              status == ObjectManager.SYMLINK:
@@ -340,10 +340,8 @@ class ObjectManager:
                     msg = options['msg']
                 if options['group']:
                     dataset['data'] = ListData()
-
                 else:
                     updated_datasets = []
-
                 if options['group']:
                     types = []
                     if 'type_name' in options and options['type_name']:
@@ -353,16 +351,18 @@ class ObjectManager:
                     if len(types) > 1:
                         # Complex type ie StructData
                         subdata = StructData()
-                        subdata['type'] = options['type']
+                        subdata['type'] = FormattedType()
+                        subdata['type']['data_terms'] = [options['type']]
                         subdata['properties'] = {}
                         status = ObjectManager.NEED_EDIT
                         i = 0
                         subdata['files'] = []
                         for struct_type in types:
                             subdata['properties'][struct_type] = RefData()
-                            subdata['properties'][struct_type]['type'] = struct_type_edam[i]
-                            subdata['properties'][struct_type]['format'] = struct_format[i]
-                            subdata['properties'][struct_type]['path'] = []
+                            subdata['properties'][struct_type]['type'] = FormattedType()
+                            subdata['properties'][struct_type]['type']['data_terms'] = [struct_type_edam[i]]
+                            subdata['properties'][struct_type]['type']['format_terms'] = [struct_format[i]]
+                            subdata['properties'][struct_type]['path'] = ''
                             filepath = options['files'][i]
                             #for filepath in options['files']:
                             # Copy files
@@ -379,10 +379,12 @@ class ObjectManager:
                             i = i + 1
                         dataset['data'] = subdata
                     else:
-                        # RefData
-                        subdata = RefData()
-                        subdata['path'] = []
-                        subdata['type'] = options['type']
+                        # StructData but with 1 type
+                        subdata = StructData()
+                        subdata['properties'] = {}
+                        subdata['files'] = []
+                        subdata['type'] = FormattedType()
+                        subdata['type']['data_terms'] = [options['type']]
                         fullsize = 0
 
                         for filepath in options['files']:
@@ -395,7 +397,13 @@ class ObjectManager:
                             fullsize = \
                                 os.path.getsize(ObjectManager.get_storage_path() +
                                             filespath)
-                            subdata['path'].append(os.path.basename(filepath))
+                            sub_prop_data = RefData()
+                            sub_prop_data['type'] = FormattedType()
+                            sub_prop_data['type']['data_terms'] = [options['type']]
+                            sub_prop_data['type']['format_terms'] = [options['format']]
+                            sub_prop_data['size'] = fullsize
+                            sub_prop_data['path'] = os.path.basename(filepath)
+                            subdata['properties'][sub_prop_data['path'].replace('.','_')] = sub_prop_data
                             # Update history
                             if ObjectManager.use_repo:
                                 index = ObjectManager.get_repository_index(uid)
@@ -403,7 +411,7 @@ class ObjectManager:
                                 if 'msg' not in options:
                                     msg += os.path.basename(filepath) + ","
                             status = ObjectManager.DOWNLOADED
-                        subdata['size'] = fullsize
+                        #subdata['size'] = fullsize
                         dataset['data'] = subdata
                 else:
                     for filepath in options['files']:
@@ -446,16 +454,17 @@ class ObjectManager:
                         for symdirfile in symdirfiles:
                             relative_file = os.path.join(file_name, symdirfile)
                             subdata = RefData()
-                            subdata['path'] = [relative_file]
+                            subdata['path'] = relative_file
                             subdata['name'] = relative_file
                             subdata['size'] = \
                             os.path.getsize(os.path.join(options['files'][0],
                                             symdirfile))
                             #fullsize += subdata['size']
-                            subdata['type'] = dataset['data']['type']
+                            subdata['type'] = FormattedType()
+                            subdata['type']['data_terms'] = [dataset['data']['type']]
                             dataset['data']['value'].append(subdata)
                     else:
-                        dataset['data']['path'] = [ file_name ]
+                        dataset['data']['path'] = file_name
                     dir_name = os.path.dirname(filepath)
                     if not os.path.exists(dir_name):
                         os.mkdir(dir_name)
@@ -466,7 +475,7 @@ class ObjectManager:
                         obj.add_bytestream(file_name, stream, path)
                     if 'properties' not in dataset['data']:
                         # Not a complex object dataset
-                        dataset['data']['path'] = [ file_name ]
+                        dataset['data']['path'] = file_name
                         dataset['data']['size'] = \
                             os.path.getsize(filepath)
                     else:
@@ -478,7 +487,8 @@ class ObjectManager:
                                 break
 
                 if options['type'] is not None:
-                    dataset['data']['type'] = options['type']
+                    dataset['data']['type'] = FormattedType()
+                    dataset['data']['type']['data_terms'] = [options['type']]
 
                 if ObjectManager.use_repo:
                     index = ObjectManager.get_repository_index(uid)
@@ -516,7 +526,7 @@ class ObjectManager:
                 else:
                     fformat = detector.detect_by_extension(dataset['name'])
                     datapath = os.path.join(dataset.get_file_path(),
-                                            dataset['data']['path'][0])
+                                            dataset['data']['path'])
                 if fformat is None:
                     (fformat, mime) = detector.detect(
                                           ObjectManager.get_storage_path() +
@@ -524,8 +534,8 @@ class ObjectManager:
             else:
                 fformat = options['format']
 
-            if fformat is not None: 
-                dataset['data']['format'] = fformat
+            if fformat is not None:
+                dataset['data']['type']['format_terms'] = [fformat]
 
         dataset['status'] = status
         dataset.save()
@@ -585,15 +595,16 @@ class ObjectManager:
         if 'public' in options:
             dataset['public'] = options['public']
 
-        dataset['data']['path'] = [ file_name ]
+        dataset['data']['path'] = file_name
 
         filepath = os.path.join(dataset.get_file_path(),
-                                dataset['data']['path'][0])
+                                dataset['data']['path'])
         dataset['status'] = ObjectManager.DOWNLOADED
         if options['uncompress'] and ObjectManager.isarchive(file_name) is not None:
             dataset['status'] = ObjectManager.UNCOMPRESS
             options['original_format'] = options['format']
             options['format'] = 'archive'
+            options['status'] = ObjectManager.UNCOMPRESS
 
         dataset['data']['size'] = os.path.getsize(filepath)
         if 'project' in options:
@@ -608,14 +619,16 @@ class ObjectManager:
         else:
             fformat = options['format']
 
-        dataset['data']['format'] = fformat
-        dataset['data']['type'] = options['type']
+
+        dataset['data']['type'] = FormattedType()
+        dataset['data']['type']['data_terms'] = [options['type']]
+        dataset['data']['type']['format_terms'] = [fformat]
 
         dataset.save()
 
         if ObjectManager.use_repo and not options['uncompress']:
             index = ObjectManager.get_repository_index(uid)
-            index.add([dataset['data']['path'][0]])
+            index.add([dataset['data']['path']])
             if 'msg' in options:
                 msg = options['msg']
             else:
@@ -646,5 +659,3 @@ class ObjectManager:
             commits.append({'committed_date': commit.committed_date,
                             'message': commit.message})
         return commits
-
-
