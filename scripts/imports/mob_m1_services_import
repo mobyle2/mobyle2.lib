@@ -188,10 +188,10 @@ class TypeConversionMap(object):
             return {'_type': mapped[0]}
         elif len(mapped) == 2:
             return {'_type': mapped[0],
-                    'data_terms': mapped[1]}
+                    'data_terms': [mapped[1]]}
         else:
             return {'_type': mapped[0],
-                    'data_terms': mapped[1],
+                    'data_terms': [mapped[1]],
                     'format_terms': mapped[2]}
 
 types_map = TypeConversionMap()
@@ -460,7 +460,8 @@ def parse_para(p_dict, para, service_type):
                 para['precond'] = MobyleExprTranslator().translate(
                     code.text())
     if service_type == 'program':
-        para['argpos'] = p_dict.text('argpos')
+        if p_dict.text('argpos') is not None:
+            para['argpos'] = int(p_dict.text('argpos'))
 
 
 def parse_parameter(p_dict, service_type):
@@ -550,7 +551,8 @@ def parse_input_parameter(p_dict, parameter, service_type):
                 parameter['ctrls'].append({'test': test, 'message': message})
     if service_type == 'program':
         parameter['command'] = p_dict.att('iscommand') in ['1', 'true', 'True']
-        parameter['argpos'] = p_dict.text('argpos')
+        if p_dict.text('argpos') is not None:
+            parameter['argpos'] = int(p_dict.text('argpos'))
         if p_dict.has('format'):
             parameter['format'] = p_dict.get('format').list('code')
             for code in p_dict.get('format').list('code'):
@@ -600,7 +602,10 @@ def parse_paragraph(p_dict, service_type):
     else:
         input_paragraph = InputParagraph()
     parse_para(p_dict, input_paragraph, service_type)
-    output_paragraph = OutputParagraph()
+    if service_type == 'program':
+        output_paragraph = OutputProgramParagraph()
+    else:
+        output_paragraph = OutputParagraph()
     parse_para(p_dict, output_paragraph, service_type)
     parse_parameters(p_dict.get('parameters'),
                      (input_paragraph, output_paragraph), service_type)
@@ -738,6 +743,7 @@ if __name__ == '__main__':
         from mobyle.common.service import Service, Program, Package
     from mobyle.common.service import InputParagraph, OutputParagraph, \
                                       InputProgramParagraph, \
+                                      OutputProgramParagraph, \
                                       InputParameter, OutputParameter, \
                                       InputProgramParameter, \
                                       OutputProgramParameter
