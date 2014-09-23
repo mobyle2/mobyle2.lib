@@ -53,7 +53,7 @@ class TestObjectManager(unittest.TestCase):
 
         # Update the schema according to the files, example:
         my_schema = RefData()
-        my_schema['path'] = [ 'test.fake' ]
+        my_schema['path'] = 'test.fake'
         my_schema['size'] = os.path.getsize(data_file)
         my_schema['type'] = FormattedType()
         my_schema['type']['format_terms'] = ["EDAM:123"]
@@ -81,7 +81,7 @@ class TestObjectManager(unittest.TestCase):
         # Update the schema according to the files, example:
         my_schema = RefData()
         sample_file = os.path.join(os.path.dirname(__file__), 'test.conf')
-        my_schema['path'] = [ 'test.conf' ]
+        my_schema['path'] = 'test.conf'
         my_schema['size'] = os.path.getsize(sample_file)
         my_schema['type'] = FormattedType()
         my_schema['type']['format_terms'] = ["EDAM:123"]
@@ -146,7 +146,7 @@ class TestObjectManager(unittest.TestCase):
 
         # Update the schema according to the files, example:
         my_schema = RefData()
-        my_schema['path'] = [ 'test.fake' ]
+        my_schema['path'] = 'test.fake'
         my_schema['size'] = os.path.getsize(data_file)
         my_schema['type'] = FormattedType()
         my_schema['type']['format_terms'] = ["EDAM:123"]
@@ -235,6 +235,7 @@ class TestObjectManager(unittest.TestCase):
         self.assertEqual(my_dataset_from_manager['status'], ObjectManager.DOWNLOADED)
 
         sample_file2 = os.path.join(os.path.dirname(__file__), 'test.conf')
+
         options['id'] = str(my_dataset_from_manager['_id'])
         options['name'] = 'test.conf'
         my_updated_dataset_from_manager = ObjectManager.store('test.conf',
