@@ -181,7 +181,10 @@ class OutputProgramParameter(OutputParameter):
     output parameter for a program
     """
     structure = {
-                'filenames': basestring
+                'filenames': basestring,
+                'argpos': int,
+                'format': basestring,
+                'paramfile': basestring
                 }
 
 
@@ -295,7 +298,7 @@ class InputParagraph(Paragraph):
 @connection.register
 class InputProgramParagraph(InputParagraph):
     """
-    a program input paragraph
+    a program inputs paragraph
     """
     structure = {
                 'argpos': int
@@ -311,6 +314,16 @@ class OutputParagraph(Paragraph):
     validators = {
                   'children': outputs_validator
                  }
+
+@myaml.register
+@connection.register
+class OutputProgramParagraph(OutputParagraph):
+    """
+    a program outputs paragraph
+    """
+    structure = {
+                'argpos': int
+                }
 
 @myaml.register
 @mf_decorator
@@ -437,10 +450,19 @@ class Service(Software):
 
     def inputs_list(self):
         """ 
-        return the list of all parameters
+        return the list of input parameters
         """
         if self['inputs'] is not None:
             return self['inputs'].parameters_list()
+        else:
+            return []
+
+    def outputs_list(self):
+        """ 
+        return the list of output parameters
+        """
+        if self['outputs'] is not None:
+            return self['outputs'].parameters_list()
         else:
             return []
 
@@ -465,7 +487,8 @@ class Program(Service):
         return the list of all parameters 
         ordered by argpos, in ascending order
         """
-        return sorted(self.inputs_list(), key=lambda x: x.argpos)
+        return sorted(self.inputs_list() + self.outputs_list(), 
+            key=lambda x: x.argpos)
 
     @property
     def env(self):
