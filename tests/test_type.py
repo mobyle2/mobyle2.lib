@@ -83,8 +83,8 @@ class TestStructType(unittest.TestCase):
         connection.TypeContainer.collection.remove({})
         self.container = connection.TypeContainer()
         self.type = StructType()
-        self.properties = {'a': BooleanType(),
-                           'b': BooleanType()}
+        self.properties = {u'a': BooleanType(),
+                           u'b': BooleanType()}
         self.type['properties'] = self.properties
         self.container['type'] = self.type
         self.container.save()
@@ -93,10 +93,10 @@ class TestStructType(unittest.TestCase):
     def test_loaded_class_type(self):
         self.assertIs(type(self.loaded_type_container['type']), StructType)
         self.assertIs(
-            type(self.loaded_type_container['type']['properties']['a']),
+            type(self.loaded_type_container['type']['properties'][u'a']),
             BooleanType)
         self.assertIs(
-            type(self.loaded_type_container['type']['properties']['b']),
+            type(self.loaded_type_container['type']['properties'][u'b']),
             BooleanType)
 if __name__=='__main__':
     unittest.main()
