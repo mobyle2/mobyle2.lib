@@ -58,7 +58,7 @@ class Term(AbstractTerm):
 
     structure = {
         '_type': unicode,
-        'subclassOf': [AbstractTerm]
+        'subclassOf': [basestring]
         }
     indexes = [
          {
