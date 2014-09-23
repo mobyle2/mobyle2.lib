@@ -139,7 +139,7 @@ class ObjectManager:
         :return: ProjectData
         '''
         uid = str(uid)
-        return connection.ProjectData.find_one({"_id": ObjectId(uid)})
+        return connection.ProjectData.fetch_one({"_id": ObjectId(uid)})
 
     @classmethod
     def get_token(cls, uid, files_path,
@@ -220,7 +220,7 @@ class ObjectManager:
             options['uncompress'] = False
         dataset = None
         try:
-            dataset = connection.ProjectData.find_one({"_id": ObjectId(uid)})
+            dataset = connection.ProjectData.fetch_one({"_id": ObjectId(uid)})
             if dataset is not None:
                 if 'path' in dataset and dataset['path']:
                     dataset.delete()
@@ -313,7 +313,7 @@ class ObjectManager:
             options['type'] = None
 
 
-        dataset = connection.ProjectData.find_one({"_id":
+        dataset = connection.ProjectData.fetch_one({"_id":
                                                    ObjectId(options['id'])})
         updated_datasets = [dataset]
 
@@ -561,7 +561,7 @@ class ObjectManager:
             options = {}
         Config.config()
         if 'id' in options and options['id']:
-            dataset = connection.ProjectData.find_one({'_id': ObjectId(
+            dataset = connection.ProjectData.fetch_one({'_id': ObjectId(
                                                        options['id'])})
             if not 'data' in dataset:
                 dataset['data'] = RefData()
@@ -624,6 +624,7 @@ class ObjectManager:
         dataset['data']['type']['data_terms'] = [options['type']]
         dataset['data']['type']['format_terms'] = [fformat]
 
+        print "JUSTE AVANT SAVE=", dataset['data'], type(dataset['data'])
         dataset.save()
 
         if ObjectManager.use_repo and not options['uncompress']:
@@ -650,7 +651,7 @@ class ObjectManager:
         fid = str(fid)
         if not ObjectManager.use_repo:
             return []
-        dataset = connection.ProjectData.find_one({'_id': ObjectId(fid)})
+        dataset = connection.ProjectData.fetch_one({'_id': ObjectId(fid)})
         uid = str(dataset['_id'])
         repo = ObjectManager.get_repository(uid)
         commits = []
