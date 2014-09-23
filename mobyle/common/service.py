@@ -124,18 +124,6 @@ class Paragraph(Para):
                 paras_list.extend(child_para.parameters_list())
         return paras_list
 
-
-@myaml.register
-@connection.register
-class InputProgramParagraph(Paragraph):
-    """
-    a program input paragraph
-    """
-    structure = {
-                'argpos': int
-                }
-
-
 @myaml.register
 @connection.register
 class InputParameter(Parameter):
@@ -302,6 +290,16 @@ class InputParagraph(Paragraph):
     validators = {
                   'children': inputs_validator
                  }
+
+@myaml.register
+@connection.register
+class InputProgramParagraph(InputParagraph):
+    """
+    a program input paragraph
+    """
+    structure = {
+                'argpos': int
+                }
 
 @myaml.register
 @connection.register
