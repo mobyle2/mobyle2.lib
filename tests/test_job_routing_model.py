@@ -123,19 +123,21 @@ class TestExecutionRoutes(unittest.TestCase):
 
     def test_insert_N_get(self):
         map = [ {"name": "route_1", 
-                          "rules" : [{"name" : u"user_is_local"} , {"name" : u"job_name_match", 
-                                                                   "parameters" : {u"name": u"Filochard"}
-                                                                   }
+                          "rules": [ ExecutionRule({"name": u"user_is_local",
+                                                    "parameters": None}),
+                                     ExecutionRule({"name": u"job_name_match", 
+                                                    "parameters": {u"name": u"Filochard"}})
                                      ],
                           "exec_system" : "big_one" 
                                       },
-                         {"name" :"route_2",
-                          "rules" : [{"name" : "project_match", "parameters" : {"name": u"dans le cambouis"}} ],
-                          "exec_system" : "small_one" 
+                         {"name":"route_2",
+                          "rules": [ExecutionRule({"name": "project_match", 
+                                                   "parameters": {"name": u"dans le cambouis"}})],
+                          "exec_system": "small_one" 
                          },
-                         {"name" : "default",
-                          "rules" : [],
-                          "exec_system" : "cluster_two" 
+                         {"name": "default",
+                          "rules": [],
+                          "exec_system": "cluster_two" 
                           }
                         ]
         
