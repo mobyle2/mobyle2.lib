@@ -243,7 +243,7 @@ class TestService(unittest.TestCase):
 
         output_stdout = OutputProgramParameter()
         output_stdout['name'] = 'stdout'
-        output_stdout['output_type'] = 'stdout'
+        output_stdout['output_type'] = u'stdout'
         output_stdout_type = FormattedType()
         output_stdout['type'] = output_stdout_type
         program['outputs']['children'].append(output_stdout)
