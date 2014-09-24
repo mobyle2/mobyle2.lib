@@ -66,13 +66,13 @@ class RefData(AbstractData):
         #TODO only clean if format is text
         return
 
-    def expr_value(self, separator=" "):
+    def expr_value(self):
         """
         Get the value used for evaluated
         expressions (precond, ctrl, format, etc.)
         i.e. the list of file names.
         """
-        return separator.join(self['path'])
+        return self['path']
 
 @connection.register
 class ValueData(AbstractData):
