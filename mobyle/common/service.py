@@ -61,7 +61,8 @@ class Parameter(Para):
                 'main': bool,
                 'hidden': bool,
                 'simple': bool,
-                'type': Type
+                'type': Type,
+                'ctrls': None
                 }
 
     default_values = {
@@ -86,6 +87,16 @@ class Parameter(Para):
             return data
         else:
             return None
+
+    def has_ctrls(self):
+        return True if self['ctrls'] is not None else False
+
+    @property
+    def ctrls(self):
+        """
+        :return: the ctrls
+        """
+        return self['ctrls']
 
 
 @myaml.register
@@ -131,8 +142,7 @@ class InputParameter(Parameter):
     input parameter
     """
     structure = {
-                'mandatory': bool,
-                'ctrls': None
+                'mandatory': bool
                 }
 
     default_values = {
@@ -143,16 +153,6 @@ class InputParameter(Parameter):
     def mandatory(self):
         return self['mandatory'] or False
 
-
-    def has_ctrls(self):
-        return True if self['ctrls'] is not None else False
-
-    @property
-    def ctrls(self):
-        """
-        :return: the ctrls
-        """
-        return self['ctrls']
     
 @myaml.register
 @connection.register
@@ -173,38 +173,17 @@ class OutputParameter(Parameter):
                 }
     default_values = {'output_type': u'file'}
 
-
 @myaml.register
 @connection.register
-class OutputProgramParameter(OutputParameter):
+class ProgramParameter(Parameter):
     """
-    output parameter for a program
+    parameter for a program
     """
     structure = {
-                'filenames': basestring,
                 'argpos': int,
                 'format': basestring,
                 'paramfile': basestring
                 }
-
-
-@myaml.register
-@connection.register
-class InputProgramParameter(InputParameter):
-    """
-    input parameter for a program
-    """
-    structure = {
-                'command': bool,
-                'argpos': int,
-                'format': basestring,
-                'paramfile': basestring
-                }
-
-    default_values = {
-                     'command': False,
-                     }
-
     @property
     def argpos(self):
         """
@@ -212,7 +191,7 @@ class InputProgramParameter(InputParameter):
         paragraphs if necessary
         """
         argpos = None
-        if self['command']:
+        if hasattr(self, 'command') and self['command']:
             argpos = 0
         elif self['argpos'] is not None:
             argpos = self['argpos']
@@ -221,7 +200,7 @@ class InputProgramParameter(InputParameter):
                 if 'argpos' in ancestor and ancestor['argpos'] is not None:
                     argpos = ancestor['argpos']
         return argpos if argpos is not None else 1
-
+    
     def has_format(self):
         """
         return existence of the format property
@@ -234,15 +213,7 @@ class InputProgramParameter(InputParameter):
         return the format value if it is defined
         """
         return self['format']
-    
-    @property
-    def command(self):
-        """
-        :return: True if parameter is command, False otherwise
-        :rtype: boolean
-        """
-        return self['command'] or False
-    
+
     def has_paramfile(self):
         """
         return existence of the paramfile property
@@ -255,6 +226,35 @@ class InputProgramParameter(InputParameter):
         return the paramfile value if it is defined
         """
         return self['paramfile']
+
+@myaml.register
+@connection.register
+class OutputProgramParameter(OutputParameter, ProgramParameter):
+    """
+    output parameter for a program
+    """
+    structure = {
+                'filenames': basestring
+                }
+
+
+@myaml.register
+@connection.register
+class InputProgramParameter(InputParameter, ProgramParameter):
+    """
+    input parameter for a program
+    """
+    structure = {
+                'command': bool
+                }
+    
+    @property
+    def command(self):
+        """
+        :return: True if parameter is command, False otherwise
+        :rtype: boolean
+        """
+        return self['command'] or False
 
 
 def inputs_validator(paras_list):
@@ -385,7 +385,7 @@ class Software(ProjectDocument):
 
         :raise: :class:`ValidationError` if the public name is already used.
         """
-        if (self['public_name'] is not None):
+        if hasattr(self, 'collection') and (self['public_name'] is not None):
             if (self.collection.find({'public_name': self['public_name'],
                 'version': self.get('version',None),
                 '_id': {'$ne': self.get('_id', None)}}).count() > 0):
@@ -466,6 +466,9 @@ class Service(Software):
         else:
             return []
 
+    def parameters_list(self):
+        return self.inputs_list() + self.outputs_list()
+
 @myaml.register
 @mf_decorator
 @connection.register
@@ -482,12 +485,12 @@ class Program(Service):
     def command(self):
         return self['command']
 
-    def inputs_list_by_argpos(self):
+    def parameters_list_by_argpos(self):
         """ 
         return the list of all parameters 
         ordered by argpos, in ascending order
         """
-        return sorted(self.inputs_list() + self.outputs_list(), 
+        return sorted(self.parameters_list(), 
             key=lambda x: x.argpos)
 
     @property
