@@ -31,7 +31,7 @@ class TestData(unittest.TestCase):
         self.assertEqual(v.expr_value(),'foo')
         v = RefData()
         v['type'] = FormattedType()
-        v['path'] = ['foo.txt']
+        v['path'] = 'foo.txt'
         self.assertEqual(v.expr_value(),'foo.txt')
         v = ListData()
         v['type'] = ArrayType(StringType())
