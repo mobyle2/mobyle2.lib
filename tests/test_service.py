@@ -163,7 +163,7 @@ class TestService(unittest.TestCase):
         self.assertEqual(input_c.argpos,1)
         self.assertEqual(input_b.argpos,2)
         self.assertEqual(input_a.argpos,3)
-        self.assertEqual(program.inputs_list_by_argpos(), [input_c, input_b, input_a])
+        self.assertEqual(program.parameters_list_by_argpos(), [input_c, input_b, input_a])
 
     def test_program_get_env(self):
         program = Program()
