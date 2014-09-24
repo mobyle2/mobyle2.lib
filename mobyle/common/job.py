@@ -446,7 +446,7 @@ class Job(ProjectDocument):
             handle.write(value)
             handle.close()
             my_data = RefData()
-            my_data['path'] = [data_name]
+            my_data['path'] = data_name
             my_data['size'] = os.path.getsize(data_file)
             my_data['type'] = parameter['type']
             my_dataset.schema(my_data)
