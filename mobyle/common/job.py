@@ -295,7 +295,8 @@ class Job(ProjectDocument):
                  'service': Service,
                  'inputs': {basestring: AbstractData},
                  'outputs': {basestring: AbstractData},
-                 '_dir': basestring
+                 '_dir': basestring,
+                 'exec_inputs': {basestring: AbstractData}
                 }
 
     required_fields = ['status', 'project']
@@ -493,7 +494,10 @@ class Job(ProjectDocument):
         """
         self['message'] = msg
         
-        
+    def import_data(self):
+        for input_name, data in self['inputs']:
+            exec_data = data.import_to_job(self)
+            self['exec_inputs'][input_name] = exec_data
         
 @mf_decorator
 @connection.register

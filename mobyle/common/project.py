@@ -196,6 +196,9 @@ class ProjectData(ProjectDocument):
         """
         return self['data'].expr_value()
 
+    def import_to_job(self, job):
+        return self['data'].import_to_job(job, self.get_file_path())
+
     def get_file_path(self):
         '''Get root path for files of the dataset'''
         if self['path']:

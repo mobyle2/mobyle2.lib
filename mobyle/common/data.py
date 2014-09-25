@@ -9,6 +9,7 @@ Created on Nov. 12, 2012
 @author: O. Sallou
 @license: GPLv3
 '''
+import shutil, copy
 
 from mongokit import SchemaDocument
 from .type import *
@@ -27,9 +28,6 @@ class AbstractData(SchemaDocument):
     def check_value(self):
         raise NotImplementedError()
 
-    def job_import(self, destination_job):
-        pass
-
     def clean(self):
         pass
 
@@ -39,6 +37,9 @@ class AbstractData(SchemaDocument):
         expressions (precond, ctrl, format, etc.)
         """
         raise NotImplementedError()
+
+    def import_to_job(self, job):
+        return copy.deepcopy(self)
 
 @connection.register
 class RefData(AbstractData):
@@ -50,14 +51,6 @@ class RefData(AbstractData):
     structure = {'path': basestring,
                  'size': int,
                 }
-
-    def job_import(destination_job):
-        """
-        Copy all files in the job folder
-        """
-        #TODO copy as binary if the type format is binary subclass
-        #     otherwise copy as text
-        return
 
     def clean():
         """
@@ -73,6 +66,20 @@ class RefData(AbstractData):
         i.e. the list of file names.
         """
         return self['path']
+
+    def import_to_job(self, job, src_pref=None):
+        src_path = self['data']['path']
+           #TODO, this is a naive implementation that does not handle
+        # any potential copy problem
+        if src_pref is not None:
+            src_path = os.path.join(src_pref, src_path)
+        # TODO, here insert "securing" of file name
+        dst_file_name = src_file_name
+        dst_path = os.path.join(job.dir, dst_file_name)
+        shutil.copy(src_path, dst_path)
+        data_object = copy.deepcopy(self)
+        data_object['path'] = dst_file_name
+        return data_object
 
 @connection.register
 class ValueData(AbstractData):
