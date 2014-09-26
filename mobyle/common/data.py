@@ -10,10 +10,27 @@ Created on Nov. 12, 2012
 @license: GPLv3
 '''
 import os, shutil, copy
+import string, re
 
 from mongokit import SchemaDocument
 from .type import *
 
+def safe_file_name(file_name, reserved = []):
+    """
+    return a file name which will not cause any potential
+    basic security issue for job execution or collide with
+    "reserved" file names
+    """
+    
+    #do not allow  non ascii chars
+    for car in file_name :
+        if car not in string.printable : 
+            file_name = file_name.replace( car , '_')
+    #SECURITY: substitute shell special characters
+    file_name = re.sub( "[ ~%#\"\'<>&\*;$`\|()\[\]\{\}\?\s ]" , '_' , file_name )
+    #SECURITY: transform absolute path into relative path
+    file_name = re.sub( "^.*[\\\]", "" , file_name )
+    return file_name
 
 class AbstractData(SchemaDocument):
     """
@@ -74,9 +91,8 @@ class RefData(AbstractData):
         if src_pref is not None:
             src_path = os.path.join(src_pref, src_path)
         # TODO, here insert "securing" of file name
-        dst_file_name = self['path']
+        dst_file_name = safe_file_name(self['path'])
         dst_path = os.path.join(job.dir, dst_file_name)
-        print job.dir
         shutil.copy(src_path, dst_path)
         data_object = copy.deepcopy(self)
         data_object['path'] = dst_file_name
