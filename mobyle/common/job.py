@@ -477,6 +477,25 @@ class Job(ProjectDocument):
                 return data
         else:
             return None
+
+    def get_exec_input_value(self, parameter_name):
+        """
+        Return the 'execution' value corresponding to a parameter
+        :param parameter_name: the name of the parameter
+        :type parameter_name: basestring
+        :return: the data corresponding to the parameter name
+                 or None
+        :rtype: AbstractData or ProjectData
+        """
+        if parameter_name in self['exec_inputs']:
+            data = self['exec_inputs'][parameter_name]
+            if isinstance(data, ObjectId):
+                project_data = connection.ProjectData.fetch_one({'_id': data})
+                return project_data
+            else:
+                return data
+        else:
+            return None
         
     @property    
     def message(self):
