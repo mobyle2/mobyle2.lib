@@ -293,10 +293,10 @@ class Job(ProjectDocument):
                  'has_been_notified': bool,
                  'project': ObjectId,
                  'service': Service,
-                 'inputs': {basestring: AbstractData},
-                 'outputs': {basestring: AbstractData},
+                 'inputs': {basestring: None},
+                 'outputs': {basestring: None},
                  '_dir': basestring,
-                 'exec_inputs': {basestring: AbstractData}
+                 'exec_inputs': {basestring: None}
                 }
 
     required_fields = ['status', 'project']
@@ -495,7 +495,8 @@ class Job(ProjectDocument):
         self['message'] = msg
         
     def import_data(self):
-        for input_name, data in self['inputs']:
+        for input_name in self['inputs'].keys():
+            data = self.get_input_value(input_name)
             exec_data = data.import_to_job(self)
             self['exec_inputs'][input_name] = exec_data
         
