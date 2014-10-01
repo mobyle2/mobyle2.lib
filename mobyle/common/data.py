@@ -39,7 +39,6 @@ class AbstractData(SchemaDocument):
 
     structure = {
                  "_type": unicode,
-                 "type": Type
                 }
 
     def check_value(self):
@@ -58,8 +57,24 @@ class AbstractData(SchemaDocument):
     def import_to_job(self, job):
         return copy.deepcopy(self)
 
+    @property
+    def type(self):
+        raise NotImplementedError()
+
+class SimpleData(AbstractData):
+    """
+    A data which has a simple type
+    """
+
+    structure = {
+                 "type": Type
+                }
+    @property
+    def type(self):
+        return self['type']
+
 @connection.register
-class RefData(AbstractData):
+class RefData(SimpleData):
     """
     A data whose value is stored on the file system
     on one or more files
@@ -99,7 +114,7 @@ class RefData(AbstractData):
         return data_object
 
 @connection.register
-class ValueData(AbstractData):
+class ValueData(SimpleData):
     """
     A data whose value is stored directly in the object
     """
@@ -115,7 +130,7 @@ class ValueData(AbstractData):
         return self['value']
 
 @connection.register
-class ListData(AbstractData):
+class ListData(SimpleData):
     """
     A data formed by a list of data sharing the same type/format
     """
@@ -154,6 +169,10 @@ class StructData(AbstractData):
         """
         return {prop_name: prop_val.expr_value() for prop_name, prop_val in self['properties'].items()}
 
+    @property
+    def type(self):
+        prop_types = {prop_name: prop_val.type for prop_name, prop_val in self['properties'].items()}
+        return StructType({'properties': prop_types})
 
 def new_data(new_data_type):
     if isinstance(new_data_type, FormattedType):
