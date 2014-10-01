@@ -379,6 +379,8 @@ class ObjectManager:
                             i = i + 1
                         if 'path' in dataset['data']:
                           del dataset['data']['path']
+                        if 'type' in dataset['data']:
+                          del dataset['data']['type']
                         dataset['data'] = subdata
                     else:
                         # StructData but with 1 type
@@ -416,6 +418,8 @@ class ObjectManager:
                         #subdata['size'] = fullsize
                         if 'path' in dataset['data']:
                           del dataset['data']['path']
+                        if 'type' in dataset['data']:
+                          del dataset['data']['type']
                         dataset['data'] = subdata
                 else:
                     for filepath in options['files']:
@@ -537,8 +541,8 @@ class ObjectManager:
                                           datapath)
             else:
                 fformat = options['format']
-
-            if fformat is not None:
+            print dataset['data']
+            if fformat is not None and dataset['data']['type'] is not None:
                 dataset['data']['type']['format_terms'] = [fformat]
 
         dataset['status'] = status

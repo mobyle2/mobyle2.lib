@@ -118,11 +118,11 @@ class TestObjectManager(unittest.TestCase):
 
         my_dataset_from_manager = ObjectManager.update(ObjectManager.UNCOMPRESSED, options)
         my_dataset_from_manager = my_dataset_from_manager[0]
-        
+
         ObjectManager.delete(my_dataset['_id'])
         self.assertTrue(my_dataset_from_manager['status'] ==
         ObjectManager.NEED_EDIT)
-        self.assertTrue(my_dataset_from_manager['data']['type']['data_terms'][0]==options['type'])
+        #self.assertTrue(my_dataset_from_manager['data']['type']['data_terms'][0]==options['type'])
         self.assertTrue('properties' in my_dataset_from_manager['data'])
         self.assertTrue('bam_data' in my_dataset_from_manager['data']['properties'])
         self.assertTrue('bai_data' in my_dataset_from_manager['data']['properties'])
@@ -333,4 +333,3 @@ class TestObjectManager(unittest.TestCase):
         self.assertTrue(ObjectManager.isarchive('test.tar.gz') is not None)
         self.assertTrue(ObjectManager.isarchive('test.bz2') is not None)
         self.assertTrue(ObjectManager.isarchive('test.txt') is None)
-
