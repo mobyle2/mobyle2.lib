@@ -542,7 +542,9 @@ class ObjectManager:
             else:
                 fformat = options['format']
             print dataset['data']
-            if fformat is not None and dataset['data']['type'] is not None:
+            if fformat is not None and \
+              'type' in dataset['data'] and \
+              dataset['data']['type'] is not None:
                 dataset['data']['type']['format_terms'] = [fformat]
 
         dataset['status'] = status
