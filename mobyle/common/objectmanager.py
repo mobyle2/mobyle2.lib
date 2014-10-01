@@ -377,7 +377,8 @@ class ObjectManager:
                             subdata['files'].append({'path': os.path.basename(filepath), 'size': fullsize })
 
                             i = i + 1
-                        del dataset['data']['path']
+                        if 'path' in dataset['data']:
+                          del dataset['data']['path']
                         dataset['data'] = subdata
                     else:
                         # StructData but with 1 type
@@ -413,7 +414,8 @@ class ObjectManager:
                                     msg += os.path.basename(filepath) + ","
                             status = ObjectManager.DOWNLOADED
                         #subdata['size'] = fullsize
-                        del dataset['data']['path']
+                        if 'path' in dataset['data']:
+                          del dataset['data']['path']
                         dataset['data'] = subdata
                 else:
                     for filepath in options['files']:
