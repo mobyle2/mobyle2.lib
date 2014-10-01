@@ -2,6 +2,7 @@
 
 from shutil import copyfile
 import unittest
+import os
 import os.path
 from mobyle.common.config import Config
 config = Config(os.path.join(os.path.dirname(__file__), 'test.conf'))
@@ -21,6 +22,8 @@ objectManager = ObjectManager()
 class TestObjectManager(unittest.TestCase):
 
     def setUp(self):
+        if not os.path.exists('/tmp/mobyle-datatest'):
+            os.makedirs('/tmp/mobyle-datatest')
         objects = connection.User.find({})
         for object in objects:
             object.delete()
