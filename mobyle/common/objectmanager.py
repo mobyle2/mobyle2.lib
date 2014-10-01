@@ -351,8 +351,8 @@ class ObjectManager:
                     if len(types) > 1:
                         # Complex type ie StructData
                         subdata = StructData()
-                        subdata['type'] = FormattedType()
-                        subdata['type']['data_terms'] = [options['type']]
+                        #subdata['type'] = FormattedType()
+                        #subdata['type']['data_terms'] = [options['type']]
                         subdata['properties'] = {}
                         status = ObjectManager.NEED_EDIT
                         i = 0
@@ -377,14 +377,15 @@ class ObjectManager:
                             subdata['files'].append({'path': os.path.basename(filepath), 'size': fullsize })
 
                             i = i + 1
+                        delete dataset['data']['path']
                         dataset['data'] = subdata
                     else:
                         # StructData but with 1 type
                         subdata = StructData()
                         subdata['properties'] = {}
                         subdata['files'] = []
-                        subdata['type'] = FormattedType()
-                        subdata['type']['data_terms'] = [options['type']]
+                        #subdata['type'] = FormattedType()
+                        #subdata['type']['data_terms'] = [options['type']]
                         fullsize = 0
 
                         for filepath in options['files']:
@@ -412,6 +413,7 @@ class ObjectManager:
                                     msg += os.path.basename(filepath) + ","
                             status = ObjectManager.DOWNLOADED
                         #subdata['size'] = fullsize
+                        delete dataset['data']['path']
                         dataset['data'] = subdata
                 else:
                     for filepath in options['files']:
@@ -624,7 +626,6 @@ class ObjectManager:
         dataset['data']['type']['data_terms'] = [options['type']]
         dataset['data']['type']['format_terms'] = [fformat]
 
-        print "JUSTE AVANT SAVE=", dataset['data'], type(dataset['data'])
         dataset.save()
 
         if ObjectManager.use_repo and not options['uncompress']:
