@@ -76,6 +76,8 @@ class ObjectManager:
         if ObjectManager.storage is None:
             config = Config.config()
             fstore = PairtreeStorageFactory()
+            if not os.path.exists(config.get("app:main", "dm_store")+'/dm'):
+                os.makedirs(config.get("app:main", "dm_store")+'/dm')
             ObjectManager.storage = fstore.get_store(
                 store_dir=config.get("app:main", "dm_store")+'/dm',
                 uri_base="http://")
