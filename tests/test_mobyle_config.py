@@ -23,8 +23,9 @@ class TestMobyleConfig(unittest.TestCase):
         import logging
         Config.logger().setLevel(logging.ERROR)
         config = connection.MobyleConfig()
+        config['active'] = True
         config.save()
-        config_list = connection.MobyleConfig.find_one({'datadir': '/var/lib/mobyle'})
+        config_list = connection.MobyleConfig.find_one({'active': True})
         self.assertIsNotNone(config_list)
 
     def test_get_current(self):
