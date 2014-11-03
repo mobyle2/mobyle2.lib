@@ -98,7 +98,6 @@ class ServiceTypeTermLoader(object):
             self.fill_terms_list(index, children_list)
 
     def fill_terms_list(self, children, children_list):
-         #print time.asctime( time.localtime(time.time()) )
         try:
             for i in children['children']:
 
@@ -106,7 +105,7 @@ class ServiceTypeTermLoader(object):
                 if isinstance(i, Parameter):
                     if i['type'] is not None and isinstance(i['type'], FormattedType):
                         try:
-                            term_id = i['type']['data_terms']
+                            term_id = i['type']['data_terms'][0]
                             formatted_type = connection.FormattedTypeTerm.fetch_one({'term_id':term_id})
                             if formatted_type is None:
                                 formatted_type = connection.FormattedTypeTerm()
@@ -129,17 +128,17 @@ class ServiceTypeTermLoader(object):
                             else:
                                 name = k + "+" + name
 
-                            term_id = v['data_terms']
+                            term_id = v['data_terms'][0]
 
                             formatted_type = connection.FormattedTypeTerm.fetch_one({'term_id':term_id})
                             if formatted_type is None:
                                 formatted_type = connection.FormattedTypeTerm()
-                                fill_formatted_type_term(v, formatted_type)
+                                fill_formatted_type_term(v[0], formatted_type)
 
                             formatted_type.save()
 
                             struct_type_term['properties'][k] = {}
-                            fill_formatted_type_term(v,struct_type_term['properties'] [k])
+                            fill_formatted_type_term(v[0],struct_type_term['properties'] [k])
 
                         struct_type_term['name'] = name
 
@@ -164,7 +163,7 @@ def append_format_terms(existing_list, new_list):
 
 
 def fill_formatted_type_term(formatted_type, formatted_type_term):
-    term_id = formatted_type['data_terms']
+    term_id = formatted_type['data_terms'][0]
     format_terms = []
 
     if type(formatted_type['format_terms']) == list:
