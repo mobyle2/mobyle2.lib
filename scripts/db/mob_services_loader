@@ -67,9 +67,6 @@ if __name__ == '__main__':
         filenames = args.load
         for filename in filenames:
             logger.info("importing service from file %s" % (filename))
-            print connection
             s = myaml.load(file(filename, 'r'))
-            print s, s.__collection__
-            #print s.to_json()
             s.save()
             logger.info("done importing service %s/%s" % (s['name'], s['version']))
