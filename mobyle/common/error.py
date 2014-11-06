@@ -20,7 +20,7 @@ class MobyleError(Exception):
     This is the base class for all error produced by Mobyle
     """
     def __init__(self, message=None):
-        self.properties = {}
+        self.properties = {'type':self.__class__.__name__}
         super(MobyleError, self).__init__(message)
         self.message = message
 
