@@ -543,7 +543,6 @@ class ObjectManager:
                                           datapath)
             else:
                 fformat = options['format']
-            print dataset['data']
             if fformat is not None and \
               'type' in dataset['data'] and \
               dataset['data']['type'] is not None:

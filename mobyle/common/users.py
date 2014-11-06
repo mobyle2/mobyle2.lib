@@ -83,7 +83,3 @@ class User(Document):
                 project_filter = {'email' : authenticated_userid}
         return project_filter
 
-
-    
-if __name__ == '__main__':
-    print connection.User
