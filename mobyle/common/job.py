@@ -284,6 +284,7 @@ class Job(ProjectDocument):
                  '_type': unicode,
                  'name': basestring,
                  'status': CustomStatus(),
+                 'error':dict,
                  #there is a bug in mongokit
                  #see https://github.com/namlook/mongokit/issues/137
                  #'owner' : {'id': ObjectId, 'klass': basestring},
@@ -456,7 +457,7 @@ class Job(ProjectDocument):
             my_dataset.save([data_name], 'new file')
             self['inputs'][parameter['name']] = my_dataset['_id']
         else:
-            data['value'] = value
+            data['value'] = parameter['type'].from_json(value)
             self['inputs'][parameter['name']] = data
 
     def get_input_value(self, parameter_name):
@@ -500,7 +501,7 @@ class Job(ProjectDocument):
     @property    
     def message(self):
         """
-        :return: a message or None. message is use when error occured error
+        :return: a message or None.
         :rtype: string or None
         """
         return self['message']
@@ -508,10 +509,19 @@ class Job(ProjectDocument):
     @message.setter
     def message(self, msg):
         """
-        :param msg: set a new message for the job (usually use to set an error messsage.
-        :param type: string
+        :param msg: set a new message for the job.
+        :type msg: string
         """
         self['message'] = msg
+
+    def set_error(self, mobyle_error):
+        """
+        :param mobyle_error: if an error happens during the processing of the job, this
+                             method stores the error and sets the status to ERROR
+        :type mobyle_error: MobyleError
+        """
+        self['error'] = mobyle_error.properties
+        self.status.state = Status.ERROR
         
     def import_data(self):
         for input_name in self['inputs'].keys():
