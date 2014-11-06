@@ -10,6 +10,7 @@ from .myaml import myaml
 
 # pylint: disable=W0201,R0904,R0913
 
+import json
 
 @myaml.register
 @connection.register
@@ -28,6 +29,9 @@ class Type(SchemaDocument):
     def check_value(self, value):
         raise NotImplementedError()
 
+    @staticmethod
+    def from_json(value):
+        return value
 
 @myaml.register
 @connection.register
@@ -43,6 +47,9 @@ class BooleanType(Type):
         if not(type(value) == bool):
             raise TypeError("value %s is not an boolean" % value)
 
+    @staticmethod
+    def from_json(value):
+        return json.loads(value)
 
 @myaml.register
 @connection.register
