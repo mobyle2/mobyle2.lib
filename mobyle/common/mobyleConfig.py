@@ -30,15 +30,16 @@ class MobyleConfig(Document):
     __database__ = Config.config().get('app:main','db_name')
 
     structure = { 'active' : bool,
-                  'auth_mod' : basestring ,
+                  'maintenance': bool,
+                  #'auth_mod' : basestring ,
                   'mail' : { 'gateway' : basestring, # smtp gateway
                              'list' : basestring, # mailing list
                              'user' : basestring, # if auth required
                              'password' : basestring,
                              'origin' : basestring }, # From in the email
                   'url' : basestring,
-                  'datadir' : basestring,
-                  'rootdir' : basestring,
+                  #'datadir' : basestring,
+                  #'rootdir' : basestring,
                   'options' :  { 'apikey' : bool },
                   'auth': { 'ldap' : {
                                 'allow': bool,
@@ -48,27 +49,28 @@ class MobyleConfig(Document):
                                 'filter': basestring
                             }
                     },
-                    'data': {
-                        'remote': {
-                            'allowed_protocols': basestring
-                        },
-                        'local': {
-                            'allowed_copy': bool
-                        }
+                  'data': {
+                    'remote': {
+                      'allowed_protocols': basestring
+                    },
+                    'local': {
+                      'allowed_copy': bool
                     }
+                  }
     }
 
     default_values = {
         'active': False,
+        'maintenance': False,
         'options.apikey': False,
         'auth.ldap.allow': False,
         'auth.ldap.host': 'localhost',
         'auth.ldap.port': 389,
         'data.remote.allowed_protocols': 'http,ftp',
         'data.local.allowed_copy': False,
-        'url': 'http://localhost',
-        'datadir' : '/var/lib/mobyle',
-        'rootdir' : '/usr/share/mobyle'
+        'url': 'http://localhost'
+        #'datadir' : '/var/lib/mobyle',
+        #'rootdir' : '/usr/share/mobyle'
     }
 
     @classmethod
@@ -89,5 +91,3 @@ class MobyleConfig(Document):
         :rtype: str
         """
         return json.dumps(self, default=json_util.default)
-
-

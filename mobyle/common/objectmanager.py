@@ -76,6 +76,8 @@ class ObjectManager:
         if ObjectManager.storage is None:
             config = Config.config()
             fstore = PairtreeStorageFactory()
+            if not os.path.exists(config.get("app:main", "dm_store")):
+                os.makedirs(config.get("app:main", "dm_store"))
             ObjectManager.storage = fstore.get_store(
                 store_dir=config.get("app:main", "dm_store")+'/dm',
                 uri_base="http://")
@@ -351,8 +353,8 @@ class ObjectManager:
                     if len(types) > 1:
                         # Complex type ie StructData
                         subdata = StructData()
-                        subdata['type'] = FormattedType()
-                        subdata['type']['data_terms'] = [options['type']]
+                        #subdata['type'] = FormattedType()
+                        #subdata['type']['data_terms'] = [options['type']]
                         subdata['properties'] = {}
                         status = ObjectManager.NEED_EDIT
                         i = 0
@@ -377,14 +379,18 @@ class ObjectManager:
                             subdata['files'].append({'path': os.path.basename(filepath), 'size': fullsize })
 
                             i = i + 1
+                        if 'path' in dataset['data']:
+                          del dataset['data']['path']
+                        if 'type' in dataset['data']:
+                          del dataset['data']['type']
                         dataset['data'] = subdata
                     else:
                         # StructData but with 1 type
                         subdata = StructData()
                         subdata['properties'] = {}
                         subdata['files'] = []
-                        subdata['type'] = FormattedType()
-                        subdata['type']['data_terms'] = [options['type']]
+                        #subdata['type'] = FormattedType()
+                        #subdata['type']['data_terms'] = [options['type']]
                         fullsize = 0
 
                         for filepath in options['files']:
@@ -412,6 +418,10 @@ class ObjectManager:
                                     msg += os.path.basename(filepath) + ","
                             status = ObjectManager.DOWNLOADED
                         #subdata['size'] = fullsize
+                        if 'path' in dataset['data']:
+                          del dataset['data']['path']
+                        if 'type' in dataset['data']:
+                          del dataset['data']['type']
                         dataset['data'] = subdata
                 else:
                     for filepath in options['files']:
@@ -533,8 +543,10 @@ class ObjectManager:
                                           datapath)
             else:
                 fformat = options['format']
-
-            if fformat is not None:
+            print dataset['data']
+            if fformat is not None and \
+              'type' in dataset['data'] and \
+              dataset['data']['type'] is not None:
                 dataset['data']['type']['format_terms'] = [fformat]
 
         dataset['status'] = status
@@ -624,7 +636,6 @@ class ObjectManager:
         dataset['data']['type']['data_terms'] = [options['type']]
         dataset['data']['type']['format_terms'] = [fformat]
 
-        print "JUSTE AVANT SAVE=", dataset['data'], type(dataset['data'])
         dataset.save()
 
         if ObjectManager.use_repo and not options['uncompress']:
