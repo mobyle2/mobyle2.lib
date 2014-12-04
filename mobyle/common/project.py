@@ -76,12 +76,12 @@ class Project(Document):
         :rtype: string
         """
         try:
-            pid_file_path = Config.config().get("DEFAULT","projects_store")
+            projects_store = Config.config().get("DEFAULT","projects_store")
         except ConfigParserError:
             _log.warning("cannot compute a project directory path from the config file",
                       exc_info=True)
             return None 
-        return os.path.join(pid_file_path, 'projects', str(self['_id']))
+        return os.path.join(projects_store, 'projects', str(self['_id']))
 
 
     @property
