@@ -279,7 +279,7 @@ class TestService(unittest.TestCase):
         self.assertTrue(input_a.has_format())
         self.assertEqual(input_a.format, '-t')
         
-    def test_format(self):
+    def test_paramfile(self):
         input_a = InputProgramParameter()
         self.assertFalse(input_a.has_paramfile())
         self.assertEqual(input_a.paramfile, None)
