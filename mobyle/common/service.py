@@ -226,6 +226,9 @@ class ProgramParameter(Parameter):
         return the paramfile value if it is defined
         """
         return self['paramfile']
+    
+    
+
 
 @myaml.register
 @connection.register
@@ -237,6 +240,13 @@ class OutputProgramParameter(OutputParameter, ProgramParameter):
                 'filenames': basestring
                 }
 
+    @property
+    def filenames(self):
+        """
+        return the filenames value if it defined
+        """
+        return self['filenames']
+    
 
 @myaml.register
 @connection.register
