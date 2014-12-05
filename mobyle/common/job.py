@@ -304,7 +304,9 @@ class Job(ProjectDocument):
     default_values = {'has_been_notified': False,
                       '_dir': None}
 
-            
+
+    
+    
     def __cmp__(self, other):
         """
         :param other: a :class:`mobyle.common.job.Job` object I want to compared with self
@@ -545,6 +547,10 @@ class ProgramJob(Job):
                                'job_no': basestring }
                 }
 
+    
+    log_file_name = '.job_log'
+
+    
     def must_be_notified(self):
         """
         :return: True if a notification must be send a the end of job. False otherwise
