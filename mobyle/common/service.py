@@ -248,6 +248,9 @@ class OutputProgramParameter(OutputParameter, ProgramParameter):
         """
         return self['filenames']
 
+    @property
+    def output_type(self):
+        return self['output_type']
 
 
 @myaml.register
