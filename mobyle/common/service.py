@@ -13,7 +13,7 @@ from mf.annotation import mf_decorator
 from .connection import connection
 from .config import Config
 from .project import ProjectDocument
-from .type import Type
+from .type import Type, FormattedType
 from .myaml import myaml
 from .data import new_data
 
@@ -160,18 +160,7 @@ class OutputParameter(Parameter):
     """
     output parameter
     """
-    structure = {
-                # output type:
-                # stdout: standard output
-                # stderr: standard error
-                # file: a specific file
-                # progress: a progress report file
-                'output_type': IS(u'stdout',
-                                  u'stderr',
-                                  u'file',
-                                  u'progress')
-                }
-    default_values = {'output_type': u'file'}
+    pass
 
 @myaml.register
 @connection.register
@@ -237,8 +226,20 @@ class OutputProgramParameter(OutputParameter, ProgramParameter):
     output parameter for a program
     """
     structure = {
-                'filenames': basestring
+                'filenames': basestring,
+                # output type:
+                # stdout: standard output
+                # stderr: standard error
+                # file: a specific file
+                'output_type': IS(u'stdout',
+                                  u'stderr',
+                                  u'file'
+                                 ),
+                # progress: a progress report file
+                'progress':bool
                 }
+
+    default_values = {'output_type': u'file'}
 
     @property
     def filenames(self):
@@ -246,7 +247,8 @@ class OutputProgramParameter(OutputParameter, ProgramParameter):
         return the filenames value if it defined
         """
         return self['filenames']
-    
+
+
 
 @myaml.register
 @connection.register
@@ -404,7 +406,7 @@ class Software(ProjectDocument):
 
     @property
     def name(self):
-        return self['name']
+        return self['name'] or ('anonymous_%s' % str(id(self)))
 
 @myaml.register
 @mf_decorator
@@ -509,6 +511,35 @@ class Program(Service):
         return the environment variables as a dictionary
         """
         return self['env'] or {} 
+
+    def outputs_list(self):
+        """ 
+        return the list of output parameters
+        """
+        outputs = super(Program, self).outputs_list()
+        stdout = [parameter for parameter in outputs if parameter.output_type==u'stdout']
+        stderr = [parameter for parameter in outputs if parameter.output_type==u'stderr']
+        if len(stdout)==0:
+            so = OutputProgramParameter()
+            so['name'] = 'stdout'
+            so['output_type'] = u'stdout'
+            so_type = FormattedType()
+            so_type['format_terms'] = ['EDAM_format:1964']
+            so_type['data_terms'] = ['EDAM_data:2048']
+            so['type'] = so_type
+            so['filenames'] = self.name + '.out'
+            outputs.append(so)
+        if len(stderr)==0:
+            se = OutputProgramParameter()
+            se['name'] = 'stderr'
+            se['output_type'] = u'stderr'
+            se_type = FormattedType()
+            se_type['format_terms'] = ['EDAM_format:1964']
+            se_type['data_terms'] = ['EDAM_data:2048']
+            se['type'] = se_type
+            se['filenames'] = self.name + '.err'
+            outputs.append(se)
+        return outputs
 
 
 @myaml.register

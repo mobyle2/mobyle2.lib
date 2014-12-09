@@ -132,14 +132,16 @@ class TestService(unittest.TestCase):
         """
         test if program-specific parameters lists methods return the right data
         """
+        # we use argpos values 4,5,6 and not 1 because default argpos value is 1
+        # which is used by both stdout and stderr default output parameters
         par_x = InputProgramParagraph()
         par_x['name'] = 'x'
         input_a = InputProgramParameter()
         input_a['name'] = 'a'
-        input_a['argpos'] = 3
+        input_a['argpos'] = 6
         input_b = InputProgramParameter()
         input_b['name'] = 'b'
-        input_b['argpos'] = 2
+        input_b['argpos'] = 5
         x_parameters = [input_b, input_a]
         par_x['children'].append(input_a)
         par_x['children'].append(input_b)
@@ -147,23 +149,23 @@ class TestService(unittest.TestCase):
         par_y['name'] = 'y'
         input_c = InputProgramParameter()
         input_c['name'] = 'c'
-        par_y['argpos'] = 1
+        par_y['argpos'] = 4
         par_y['children'].append(input_c)
         par_x['children'].append(par_y)
         x_parameters = [input_c, input_b, input_a]
         program = Program()
         program['inputs'] = par_x
         self.assertEqual(sorted(program.inputs_list()), sorted(x_parameters),
-            "service.inputs_list() is the three nested input parameters contained")        
+            "service.inputs_list() is the five nested input parameters contained")        
         # we need to call init_ancestors manually here because ancestors are linked
         # only during service creation (by __init__)
         program.init_ancestors()
         self.assertEqual(input_a.ancestors,[par_x])
         self.assertEqual(input_c.ancestors,[par_y, par_x])
-        self.assertEqual(input_c.argpos,1)
-        self.assertEqual(input_b.argpos,2)
-        self.assertEqual(input_a.argpos,3)
-        self.assertEqual(program.parameters_list_by_argpos(), [input_c, input_b, input_a])
+        self.assertEqual(input_c.argpos,4)
+        self.assertEqual(input_b.argpos,5)
+        self.assertEqual(input_a.argpos,6)
+        self.assertEqual(program.parameters_list_by_argpos()[2:], [input_c, input_b, input_a])
 
     def test_program_get_env(self):
         program = Program()
