@@ -97,6 +97,14 @@ class Parameter(Para):
         :return: the ctrls
         """
         return self['ctrls']
+    
+    @property
+    def type(self):
+        """
+        :return: the type
+        :rtype: :class:`mobyle.comon.type.Type` object
+        """
+        return self['type']
 
 
 @myaml.register
