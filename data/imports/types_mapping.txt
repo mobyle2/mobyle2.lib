@@ -15,3 +15,4 @@ DistanceMatrix/FormattedType-EDAM_data:0870
 PhylipDistanceMatrix/FormattedType-EDAM_data:0870
 Tree/FormattedType-EDAM_data:0872
 BlastTextReport/FormattedType-EDAM_data:0857-EDAM_format:1333
+Report/FormattedType-EDAM_data:2048-EDAM_format:1964

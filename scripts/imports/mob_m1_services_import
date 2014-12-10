@@ -497,6 +497,10 @@ def parse_parameter(p_dict, service_type):
     m1_biotypes = [biotype.text() for biotype in t_dict.list('biotype')]
     m1_biotype = m1_biotypes[0] if len(m1_biotypes) == 1 else None
     type_ds = types_map.get_type(m1_class, m1_biotype)
+    if not type_ds:
+       m1_class = t_dict.get('datatype').text('superclass')
+       if m1_class is not None:
+           type_ds = types_map.get_type(m1_class, m1_biotype)
     if type_ds:
         m2_type = getattr(type_module, type_ds['_type'])()
         if 'data_terms' in type_ds:
