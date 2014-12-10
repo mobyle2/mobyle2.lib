@@ -549,6 +549,7 @@ class ProgramJob(Job):
 
     
     log_file_name = '.job_log'
+    return_value_file = '.job_return_value'
 
     
     def must_be_notified(self):
