@@ -538,7 +538,7 @@ class Program(Service):
             so_type['format_terms'] = ['EDAM_format:1964']
             so_type['data_terms'] = ['EDAM_data:2048']
             so['type'] = so_type
-            so['filenames'] = self.name + '.out'
+            so['filenames'] = "'" + self.name + ".out'"
             outputs.append(so)
         if len(stderr)==0:
             se = OutputProgramParameter()
@@ -548,7 +548,7 @@ class Program(Service):
             se_type['format_terms'] = ['EDAM_format:1964']
             se_type['data_terms'] = ['EDAM_data:2048']
             se['type'] = se_type
-            se['filenames'] = self.name + '.err'
+            se['filenames'] = "'" + self.name + ".err'"
             outputs.append(se)
         return outputs
 
