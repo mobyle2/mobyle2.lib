@@ -38,6 +38,7 @@ class Notification(Document):
                   'user': ObjectId,
                   'type': int,
                   'read': bool
+                  'ref': ObjectId # the object the notification refers to (Project, Job, Data)
                 }
 
     required_fields = ['message', 'user', 'type']
