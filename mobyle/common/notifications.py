@@ -37,7 +37,7 @@ class Notification(Document):
     structure = {'message': basestring,
                   'user': ObjectId,
                   'type': int,
-                  'read': bool
+                  'read': bool,
                   'ref': ObjectId # the object the notification refers to (Project, Job, Data)
                 }
 
