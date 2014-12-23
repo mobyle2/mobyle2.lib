@@ -427,7 +427,7 @@ class Job(ProjectDocument):
     def has_been_notified(self):
         return self['has_been_notified']
 
-    @end_time.setter
+    @has_been_notified.setter
     def has_been_notified(self, has_been_notified):
         self['has_been_notified'] = has_been_notified
 
