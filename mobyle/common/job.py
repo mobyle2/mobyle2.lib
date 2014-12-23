@@ -25,6 +25,7 @@ from .config import Config
 from .connection import connection
 from .data import AbstractData, RefData, new_data
 from .service import Service
+from .notifications import Notification
 from .project import ProjectDocument, ProjectData
 from .error import InternalError
 from mobyle.common.objectmanager import ObjectManager
@@ -539,6 +540,18 @@ class Job(ProjectDocument):
             data = self.get_input_value(input_name)
             exec_data = data.import_to_job(self)
             self['exec_inputs'][input_name] = exec_data
+
+    def notify_end(self):
+        """
+        Notify the user who created the job that it is finished.
+        """
+        my_notif = connection.Notification()
+        my_notif['message'] = '%s finished' % self.name
+        my_notif['type'] = 2
+        my_notif['user'] = self.user
+        my_notif['ref'] = self.id
+        my_notif.save()
+
         
 @mf_decorator
 @connection.register
