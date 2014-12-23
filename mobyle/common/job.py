@@ -289,6 +289,7 @@ class Job(ProjectDocument):
                  #see https://github.com/namlook/mongokit/issues/137
                  #'owner' : {'id': ObjectId, 'klass': basestring},
                  'owner': dict,
+                 'user': ObjectId,
                  'message': basestring,
                  'end_time': datetime.datetime,
                  'has_been_notified': bool,
@@ -405,6 +406,14 @@ class Job(ProjectDocument):
     @owner.setter
     def owner(self, owner):
         self['owner'] = owner
+
+    @property
+    def user(self):
+        return self['user']
+
+    @user.setter
+    def user(self, user):
+        self['user'] = user
 
     @property
     def end_time(self):
