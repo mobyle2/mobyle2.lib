@@ -501,8 +501,13 @@ class Program(Service):
     """
     structure = {
                   'command': basestring,
-                  'env': dict
+                  'env': dict,
+                  'cpu': int, # how many CPUs required to run the program 
+                  'mem': int, # how much RAM required to run the program
+                  'network': bool # specify if the program requires a network access to run
                 }
+
+    default_values = {'network': False}
 
     @property
     def command(self):
