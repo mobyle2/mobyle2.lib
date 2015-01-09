@@ -740,7 +740,6 @@ if __name__ == '__main__':
         from mobyle.common.connection import connection
         from mobyle.common.service import Service, Program, Package
         from mobyle.common import users
-        from mobyle.common import project
         Program = connection.Program
         Package = connection.Package
     else:
@@ -761,7 +760,6 @@ if __name__ == '__main__':
     if args.config:
         user = connection.User.find_one({'email': config.get("app:main",
                                          'root_email')})
-        project = connection.Project.find_one({ 'owner' : user['_id'] })
         if args.init:
             connection.Program.collection.remove()
             connection.Package.collection.remove()
@@ -789,11 +787,13 @@ if __name__ == '__main__':
                 if args.public:
                     s['public_name'] = s['name']
                 if args.config:
-                    s['project'] = project['_id']
+                    s['project'] = user['default_project']
                     s.save()
                 if args.storeto:
                     fh = open(os.path.join(args.storeto, s['name'] + '.json'),
                               'w')
+                    s['_id'] = None
+                    s['project'] = None
                     fh.write(json.dumps(s, sort_keys=True,
                                         indent=4, separators=(',', ': ')))
                     fh.close()
