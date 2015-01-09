@@ -545,12 +545,11 @@ class Job(ProjectDocument):
         """
         Notify the user who created the job that it is finished.
         """
-        my_notif = connection.Notification()
-        my_notif['message'] = '%s finished' % self.name
-        my_notif['type'] = 2
-        my_notif['user'] = self.user
-        my_notif['ref'] = self.id
-        my_notif.save()
+        notif = connection.Notification()
+        notif['type'] = 2
+        notif['user'] = self.user
+        notif['ref'] = self.id
+        notif.save()
 
         
 @mf_decorator

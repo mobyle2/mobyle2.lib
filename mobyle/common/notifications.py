@@ -41,7 +41,7 @@ class Notification(Document):
                   'ref': ObjectId # the object the notification refers to (Project, Job, Data)
                 }
 
-    required_fields = ['message', 'user', 'type']
+    required_fields = ['user', 'type']
     default_values = {'read': False}
 
     is_debug = False
