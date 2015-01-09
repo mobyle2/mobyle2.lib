@@ -69,9 +69,6 @@ if __name__ == '__main__':
     elif args.load:
         user = connection.User.find_one({'email': config.get("app:main",
                                          'root_email')})
-        print {'email': config.get("app:main",
-                                         'root_email')}
-        print user
         if args.init:
             connection.Program.collection.remove()
             connection.Package.collection.remove()
