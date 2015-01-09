@@ -42,12 +42,15 @@ if __name__ == '__main__':
                         "export services to specified directory")
     action.add_argument('--load', nargs='*', help=
                         "import services from specified directory")
+    parser.add_argument('-public', action="store_true", default=False)
+    parser.add_argument('-init', action="store_true", default=False)
     args = parser.parse_args()
     # Init config
     config = Config(args.config).config()
     # init db connection
     from mobyle.common.connection import connection
     from mobyle.common.service import Service, Program
+    from mobyle.common import users
     if args.loglevel:
         try:
             logger.setLevel(args.loglevel)
@@ -64,9 +67,20 @@ if __name__ == '__main__':
             s_yaml = myaml.dump(s, file(filename, 'w'), indent=4, tags=None)
             logger.info("done exporting service to file %s" % (filename))
     elif args.load:
+        user = connection.User.find_one({'email': config.get("app:main",
+                                         'root_email')})
+        print {'email': config.get("app:main",
+                                         'root_email')}
+        print user
+        if args.init:
+            connection.Program.collection.remove()
+            connection.Package.collection.remove()
         filenames = args.load
         for filename in filenames:
             logger.info("importing service from file %s" % (filename))
             s = myaml.load(file(filename, 'r'))
+            if args.public:
+                s['public_name'] = s['name']
+            s['project'] = user['default_project']
             s.save()
             logger.info("done importing service %s/%s" % (s['name'], s['version']))
