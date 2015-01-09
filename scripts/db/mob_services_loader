@@ -12,15 +12,8 @@
 
 
 import os
-from collections import OrderedDict
-
-import xml.etree.cElementTree as ET
-import xml.etree.ElementInclude as EI
 import logging
 import argparse
-from importlib import import_module
-import yaml
-from mongokit import SchemaDocument, ObjectId
 
 from mobyle.common.config import Config
 from mobyle.common.myaml import myaml
@@ -51,6 +44,8 @@ if __name__ == '__main__':
     from mobyle.common.connection import connection
     from mobyle.common.service import Service, Program
     from mobyle.common import users
+    from mobyle.common.classification import ClassificationLoader
+    from mobyle.common.service_terms import ServiceTypeTermLoader
     if args.loglevel:
         try:
             logger.setLevel(args.loglevel)
@@ -80,4 +75,7 @@ if __name__ == '__main__':
                 s['public_name'] = s['name']
             s['project'] = user['default_project']
             s.save()
-            logger.info("done importing service %s/%s" % (s['name'], s['version']))
+            logger.info("done importing service %s/%s"
+                        % (s['name'], s['version']))
+        classification_loader = ClassificationLoader('EDAM_topic:0003')
+        ServiceTypeTermLoader()
