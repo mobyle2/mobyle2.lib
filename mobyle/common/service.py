@@ -504,7 +504,10 @@ class Program(Service):
                   'env': dict,
                   'cpu': int, # how many CPUs required to run the program 
                   'mem': int, # how much RAM required to run the program
-                  'network': bool # specify if the program requires a network access to run
+                  'network': bool, # specify if the program requires a network access to run
+                  'containers': [{'type': basestring,
+                                  'id': basestring,
+                                  'url': basestring}]
                 }
 
     default_values = {'network': False}
