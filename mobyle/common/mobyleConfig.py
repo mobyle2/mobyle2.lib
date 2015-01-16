@@ -56,6 +56,9 @@ class MobyleConfig(Document):
                     'local': {
                       'allowed_copy': bool
                     }
+                  },
+                  'containers': {
+                    'docker': bool
                   }
     }
 
@@ -68,7 +71,8 @@ class MobyleConfig(Document):
         'auth.ldap.port': 389,
         'data.remote.allowed_protocols': 'http,ftp',
         'data.local.allowed_copy': False,
-        'url': 'http://localhost'
+        'url': 'http://localhost',
+        'containers.docker': True
         #'datadir' : '/var/lib/mobyle',
         #'rootdir' : '/usr/share/mobyle'
     }
