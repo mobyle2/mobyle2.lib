@@ -13,7 +13,7 @@ from mobyle.common.users import User
 
 from mongokit import SchemaTypeError
 
-from mf.views import MF_READ, MF_EDIT
+from mf.annotation import MF_READ, MF_EDIT
 
 class RequestMock(object):
 

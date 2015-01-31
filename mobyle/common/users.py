@@ -2,8 +2,7 @@
 
 from mongokit import Document, ObjectId
 import bcrypt
-from mf.annotation import mf_decorator
-from mf.views import MF_READ, MF_EDIT
+from mf.annotation import mf_decorator, MF_READ, MF_EDIT
 import uuid
 
 from .connection import connection

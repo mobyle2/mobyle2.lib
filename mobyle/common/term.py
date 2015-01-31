@@ -13,12 +13,10 @@ Created on Mar 7, 2013
 from mongokit import Document
 from itertools import chain
 
-from mf.annotation import mf_decorator
+from mf.annotation import mf_decorator, MF_READ
 
 from mobyle.common.connection import connection
 from mobyle.common.config import Config
-
-from mf.views import MF_READ
 
 
 class AbstractTerm(Document):

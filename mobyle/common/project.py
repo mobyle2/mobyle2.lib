@@ -12,8 +12,7 @@ import logging
 _log = logging.getLogger(__name__)
 
 from mongokit import Document, ObjectId, IS
-from mf.annotation import mf_decorator
-from mf.views import MF_READ, MF_EDIT
+from mf.annotation import mf_decorator, MF_READ, MF_EDIT
 
 from .connection import connection
 from .config import Config

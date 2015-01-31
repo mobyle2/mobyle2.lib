@@ -8,7 +8,7 @@ config = Config( os.path.join( os.path.dirname(__file__), 'test.conf'))
 from mobyle.common.connection import connection
 from mobyle.common import users
 
-from mf.views import MF_READ, MF_EDIT
+from mf.annotation import MF_READ, MF_EDIT
 
 from mobyle.common.users import User
 
