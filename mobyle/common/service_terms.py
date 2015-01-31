@@ -13,14 +13,11 @@ from mongokit import Document
 from .connection import connection
 from .config import Config
 
-from mf.annotation import mf_decorator
+from mf.annotation import mf_decorator, MF_READ
 
 from mobyle.common.service import Service, Parameter
 from mobyle.common.term import Term
 from mobyle.common.type import FormattedType, StructType, ArrayType
-
-
-from mf.views import MF_READ
 
 @mf_decorator
 @connection.register
